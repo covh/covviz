@@ -18,6 +18,11 @@ RISKLAYER_URL01 = "http://risklayer-explorer.com/media/data/events/GermanyValues
 RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/" 
 RISKLAYER_URL02_SHEET = "bnn"
 
+OPENDATASOFT_URL01 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/table/"
+OPENDATASOFT_URL02 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/download/?format=csv&lang=en&use_labels_for_header=true&csv_separator=%3B"
+OPENDATASOFT_PATH = os.path.join(DATA_PATH, "landkreise-in-germany.csv")
+DISTANCES_PATH = os.path.join(DATA_PATH, "distances.csv")
+
 def downloadData():
     print ("TODO daily")
     print (RISKLAYER_URL01)

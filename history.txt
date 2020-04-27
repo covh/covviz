@@ -1,6 +1,8 @@
 probable history of this project: 11h + 6h + 
 
 
+27/April/2020 22:00 continued with links and pages
+27/April/2020 21:15 pairwise distances for 402 locations ~ ready
 27/April/2020 16:45 continued; this history file
 27/April/2020 05:35 file "interactive2.ipynb", went to bed 
 27/April/2020 05:23 newest Kreis plot 'Kreis_14524.png', one of 445 items in repo, so first version of generating all the plots (Kreis, BuLa, Germany) was ready.   
