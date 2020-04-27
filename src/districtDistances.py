@@ -11,8 +11,8 @@ import requests
 import geopy.distance
 import wget
 
-import dataMangling
-from dataFiles import DATA_PATH, OPENDATASOFT_URL01, OPENDATASOFT_URL02, OPENDATASOFT_PATH, DISTANCES_PATH 
+import dataMangling, dataFiles
+from dataFiles import DATA_PATH, OPENDATASOFT_URL01, OPENDATASOFT_URL02, OPENDATASOFT_PATH, DISTANCES_PATH
 
 
 def download_kreise_locations(url1=OPENDATASOFT_URL01, url2=OPENDATASOFT_URL02, out=OPENDATASOFT_PATH):
@@ -23,6 +23,19 @@ def download_kreise_locations(url1=OPENDATASOFT_URL01, url2=OPENDATASOFT_URL02, 
     print ("Done -->", filename)
     return filename
 
+def repair_kreise_locations(LKG):
+    # Goettingen old=3152 new 3159 
+    i=LKG[LKG["Cca 2"]==3152].index.tolist()
+    if i:
+        LKG.at[i, "Cca 2"] = 3159
+        
+    # Osterode old=3156, now part of 3159
+    i=LKG[LKG["Cca 2"]==3156].index.tolist()
+    if i:
+        LKG.drop(index=i, inplace=True)
+    print ("Done repairing data (Osterode, Goettingen) --> Goettingen AGS 3159.")
+    return LKG
+
 def load_kreise_locations(filename = OPENDATASOFT_PATH):
     # s=requests.get(url2).content
     # LKG=pandas.read_csv(io.StringIO(s.decode('utf-8')), sep=';') # error_bad_lines=False)
@@ -32,6 +45,8 @@ def load_kreise_locations(filename = OPENDATASOFT_PATH):
     # turn AGS into integer:
     LKG["Cca 2"]=LKG["Cca 2"].astype(int)
     print ("Done downloading.")
+    LKG = repair_kreise_locations(LKG)
+    
     return LKG
 
 def accelerate_lookup(LKG):
@@ -102,11 +117,26 @@ def kreis_nearby_links(bnn, distances, AGS, km=50):
     neighbours = nearby (distances, AGS, km)
     linklist=[]
     for AGS2 in neighbours["AGS2"].tolist():
+        # print (AGS2)
         filename, nameAndType, link = kreis_link(bnn, AGS2)
-        print (filename, nameAndType)
+        # print (filename, nameAndType)
         linklist.append(link)
     return ", ".join(linklist)
     
+    
+def compare_risklayer_with_opendatasoft(bnn):
+    filename = dataFiles.OPENDATASOFT_PATH
+    LKG = load_kreise_locations(filename)
+    ODS = set(LKG["Cca 2"].tolist())
+    ts, bnn = dataFiles.data(withSynthetic=True)
+    RSL=set(bnn["AGS"].values.tolist())
+    
+    diff1 = list(ODS-RSL)
+    names1=([LKG["Name 2"][LKG["Cca 2"]==AGS].tolist()[0] for AGS in diff1])
+    print ("ODS-RSL: %s = %s"% (diff1, names1))
+    diff2 = list(RSL-ODS)
+    names2=([bnn["GEN"][bnn["AGS"]==AGS].tolist()[0] for AGS in diff2])
+    print ("RSL-ODS: %s = %s"% (diff2, names2))
 
 if __name__ == '__main__':
     
@@ -140,9 +170,15 @@ if __name__ == '__main__':
     print (nearby (distances, AGS1, km))
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
+    
+    print ("\ns**t inconsistent data:")
+    compare_risklayer_with_opendatasoft(bnn)
+    
+    
     print()
     print (kreis_link(bnn, 0))
     print (kreis_link(bnn, 1001))
+    # print (kreis_link(bnn, 3152))
     
     # print (districtDistances.nearby(distances, 1001, 50))
     AGS=1001
