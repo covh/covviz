@@ -2,15 +2,15 @@
 Created on 26 Apr 2020
 
 @author: andreas
+
+@param  AGS = https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel like riskLayer used it (4-5 digits)
+ 
 '''
 
 import os, copy
 import datetime as dt
-
-import pandas
-
+import pandas, numpy
 import dataFiles
-
 
 
 def find_AGS(ts, name):
@@ -58,6 +58,15 @@ def AGS_to_population(bnn, AGS):
     gen = row["GEN"].values[0] 
     bez = row["BEZ"].values[0] 
     return gen, bez, inf, pop
+
+abbrev = {'Kreis': 'KR',
+          'Kreisfreie Stadt' : 'KS',
+          'Landkreis' : 'LK',
+          'Stadtkreis': 'SK'}
+
+def AGS_to_name_and_type(bnn, AGS):
+    gen, bez, inf, pop = AGS_to_population(bnn, AGS)
+    return "%s_%s" % (gen, abbrev[bez]) 
 
 
 def AGS_to_Bundesland(bnn, AGS):
@@ -132,6 +141,42 @@ def get_BuLa(Bundeslaender, name):
     return daily, cumulative, title, filename, population
 
 
+
+def add_centerday_column(ts, ts_BuLa):
+    
+    ts_BuLa["centerday"] = [ temporal_center( AGS_to_ts_daily(ts, "%s" % AGS) )[0]
+                            for AGS in ts_BuLa["AGS"].tolist() ]
+    ts_sorted = ts_BuLa.sort_values("centerday", ascending=False).set_index("AGS")
+
+    return ts_sorted
+
+def add_centerday_column_Bundeslaender(Bundeslaender):
+    Bundeslaender["centerday"] = [temporal_center(get_BuLa(Bundeslaender, name)[0])[0]
+                                  for name in Bundeslaender.index.tolist() ]
+    Bundeslaender.sort_values("centerday", ascending=False, inplace=True)
+    return Bundeslaender
+
+
+def maxdata(ts_sorted):
+    maxvalue = max(ts_sorted[ts.columns[2:]].max())
+    digits=int(1 + numpy.log10(maxvalue))
+    return maxvalue, digits
+
+
+
+
+def dataMangled(withSynthetic=True):
+    ts, bnn = dataFiles.data(withSynthetic=withSynthetic)
+    dates = dates_list(ts)
+    datacolumns = ts.columns[2:]
+    ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
+    ts_sorted = add_centerday_column(ts, ts_BuLa)
+    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender)
+
+    return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
+
+
+
 if __name__ == '__main__':
     ts, bnn = dataFiles.data(withSynthetic=True)
     
@@ -151,6 +196,8 @@ if __name__ == '__main__':
     print (gen, bez, inf, pop)
     name, inf_BL, pop_BL = AGS_to_Bundesland(bnn, AGS)
     print (name, inf_BL, pop_BL )
+    nameAndType = AGS_to_name_and_type(bnn, AGS)
+    print (nameAndType ); # exit()
     
     data = AGS_to_ts_daily(ts, "0")
     print (len(data))
@@ -171,3 +218,7 @@ if __name__ == '__main__':
     print (daily, cumulative)
     print (title, filename, population)
     
+    # print ( maxdata(ts_sorted) )
+    # total_max_cum, digits = maxdata(ts_sorted)
+
+

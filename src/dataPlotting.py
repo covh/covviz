@@ -93,10 +93,10 @@ def plot_Kreise(ts, bnn, dates, Kreise_AGS):
         print (title, filename)
 
 
-def test_plot_Bundesland(ts, bnn, dates):
+def test_plot_Bundesland(ts, bnn, dates, Bundesland = "Hessen"):
     ## Bundesland
-    Bundesland = "Dummyland"
-    Bundesland = "Hessen"
+    # Bundesland = "Dummyland"
+    
     ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
     daily, cumulative, title, filename, population = dataMangling.get_BuLa(Bundeslaender, Bundesland)
     plot_timeseries(dates, daily, cumulative, title, filename=filename)
@@ -115,18 +115,23 @@ def plot_all_Bundeslaender(ts, bnn, dates):
         population += pop_BL
     print ("\nTotal population covered:", population)
     print ("%d filenames written: %s" % (len(filenames), filenames))
+    
 
 if __name__ == '__main__':
 
     ts, bnn = dataFiles.data(withSynthetic=True)
     dates = dataMangling.dates_list(ts)
     
-    #test_plot_Kreis(ts, bnn, dates)
-    
-    plot_Kreise(ts, bnn, dates, ts["AGS"].tolist())
-    
-    #test_plot_Bundesland(ts, bnn, dates)
-    # plot_all_Bundeslaender(ts, bnn, dates)
+    examples=False
+    if examples:
+        test_plot_Kreis(ts, bnn, dates)
+        test_plot_Bundesland(ts, bnn, dates)
+        test_plot_Bundesland(ts, bnn, dates, Bundesland="Deutschland")
+
+    longrunner=False
+    if longrunner:    
+        plot_Kreise(ts, bnn, dates, ts["AGS"].tolist())
+        plot_all_Bundeslaender(ts, bnn, dates)
         
 
 

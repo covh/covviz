@@ -12,29 +12,8 @@ from matplotlib import pyplot as plt
 import matplotlib 
 
 
-import dataFiles, dataMangling, dataPlotting
+import dataFiles, dataMangling, dataPlotting, districtDistances
 
-
-def add_centerday_column(ts, ts_BuLa):
-    
-    ts_BuLa["centerday"] = [ dataMangling.temporal_center( dataMangling.AGS_to_ts_daily(ts, "%s" % AGS) )[0]
-                            for AGS in ts_BuLa["AGS"].tolist() ]
-    ts_sorted = ts_BuLa.sort_values("centerday", ascending=False).set_index("AGS")
-
-    return ts_sorted
-
-
-def add_centerday_column_Bundeslaender(Bundeslaender):
-    Bundeslaender["centerday"] = [dataMangling.temporal_center(dataMangling.get_BuLa(Bundeslaender, name)[0])[0]
-                                  for name in Bundeslaender.index.tolist() ]
-    Bundeslaender.sort_values("centerday", ascending=False, inplace=True)
-    return Bundeslaender
-
-
-def maxdata(ts_sorted):
-    maxvalue = max(ts_sorted[ts.columns[2:]].max())
-    digits=int(1+numpy.log10(maxvalue))
-    return maxvalue, digits
 
 
 def toHTMLRow(ts_sorted, row_index, datacolumns, cmap, labels, rolling_window_size=5):
@@ -112,7 +91,7 @@ PAGE_END="""
 </html>
 """
 
-def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", rolling_window_size=5):
+def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, filename="kreise_Germany.html", km=50, rolling_window_size=5):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
@@ -120,7 +99,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
     
-    cols = ["Kreis", "Population", "Bundesland", "center day" ]
+    cols = ["Kreis", "Population", "Bundesland", "center day", "<= %d km" % km]
     for col in cols:
         page += "<th>%s</th>" % col
     page +="</tr>"
@@ -128,10 +107,12 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     for AGS in district_AGSs:
         gen, bez, inf, pop = dataMangling.AGS_to_population(bnn, AGS)
         name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(bnn, AGS)
-        labels = ["%s (%s)" % (gen, bez)]
+        nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km)
+        labels = [districtDistances.kreis_link(bnn, AGS)[2]]
         labels += ['{:,}'.format(pop)]
         labels += [name_BL]
         labels += ["%.2f"% (ts_sorted["centerday"][AGS])]
+        labels += [nearby_links]
         page += toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
     page += "</table>" + PAGE_END
@@ -170,37 +151,27 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, names, cmap, table_filename=
     return fn
     
 
-def dataMangled(withSynthetic=True):
-    ts, bnn = dataFiles.data(withSynthetic=withSynthetic)
-    dates = dataMangling.dates_list(ts)
-    datacolumns = ts.columns[2:]
-    ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
-    ts_sorted = add_centerday_column(ts, ts_BuLa)
-    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender)
-
-    return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
 
 
 if __name__ == '__main__':
 
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangled()
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
     
-    # print ( maxdata(ts_sorted) )
-    
+       
     AGS = 1001
     AGS = 5370
     print ( ts_sorted["centerday"][AGS] )
 
-    # total_max_cum, digits = maxdata(ts_sorted)
     cmap=plt.get_cmap("Wistia")
     cmap.set_bad("white")
     
     print ( toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels=["%s" % AGS]) ) 
 
     district_AGSs = [1001, 1002, 5370, 9377]
-    district_AGSs = ts_sorted.index.tolist()
+    # district_AGSs = ts_sorted.index.tolist()
     
-    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap))
+    distances = districtDistances.load_distances()
+    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, km=50))
     
     # Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
     

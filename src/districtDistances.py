@@ -11,7 +11,9 @@ import requests
 import geopy.distance
 import wget
 
+import dataMangling
 from dataFiles import DATA_PATH, OPENDATASOFT_URL01, OPENDATASOFT_URL02, OPENDATASOFT_PATH, DISTANCES_PATH 
+
 
 def download_kreise_locations(url1=OPENDATASOFT_URL01, url2=OPENDATASOFT_URL02, out=OPENDATASOFT_PATH):
     print ("Downloading large table with Kreise locations. For infos see")
@@ -88,8 +90,26 @@ def number_of_pairs_max_dist(distances, km):
 def nearby(distances, AGS, km):
     return distances[(distances.km<=km) & (distances.AGS1==AGS)]
     
+def kreis_link(bnn, AGS):
+    nameAndType = dataMangling.AGS_to_name_and_type(bnn, AGS)
+    name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(bnn, AGS)
+    AGS_5digits = ("00000%s" % AGS) [-5:] 
+    filename = "%s.html#AGS%s" % (name_BL, AGS_5digits)
+    link='<a href="%s">%s</a>' % (filename, nameAndType)
+    return filename, nameAndType, link
+
+def kreis_nearby_links(bnn, distances, AGS, km=50):
+    neighbours = nearby (distances, AGS, km)
+    linklist=[]
+    for AGS2 in neighbours["AGS2"].tolist():
+        filename, nameAndType, link = kreis_link(bnn, AGS2)
+        print (filename, nameAndType)
+        linklist.append(link)
+    return ", ".join(linklist)
+    
 
 if __name__ == '__main__':
+    
     AGS1,km = 5370, 50
     generateNew = False
     if generateNew:
@@ -119,5 +139,12 @@ if __name__ == '__main__':
     print ("example for AGS1=" , AGS1)
     print (nearby (distances, AGS1, km))
     
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
+    print()
+    print (kreis_link(bnn, 0))
+    print (kreis_link(bnn, 1001))
     
+    # print (districtDistances.nearby(distances, 1001, 50))
+    AGS=1001
+    print( kreis_nearby_links(bnn, distances, AGS, km=50) )
 
