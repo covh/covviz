@@ -106,10 +106,12 @@ def join_tables_for_and_aggregate_Bundeslaender(ts, bnn):
     ts_int = copy.deepcopy(ts.dropna()) 
     
     ts_int["AGS"]=pandas.to_numeric(ts_int["AGS"]) # must transform string to int, for merge:
-    ts_BuLa=pandas.merge(ts_int, bnn[["AGS", "Bundesland", "Population"]], how="left", on=["AGS"])
+    ts_BuLa = pandas.merge(ts_int, bnn[["AGS", "Bundesland", "Population"]], how="left", on=["AGS"])
 
     Bundeslaender=ts_BuLa.drop(["AGS"], axis=1).groupby(["Bundesland"]).sum()
     print("consistency check, does this look like Germany's population? ", Bundeslaender["Population"].sum())
+    
+    Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
 
     return ts_BuLa, Bundeslaender
 
