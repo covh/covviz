@@ -111,7 +111,7 @@ def join_tables_for_and_aggregate_Bundeslaender(ts, bnn):
     Bundeslaender=ts_BuLa.drop(["AGS"], axis=1).groupby(["Bundesland"]).sum()
     print("consistency check, does this look like Germany's population? ", Bundeslaender["Population"].sum())
     
-    Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
+    Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().astype('int32').values.tolist()
 
     return ts_BuLa, Bundeslaender
 

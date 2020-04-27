@@ -129,7 +129,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
         gen, bez, inf, pop = dataMangling.AGS_to_population(bnn, AGS)
         name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(bnn, AGS)
         labels = ["%s (%s)" % (gen, bez)]
-        labels += [pop]
+        labels += ['{:,}'.format(pop)]
         labels += [name_BL]
         labels += ["%.2f"% (ts_sorted["centerday"][AGS])]
         page += toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
@@ -156,9 +156,9 @@ def BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, names, cmap, table_fi
     page +="</tr>"
     
     for BL in names:
-        daily, cumulative, title, filename, population = dataMangling.get_BuLa(Bundeslaender, BL)
+        daily, cumulative, title, filename, pop = dataMangling.get_BuLa(Bundeslaender, BL)
         labels = ["%s" % BL]
-        labels += [population]
+        labels += ['{:,}'.format(pop)]
         labels += ["%.2f"% (Bundeslaender["centerday"][BL])]
         page += toHTMLRow(Bundeslaender, BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
