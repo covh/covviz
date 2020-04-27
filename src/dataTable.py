@@ -24,9 +24,11 @@ def add_centerday_column(ts, ts_BuLa):
     return ts_sorted
 
 
-def add_centerday_column_Bundeslaender(ts, Bundeslaender):
-    print ("TODO")
-    pass
+def add_centerday_column_Bundeslaender(Bundeslaender):
+    Bundeslaender["centerday"] = [dataMangling.temporal_center(dataMangling.get_BuLa(Bundeslaender, name)[0])[0]
+                                  for name in Bundeslaender.index.tolist() ]
+    Bundeslaender.sort_values("centerday",inplace=True)
+    return Bundeslaender
 
 
 def maxdata(ts_sorted):
@@ -35,36 +37,8 @@ def maxdata(ts_sorted):
     return maxvalue, digits
 
 
-def toHTMLRow_diffmean(AGS, digits, cmap, labels):
-    """
-    OBSOLETE ?
-    """
-    row = ts_sorted[ts.columns[2:]].loc[AGS].astype('int')
-    diff= pandas.DataFrame(row).diff(axis=0)[AGS].tolist()
-    diff[0]=0 # overwrite the nan
-    diff=list(map(int, diff)) #make integer
-    
-    window=14
-    rolling_mean_diff = pandas.DataFrame(diff).rolling(window=window, center=True).mean().fillna(0)[0].tolist()
-    # return rolling_mean_diff
-    
-    cumulative=row.tolist()
-    # return diff, cumulative
-    cummax, diffmax, rollingdiffmax = max(cumulative), max(diff), max(rolling_mean_diff)
-    # return cummax, diffmax, rollingdiffmax
-    line="<tr>"
-    # for c,d in zip(cumulative, rolling_mean_diff):
-    for c,d in zip(cumulative, diff):
-        rgb = matplotlib.colors.to_hex(cmap(d/rollingdiffmax))
-        line+='<td bgcolor="%s">%d</td>' % (rgb, c)
-    for label in labels:
-        line+="<td>%s</td>" % label
-    return line + "</tr>"
-    
-
-
-def toHTMLRow(AGS, cmap, labels, rolling_window_size=5):
-    row = ts_sorted[ts.columns[2:]].loc[AGS].astype('int')
+def toHTMLRow(ts_sorted, row_index, datacolumns, cmap, labels, rolling_window_size=5):
+    row = ts_sorted[datacolumns].loc[row_index].astype('int')
     # return row
 
     window=rolling_window_size
@@ -72,9 +46,8 @@ def toHTMLRow(AGS, cmap, labels, rolling_window_size=5):
     # return rolling_mean_cum
 
     # diff= pandas.DataFrame(rolling_mean_cum).diff(axis=0).fillna(0)[AGS].tolist()
-    diff= pandas.DataFrame(rolling_mean_cum).diff(axis=0)[AGS].tolist()
+    diff= pandas.DataFrame(rolling_mean_cum).diff(axis=0)[row_index].tolist()
     # return diff
-    
     cumulative=row.tolist()
     # return diff, cumulative
     diffmax = numpy.nanmax(diff)
@@ -139,12 +112,12 @@ PAGE_END="""
 </html>
 """
 
-def Districts_to_HTML_table(ts_sorted, bnn, district_AGSs, cmap, filename="kreise_Germany.html"):
+def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", rolling_window_size=5):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
     page = PAGE + "<table><tr>\n"
-    for col in ts.columns[2:]:
+    for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
     
     cols = ["Kreis", "Population", "Bundesland", "center day" ]
@@ -159,7 +132,7 @@ def Districts_to_HTML_table(ts_sorted, bnn, district_AGSs, cmap, filename="kreis
         labels += [pop]
         labels += [name_BL]
         labels += ["%.2f"% (ts_sorted["centerday"][AGS])]
-        page += toHTMLRow(AGS, cmap, labels) + "\n"
+        page += toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
     page += "</table>" + PAGE_END
     
@@ -169,12 +142,12 @@ def Districts_to_HTML_table(ts_sorted, bnn, district_AGSs, cmap, filename="kreis
     return fn
     
 
-def BuLas_to_HTML_table(ts_sorted, bnn, district_AGSs, cmap, filename="bundeslaender_Germany.html"):
+def BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
     page = PAGE + "<table><tr>\n"
-    for col in ts.columns[2:]:
+    for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
     
     cols = ["Bundesland", "Population", "center day" ]
@@ -182,20 +155,16 @@ def BuLas_to_HTML_table(ts_sorted, bnn, district_AGSs, cmap, filename="bundeslae
         page += "<th>%s</th>" % col
     page +="</tr>"
     
-    return page 
-
-    for AGS in district_AGSs:
-        gen, bez, inf, pop = dataMangling.AGS_to_population(bnn, AGS)
-        name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(bnn, AGS)
-        labels = ["%s (%s)" % (gen, bez)]
-        labels += [pop]
-        labels += [name_BL]
-        labels += ["%.2f"% (ts_sorted["centerday"][AGS])]
-        page += toHTMLRow(AGS, cmap, labels) + "\n"
+    for BL in names:
+        daily, cumulative, title, filename, population = dataMangling.get_BuLa(Bundeslaender, BL)
+        labels = ["%s" % BL]
+        labels += [population]
+        labels += ["%.2f"% (Bundeslaender["centerday"][BL])]
+        page += toHTMLRow(Bundeslaender, BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
     page += "</table>" + PAGE_END
     
-    fn=os.path.join(dataFiles.PAGES_PATH, filename)
+    fn=os.path.join(dataFiles.PAGES_PATH, table_filename)
     with open(fn, "w") as f:
         f.write(page)
     return fn
@@ -206,24 +175,27 @@ if __name__ == '__main__':
 
     ts, bnn = dataFiles.data(withSynthetic=True)
     dates = dataMangling.dates_list(ts)
+    datacolumns = ts.columns[2:]
     ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
    
     ts_sorted = add_centerday_column(ts, ts_BuLa)
-    print ( maxdata(ts_sorted) )
+    # print ( maxdata(ts_sorted) )
     
     AGS = 1001
     AGS = 5370
     print ( ts_sorted["centerday"][AGS] )
 
-    total_max_cum, digits = maxdata(ts_sorted)
+    # total_max_cum, digits = maxdata(ts_sorted)
     cmap=plt.get_cmap("Wistia")
     cmap.set_bad("white")
-    print ( toHTMLRow(AGS, digits, cmap, labels=["%s" % AGS]) ) 
+    
+    print ( toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels=["%s" % AGS]) ) 
 
     district_AGSs = [1001, 1002, 5370, 9377]
     district_AGSs = ts_sorted.index.tolist()
     
-    print (Districts_to_HTML_table(ts_sorted, bnn, district_AGSs, cmap))
+    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap))
     
-    
-    
+    # Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
+    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender)
+    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender.index.tolist(), cmap))
