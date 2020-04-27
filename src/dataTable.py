@@ -91,15 +91,15 @@ PAGE_END="""
 </html>
 """
 
-def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, filename="kreise_Germany.html", km=50, rolling_window_size=5):
+def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, filename="kreise_Germany.html", km=50, rolling_window_size=5, header=PAGE, footer=PAGE_END):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
-    page = PAGE + "<table><tr>\n"
+    page = header  + "<table><tr>\n"
     for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
     
-    cols = ["Kreis", "Population", "Bundesland", "center day", "<= %d km" % km]
+    cols = ["Kreis", "Population", "Bundesland", "center day" ] # , "<= %d km" % km]
     for col in cols:
         page += "<th>%s</th>" % col
     page +="</tr>"
@@ -107,20 +107,24 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGS
     for AGS in district_AGSs:
         gen, bez, inf, pop = dataMangling.AGS_to_population(bnn, AGS)
         name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(bnn, AGS)
-        nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km)
+        # print (AGS)
+        # nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         labels = [districtDistances.kreis_link(bnn, AGS)[2]]
         labels += ['{:,}'.format(pop)]
         labels += [name_BL]
         labels += ["%.2f"% (ts_sorted["centerday"][AGS])]
-        labels += [nearby_links]
+        # labels += [nearby_links]
         page += toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
-    page += "</table>" + PAGE_END
+    page += "</table>" + footer
     
-    fn=os.path.join(dataFiles.PAGES_PATH, filename)
-    with open(fn, "w") as f:
-        f.write(page)
-    return fn
+    fn=None
+    if filename:
+        fn=os.path.join(dataFiles.PAGES_PATH, filename)
+        with open(fn, "w") as f:
+            f.write(page)
+    
+    return fn, page
     
 
 def BuLas_to_HTML_table(Bundeslaender, datacolumns, names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3):
@@ -150,7 +154,10 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, names, cmap, table_filename=
         f.write(page)
     return fn
     
-
+def colormap():
+    cmap=plt.get_cmap("Wistia")
+    cmap.set_bad("white")
+    return cmap
 
 
 if __name__ == '__main__':
@@ -162,8 +169,7 @@ if __name__ == '__main__':
     AGS = 5370
     print ( ts_sorted["centerday"][AGS] )
 
-    cmap=plt.get_cmap("Wistia")
-    cmap.set_bad("white")
+    cmap = colormap()  
     
     print ( toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels=["%s" % AGS]) ) 
 
