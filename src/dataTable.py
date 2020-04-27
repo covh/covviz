@@ -19,7 +19,7 @@ def add_centerday_column(ts, ts_BuLa):
     
     ts_BuLa["centerday"] = [ dataMangling.temporal_center( dataMangling.AGS_to_ts_daily(ts, "%s" % AGS) )[0]
                             for AGS in ts_BuLa["AGS"].tolist() ]
-    ts_sorted = ts_BuLa.sort_values("centerday").set_index("AGS")
+    ts_sorted = ts_BuLa.sort_values("centerday", ascending=False).set_index("AGS")
 
     return ts_sorted
 
@@ -27,7 +27,7 @@ def add_centerday_column(ts, ts_BuLa):
 def add_centerday_column_Bundeslaender(Bundeslaender):
     Bundeslaender["centerday"] = [dataMangling.temporal_center(dataMangling.get_BuLa(Bundeslaender, name)[0])[0]
                                   for name in Bundeslaender.index.tolist() ]
-    Bundeslaender.sort_values("centerday",inplace=True)
+    Bundeslaender.sort_values("centerday", ascending=False, inplace=True)
     return Bundeslaender
 
 
@@ -142,7 +142,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     return fn
     
 
-def BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3):
+def BuLas_to_HTML_table(Bundeslaender, datacolumns, names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
@@ -170,15 +170,21 @@ def BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, names, cmap, table_fi
     return fn
     
 
-
-if __name__ == '__main__':
-
-    ts, bnn = dataFiles.data(withSynthetic=True)
+def dataMangled(withSynthetic=True):
+    ts, bnn = dataFiles.data(withSynthetic=withSynthetic)
     dates = dataMangling.dates_list(ts)
     datacolumns = ts.columns[2:]
     ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
-   
     ts_sorted = add_centerday_column(ts, ts_BuLa)
+    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender)
+
+    return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
+
+
+if __name__ == '__main__':
+
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangled()
+    
     # print ( maxdata(ts_sorted) )
     
     AGS = 1001
@@ -197,5 +203,5 @@ if __name__ == '__main__':
     print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap))
     
     # Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
-    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender)
-    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender.index.tolist(), cmap))
+    
+    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender_sorted.index.tolist(), cmap))
