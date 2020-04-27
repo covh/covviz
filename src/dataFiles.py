@@ -4,37 +4,61 @@ Created on 25 Apr 2020
 @author: andreas
 '''
 
-import os
-import pandas
+import os, shutil
+import pandas, wget
 
 DATA_PATH = os.path.join("..", "data")
 BNN_FILE = os.path.join(DATA_PATH, "GermanyKreisebene_Risklayer_bnn-20200425.csv")
 TS_FILE =  os.path.join(DATA_PATH, "GermanyValues_RiskLayer-20200425.csv")
+TS_NEWEST =  os.path.join(DATA_PATH, "GermanyValues_RiskLayer.csv")
 PICS_PATH = os.path.join(DATA_PATH, "..", "pics")
 PAGES_PATH = os.path.join(DATA_PATH, "..", "pages")
 
-RISKLAYER_URL01 = "risklayer-explorer.com/media/data/events/GermanyValues.csv"
+RISKLAYER_URL01 = "http://risklayer-explorer.com/media/data/events/GermanyValues.csv"
 RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/" 
 RISKLAYER_URL02_SHEET = "bnn"
 
 def downloadData():
     print ("TODO daily")
     print (RISKLAYER_URL01)
+    filename = wget.download(RISKLAYER_URL01, out=DATA_PATH)
+    print ("downloaded:", filename)
+    ts=pandas.read_csv(filename)
+    last_col = ts.columns[2:].tolist()[-1]
+    print ("newest column:", last_col)
+    d=last_col.split(".")
+    d.reverse()
+    last_date = "".join(d)
+    newfilename = TS_FILE.replace("20200425", last_date)
+    print (newfilename)
+    shutil.move(filename,newfilename)
+    shutil.copy(newfilename, TS_NEWEST)
     
-    print ("TODO perhaps")
-    print (RISKLAYER_URL02)
-    print ("sheet", RISKLAYER_URL02_SHEET)
+    # print ("TODO perhaps")
+    # print (RISKLAYER_URL02)
+    # print ("sheet", RISKLAYER_URL02_SHEET)
     
     
-def repairData():
-    print ("TODO")
+def repairData(ts, bnn):
+    print ("repair dirty risklayer data:")
     print ("e.g. 12.03.20203 --> 12.03.2020")
-    print ("e.g. 10000 --> 1000 in bnn!k2")
+    print ("TODO: ... e.g. 10000 --> 1000 in bnn!k2")
+    newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
+    ts.columns = newcols
+    # print (ts.columns)
+    return ts, bnn 
+
     
 
-def load_data(ts_f=TS_FILE, bnn_f=BNN_FILE):
+def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE):
     ts=pandas.read_csv(ts_f)
     bnn=pandas.read_csv(bnn_f)
+    print ("\nLoading data from RiskLayer. This is their message:")
+    print ("\n".join(ts[ts.ADMIN.isna()]["AGS"].tolist()))
+    print()
+    # now drop those info lines which are not data:
+    ts.drop(ts[ts.ADMIN.isna()].index, inplace=True)
+    ts, bnn = repairData(ts, bnn)
     return ts, bnn
 
 
@@ -64,7 +88,12 @@ def data(withSynthetic=True):
 
 if __name__ == '__main__':
 
+    # downloadData(); exit()
+    # load_data(); exit()
+
     ts, bnn = data(withSynthetic=True)
+    
+    print()
     
     print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist())
     pass
