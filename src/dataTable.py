@@ -16,7 +16,7 @@ import dataFiles, dataMangling, dataPlotting, districtDistances
 
 
 
-def toHTMLRow(ts_sorted, row_index, datacolumns, cmap, labels, rolling_window_size=5):
+def toHTMLRow(ts_sorted, row_index, datacolumns, cmap, labels, rolling_window_size=7):
     row = ts_sorted[datacolumns].loc[row_index].astype('int')
     # return row
 
@@ -47,6 +47,7 @@ PAGE="""
 <!DOCTYPE html>
 <html>
 <head>
+<TITLE>%s</TITLE>
 <STYLE>
 
 table {
@@ -84,6 +85,11 @@ th span
   font-family: sans-serif;
 }
 
+.flag 
+{
+    border:1px solid #777777;
+}
+
 </STYLE>
 <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed|Teko&display=swap" rel="stylesheet">
 </head>
@@ -95,15 +101,31 @@ PAGE_END="""
 </html>
 """
 
-def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, filename="kreise_Germany.html", km=50, rolling_window_size=5, header=PAGE, footer=PAGE_END):
+def flag_image(name, population=None, height=14):
+    fn = "../pics/flag_%s.svg" % name
+    info_str = name
+    info_str  += " population={:,}".format(population) if population else ""
+    text = '<img class="flag" height=%d src="%s" alt="%s" title="%s"/>' % (height, fn, fn, info_str)
+    return text
+
+
+def prevalence(datatable, row_index, datacolumns, population):
+    cumulative = datatable[datacolumns].loc[row_index].astype('int')
+    prev1mio = cumulative[-1] / population * 1000000
+    return prev1mio
+
+def bulaLink(name):
+    return '<a href="%s.html">%s</a>' % (name, name)
+
+def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", rolling_window_size=5, header=PAGE % "Deutschland Kreise", footer=PAGE_END):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
-    page = header  + "<table><tr>\n"
+    page = header + "<table><tr>\n"
     for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
     
-    cols = ["Kreis", "Population", "Bundesland", "center day" ] # , "<= %d km" % km]
+    cols = ["Kreis", "Prev. p. 1mio", "Population", "center day", "Bundesland", "info" ] # , "<= %d km" % km]
     for col in cols:
         page += "<th>%s</th>" % col
     page +="</tr>"
@@ -114,9 +136,11 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGS
         # print (AGS)
         # nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         labels = [districtDistances.kreis_link(bnn, AGS)[2]]
+        labels += ["%d" % prevalence(datatable=ts_sorted, row_index=AGS, datacolumns=datacolumns, population=pop)]
         labels += ['{:,}'.format(pop)]
-        labels += [name_BL]
-        labels += ["%.2f"% (ts_sorted["centerday"][AGS])]
+        labels += ["%.1f"% (ts_sorted["centerday"][AGS])]
+        labels += [bulaLink(name_BL)]
+        labels += [flag_image(name_BL, pop_BL)]
         # labels += [nearby_links]
         page += toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
@@ -131,32 +155,38 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGS
     return fn, page
     
 
-def BuLas_to_HTML_table(Bundeslaender, datacolumns, names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3):
+def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3, header = PAGE % "Bundeslaender", footer=PAGE_END):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
-    page = PAGE + "<table><tr>\n"
+    page = header + "<table><tr>\n"
     for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
     
-    cols = ["Bundesland", "Population", "center day" ]
+    cols = ["Bundesland", "info", "Prev. per 1mio", "Population", "center day" ]
     for col in cols:
         page += "<th>%s</th>" % col
     page +="</tr>"
     
-    for BL in names:
-        daily, cumulative, title, filename, pop = dataMangling.get_BuLa(Bundeslaender, BL)
-        labels = ["%s" % BL]
-        labels += ['{:,}'.format(pop)]
-        labels += ["%.2f"% (Bundeslaender["centerday"][BL])]
-        page += toHTMLRow(Bundeslaender, BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
+    for name_BL in BL_names:
+        labels=[]
+        daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, name_BL)
+        labels += [bulaLink(name_BL)]
+        labels += [flag_image(name_BL)]
+        labels += ["%d" % prevalence(datatable=Bundeslaender, row_index=name_BL, datacolumns=datacolumns, population=pop_BL)]
+        labels += ['{:,}'.format(pop_BL)]
+        labels += ["%.2f"% (Bundeslaender["centerday"][name_BL])]
+        page += toHTMLRow(Bundeslaender, name_BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
-    page += "</table>" + PAGE_END
+    page += "</table>" + footer
     
-    fn=os.path.join(dataFiles.PAGES_PATH, table_filename)
-    with open(fn, "w") as f:
-        f.write(page)
-    return fn
+    fn=None
+    if table_filename:
+        fn=os.path.join(dataFiles.PAGES_PATH, table_filename)
+        with open(fn, "w") as f:
+            f.write(page)
+
+    return fn, page
     
 def colormap():
     cmap=plt.get_cmap("Wistia")
@@ -181,8 +211,8 @@ if __name__ == '__main__':
     district_AGSs = ts_sorted.index.tolist()
     
     distances = districtDistances.load_distances()
-    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, km=50)[0])
+    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap)[0])
     
     # Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
     
-    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender_sorted.index.tolist(), cmap))
+    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender_sorted.index.tolist(), cmap)[0])
