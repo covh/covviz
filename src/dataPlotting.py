@@ -15,9 +15,9 @@ import matplotlib
 import dataFiles, dataMangling
 
 
-def plot_timeseries(dates, daily, cumulative, title, filename, ifShow=True):
+def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifShow=True):
 
-    fig, ax = plt.subplots(figsize=(14, 10)) #, constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(10, 6)) #, constrained_layout=True)
     # plt.tight_layout()
 
     # x axis
@@ -26,24 +26,24 @@ def plot_timeseries(dates, daily, cumulative, title, filename, ifShow=True):
     fig.autofmt_xdate(rotation=60)
 
     # plot data
-    lns1 = ax.plot(dates, daily, label="daily cases", color='lightgray')
-    plt.ylabel("daily cases", color="black")
+    lns1 = ax.plot(dates, daily, label="daily cases, but with weekend flaw", color='lightgray')
+    plt.ylabel("daily cases", color="purple")
     plt.ylim(0, max(daily[1:])*1.5)
 
     # plot averages
     window=7
     rolling_mean = pandas.DataFrame(daily).rolling(window=window, center=True).mean()
-    lns2 = ax.plot(dates, rolling_mean, label='daily: SMA %s days' % window, color='purple')
+    lns2 = ax.plot(dates, rolling_mean, label='daily: moving average %s days' % window, color='purple')
     window=14
     rolling_mean = pandas.DataFrame(daily).rolling(window=window, center=True).mean()
-    lns3 = ax.plot(dates, rolling_mean, label='daily: SMA %s days' % window, color='orange', linewidth=4)
+    lns3 = ax.plot(dates, rolling_mean, label='daily: moving average %s days' % window, color='orange', linewidth=4)
     # window=21
     # rolling_mean = pandas.DataFrame(daily).rolling(window=window, center=True).mean()
     # ax.plot(dates, rolling_mean, label='SMA %s days' % window, color='pink', linewidth=1)
 
     # plot center bar
     center, signal = dataMangling.temporal_center(daily)
-    center_date=ts.columns[2:].values[int(round(center))]
+    center_date=datacolumns.values[int(round(center))]
     lns4 = ax.bar(dates, signal, label="'center day': "+center_date, color='green')
     # lns4 = ax.plot(dates, signal, label="'center day': "+center_date, color='green', kind='bar')
 
@@ -51,9 +51,9 @@ def plot_timeseries(dates, daily, cumulative, title, filename, ifShow=True):
     ax2 = plt.twinx()
     plt.ylim(0, max(cumulative)*1.1)
     
-    plt.ylabel("cumulative total cases", color="b")
+    plt.ylabel("cumulative total cases", color="#1E90FF")
 
-    lns5 = ax2.plot(dates, cumulative, label="total cases", color = 'b')
+    lns5 = ax2.plot(dates, cumulative, label="total cases reported at RiskLayer", color = '#1E90FF')
 
     lines = lns5 + lns1 + lns2 + lns3
     labs = [l.get_label() for l in lines]
@@ -62,8 +62,8 @@ def plot_timeseries(dates, daily, cumulative, title, filename, ifShow=True):
     text += "\nplot @DrAndreasKruger " + ("%s" % datetime.datetime.now())[:16]
     text += "\ndaily cases --> 'center date' = "+center_date
 
-    plt.legend(lines, labs, loc='best', facecolor="white", framealpha=1, 
-               title=text)
+    plt.legend(lines, labs, loc='best', facecolor="#f7f7f7", framealpha=0.9, 
+               title=text, prop={'size': 8}, title_fontsize = 8)
 
     plt.title(title)
     
@@ -76,62 +76,76 @@ def plot_timeseries(dates, daily, cumulative, title, filename, ifShow=True):
     plt.close("all")
 
 
-def test_plot_Kreis(ts, bnn, dates):
+def test_plot_Kreis(ts, bnn, dates, datacolumns):
     ## Kreis
     AGS = "0"
     #AGS = "1001"
     #AGS = "5370"
     #AGS = "9377"
     daily, cumulative, title, filename = dataMangling.get_Kreis(ts, bnn, AGS)
-    plot_timeseries(dates, daily, cumulative, title, filename=filename)
+    plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename)
 
 
-def plot_Kreise(ts, bnn, dates, Kreise_AGS):
+def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
+    done = []
     for AGS in Kreise_AGS:
         daily, cumulative, title, filename = dataMangling.get_Kreis(ts, bnn, AGS)
-        plot_timeseries(dates, daily, cumulative, title, filename=filename, ifShow=False)
-        print (title, filename)
+        plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False)
+        if ifPrint:
+            print (title, filename)
+        else:
+            print (".", end="")
+        done.append((title, filename))
+    if not ifPrint:
+        print()
+    return done
 
 
-def test_plot_Bundesland(ts, bnn, dates, Bundesland = "Hessen"):
+def test_plot_Bundesland(ts, bnn, dates, datacolumns, Bundesland = "Hessen"):
     ## Bundesland
     # Bundesland = "Dummyland"
     
     ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
     daily, cumulative, title, filename, population = dataMangling.get_BuLa(Bundeslaender, Bundesland)
-    plot_timeseries(dates, daily, cumulative, title, filename=filename)
+    plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename)
 
 
-def plot_all_Bundeslaender(ts, bnn, dates):
+def plot_all_Bundeslaender(ts, bnn, dates, datacolumns, ifPrint=True):
     ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
     filenames, population = [], 0
+    done=[]
     for BL in Bundeslaender.index.tolist():
         print (BL, end=" ")
         daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, BL)
         if BL=="Deutschland":
             filename = filename.replace("bundesland_", "")
-        plot_timeseries(dates, daily, cumulative, title, filename=filename, ifShow=False)
+        plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False)
         filenames.append(filename)
         population += pop_BL
+        if ifPrint:
+            print (title, filename)
+        done.append((title, filename))
     print ("\nTotal population covered:", population)
-    print ("%d filenames written: %s" % (len(filenames), filenames))
-    
+    if ifPrint:    
+        print ("%d filenames written: %s" % (len(filenames), filenames))
+    return done
 
 if __name__ == '__main__':
 
-    ts, bnn = dataFiles.data(withSynthetic=True)
-    dates = dataMangling.dates_list(ts)
+    # ts, bnn = dataFiles.data(withSynthetic=True)
+    # dates = dataMangling.dates_list(ts)
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
     
-    examples=False
+    examples=True
     if examples:
-        test_plot_Kreis(ts, bnn, dates)
-        test_plot_Bundesland(ts, bnn, dates)
-        test_plot_Bundesland(ts, bnn, dates, Bundesland="Deutschland")
+        test_plot_Kreis(ts, bnn, dates, datacolumns)
+        test_plot_Bundesland(ts, bnn, dates, datacolumns)
+        test_plot_Bundesland(ts, bnn, dates, datacolumns, Bundesland="Deutschland")
 
-    longrunner=False
+    longrunner=True
     if longrunner:    
-        plot_Kreise(ts, bnn, dates, ts["AGS"].tolist())
-        plot_all_Bundeslaender(ts, bnn, dates)
+        plot_Kreise(ts, bnn, dates, datacolumns, ts["AGS"].tolist())
+        plot_all_Bundeslaender(ts, bnn, dates, datacolumns)
         
 
 
