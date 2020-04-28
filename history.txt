@@ -1,6 +1,7 @@
 probable history of this project: 11h + 6h + 
 
-
+28/April/2020 04:30 finish for today
+28/April/2020 02:00 Bundesland & Deutschland pages, many improvements. about.html page
 28/April/2020 01:00 bundesland page is ~working, early version 
 27/April/2020 22:00 continued with links and pages
 27/April/2020 21:15 pairwise distances for 402 locations ~ ready
