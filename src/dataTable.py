@@ -174,10 +174,10 @@ if __name__ == '__main__':
     print ( toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels=["%s" % AGS]) ) 
 
     district_AGSs = [1001, 1002, 5370, 9377]
-    # district_AGSs = ts_sorted.index.tolist()
+    district_AGSs = ts_sorted.index.tolist()
     
     distances = districtDistances.load_distances()
-    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, km=50))
+    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, district_AGSs, cmap, km=50)[0])
     
     # Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
     
