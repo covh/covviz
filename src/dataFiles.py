@@ -14,6 +14,13 @@ TS_NEWEST =  os.path.join(DATA_PATH, "GermanyValues_RiskLayer.csv")
 PICS_PATH = os.path.join(DATA_PATH, "..", "pics")
 PAGES_PATH = os.path.join(DATA_PATH, "..", "pages")
 
+WWW_REPO_PATH = os.path.join(DATA_PATH, "..", "..", "cov19de")
+WWW_REPO_PICS = os.path.join(WWW_REPO_PATH, "pics")
+WWW_REPO_PAGES = os.path.join(WWW_REPO_PATH, "pages")
+WWW_REPO_PATH_GIT_SCRIPT = "./git-add-commit-push.sh"
+WWW_REPO_INDEX = os.path.join(WWW_REPO_PATH, "index.html")
+INDEX_PATH = os.path.join(DATA_PATH, "..", "index.html")
+
 RISKLAYER_URL01 = "http://risklayer-explorer.com/media/data/events/GermanyValues.csv"
 RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/" 
 RISKLAYER_URL02_SHEET = "bnn"
@@ -35,10 +42,10 @@ def downloadData():
     d.reverse()
     last_date = "".join(d)
     newfilename = TS_FILE.replace("20200425", last_date)
-    print (newfilename)
     shutil.move(filename,newfilename)
+    print (newfilename)
     shutil.copy(newfilename, TS_NEWEST)
-    
+    print (TS_NEWEST)
     # print ("TODO perhaps")
     # print (RISKLAYER_URL02)
     # print ("sheet", RISKLAYER_URL02_SHEET)
@@ -100,5 +107,6 @@ if __name__ == '__main__':
     
     print()
     
+    # TODO: Use 'datacolumns' instead of dropping
     print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist())
     pass
