@@ -93,7 +93,7 @@ def data(withSynthetic=True):
 
 if __name__ == '__main__':
 
-    # downloadData(); exit()
+    downloadData(); exit()
     # load_data(); exit()
 
     ts, bnn = data(withSynthetic=True)
