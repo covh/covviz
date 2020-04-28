@@ -9,3 +9,7 @@ pip3 install wheel
 pip3 install jupyter ipykernel numpy pandas matplotlib wget geopy requests
 ipython kernel install --user --name="py3science"
 ```
+
+### start here:
+
+[pages/about.html](pages/about.html)
