@@ -14,26 +14,27 @@ import matplotlib
 
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable
 
-def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts_sorted, datacolumns, bnn, distances, cmap, km):
-    page = dataTable.PAGE
+def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
+    page = dataTable.PAGE % BL_name
 
     district_AGSs = ts_sorted[ts_sorted.Bundesland==BL_name].index.tolist()
     
-    page +='<a name="#top">'
-    page +='Up to <a href="about.html">about.html</a>\n'
-    page +="<h1>%s, and its %d districts (%s)</h1>\n" % (BL_name, len(district_AGSs), datacolumns[-1])
+    page +='<a name="top">'
+    page +='Up to <a href="about.html">about.html</a> or to overview of <a href="Deutschland.html">Germany</a>\n'
+    flagimg = dataTable.flag_image(BL_name, pop_BL, height=20)
+    page +="<h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, BL_name, len(district_AGSs), datacolumns[-1])
     page +='<img src="%s"/><p/>' % ("../pics/" + filename_PNG)
-    page +="total cases: %s<br>\n" % (list(map(int, cumulative)))
-    prevalence = cumulative[-1] / pop_BL * 1000000
+    page +='total cases: <span style="color:#1E90FF">%s</span><br>\n' % (list(map(int, cumulative)))
+    prevalence = 1000000.0 * cumulative[-1] / pop_BL 
     page += "population: {:,}".format(pop_BL)
     page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
     
     page +="<h2>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
     page +="<h3>Sorted by 'center day'</h3>\n"
     
-    districtsHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, distances, 
+    districtsHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, 
                                                       district_AGSs, cmap, filename=None, 
-                                                      km=50, rolling_window_size=5, header="\n", footer="\n")
+                                                      rolling_window_size=5, header="\n", footer="\n")
     page+=districtsHTML[1]
 
     for AGS in district_AGSs:
@@ -48,13 +49,13 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         page +="Neighbours within %d km: %s<p/>\n" % (km, nearby_links)
         filename_kreis_PNG = "Kreis_" + ("00000"+str(AGS))[-5:] + ".png"
         page +='<img src="%s"/><p/>' % ("../pics/" + filename_kreis_PNG)
-        page +="Total cases: %s<br>\n" % (list(map(int, cumulative)))
+        page +='total cases: <span style="color:#1E90FF">%s</span><br>\n' % (list(map(int, cumulative)))
         
         prevalence = cumulative[-1] / pop * 1000000
         page += ("%s %s" % (bez, gen)) + " population: {:,}".format(pop)
         page += " --> current prevalence: %d known infected per 1 million people.<p/>\n" % (prevalence )
         
-        page +='<a href="#top">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+        page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
     page += dataTable.PAGE_END
     
@@ -64,7 +65,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     
     return fn
 
-def Bundeslaender_alle(Bundeslaender, ts_sorted, datacolumns, bnn, distances, cmap, km):
+def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
     print ("Creating HTML files for all 'Bundeslaender'")
     filenames, population = [], 0
     for BL_name in Bundeslaender.index.tolist():
@@ -75,7 +76,7 @@ def Bundeslaender_alle(Bundeslaender, ts_sorted, datacolumns, bnn, distances, cm
         filename_HTML = filename_PNG.replace(".png", ".html")
         filename_HTML = filename_HTML.replace("bundesland_", "")
 
-        fn = bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts_sorted, datacolumns, bnn, distances, cmap, km)
+        fn = bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km)
         filenames.append((BL_name, fn ))
         population += pop_BL
     print ("\nTotal population covered:", population)
@@ -83,8 +84,8 @@ def Bundeslaender_alle(Bundeslaender, ts_sorted, datacolumns, bnn, distances, cm
     
     return filenames
     
-
-def Deutschland(Bundeslaender_filenames, filename_HTML="Deutschland.html"):
+    
+def Deutschland_simple(Bundeslaender_filenames, filename_HTML="Deutschland_simple.html"):
     page = dataTable.PAGE
     page +='<a name="#top">'
     page +='Up to <a href="about.html">about.html</a>\n'
@@ -111,6 +112,49 @@ def Deutschland(Bundeslaender_filenames, filename_HTML="Deutschland.html"):
         f.write(page)
     
     return fn
+    
+
+def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filename_HTML="Deutschland.html"):
+    page = dataTable.PAGE % "Deutschland"
+    page +='<a name="top">'
+    page +='Up to <a href="about.html">about.html</a>\n'
+    
+    page +="<h1>Germany</h1>\n" 
+    page +='<img src="%s"/><p/>' % ("../pics/Deutschland.png")
+    
+    DE=Bundeslaender_sorted.drop(["Deutschland", "Dummyland"]).sum()
+    cumulative = DE[datacolumns].astype(int).tolist()
+    
+    page +='total cases: <span style="color:#1E90FF">%s</span><br>\n' % (list(map(int, cumulative)))
+    
+    prevalence = cumulative[-1] / DE["Population"] * 1000000
+    page += "population: {:,}".format(DE["Population"])
+    page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
+    
+    page +='<h2 id="Bundeslaender">16 Bundesländer</h2>\n'
+    
+    BL_names = Bundeslaender_sorted.index.tolist()
+    fn, bulaHTML= dataTable.BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, BL_names, cmap, table_filename=None, rolling_window_size=3, header="\n", footer="\n")
+    
+    page+=bulaHTML
+    
+    page +="<p>Click on name of Bundesland to see more detailed data.</p>"
+    page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+    
+    page +='<h2 id="Kreise">401 Kreise (districts)</h2>\n'
+    
+    district_AGSs = ts_sorted.index.tolist()
+    fn, kreiseHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", header="\n", footer="\n")
+    page += kreiseHTML 
+    
+    page +="<p>Click on name of Kreis (or Bundesland) to see more detailed data.</p>"
+    page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+    
+    fn=os.path.join(dataFiles.PAGES_PATH, filename_HTML)
+    with open(fn, "w") as f:
+        f.write(page)
+    
+    return fn
 
 if __name__ == '__main__':
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
@@ -118,12 +162,13 @@ if __name__ == '__main__':
     print()
     print()
     cmap = dataTable.colormap()
-    # print ( bundesland("Hessen", "bundesland_Hessen.png", "Hessen", 7777, [8,9,10], "Hessen.html", ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
+    # print ( bundesland("Hessen", "bundesland_Hessen.png", "Hessen", 7777, [8,9,10], "Hessen.html", ts, ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
     
-    Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts_sorted, datacolumns, bnn, distances, cmap, km=50)
-    print (Bundeslaender_filenames)
+    Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50); print (Bundeslaender_filenames)
     # Bundeslaender_filenames = [('Brandenburg', '../data/../pages/Brandenburg.html'), ('Bremen', '../data/../pages/Bremen.html'), ('Thüringen', '../data/../pages/Thüringen.html'), ('Bayern', '../data/../pages/Bayern.html'), ('Saarland', '../data/../pages/Saarland.html'), ('Hessen', '../data/../pages/Hessen.html'), ('Schleswig-Holstein', '../data/../pages/Schleswig-Holstein.html'), ('Baden-Württemberg', '../data/../pages/Baden-Württemberg.html'), ('Niedersachsen', '../data/../pages/Niedersachsen.html'), ('Sachsen-Anhalt', '../data/../pages/Sachsen-Anhalt.html'), ('Sachsen', '../data/../pages/Sachsen.html'), ('Hamburg', '../data/../pages/Hamburg.html'), ('Berlin', '../data/../pages/Berlin.html'), ('Rheinland-Pfalz', '../data/../pages/Rheinland-Pfalz.html'), ('Nordrhein-Westfalen', '../data/../pages/Nordrhein-Westfalen.html'), ('Mecklenburg-Vorpommern', '../data/../pages/Mecklenburg-Vorpommern.html'), ('Dummyland', '../data/../pages/Dummyland.html')]
-
-    Deutschland(Bundeslaender_filenames)
+    # Deutschland_simple(Bundeslaender_filenames)
+    
+    fn=Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn )
+    print ("\n" + fn)
     
     
