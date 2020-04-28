@@ -53,6 +53,10 @@ table {
   border-collapse: collapse;
 }
 
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
 th, td {
   text-align:center;
   font-family: 'Roboto Condensed', sans-serif;
