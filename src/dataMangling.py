@@ -42,6 +42,8 @@ def AGS_to_ts_total(ts, AGS):
 def AGS_to_ts_daily(ts, AGS):
     AGS = ("00000"+AGS)[-5:]
     row = ts.loc[ts['AGS'] == AGS]
+    
+    # TODO: Use 'datacolumns' instead of dropping
     row = row.drop(['AGS', 'ADMIN'], axis=1)
     # return row
     diff = row.diff(axis=1)
@@ -130,6 +132,9 @@ def get_BuLa(Bundeslaender, name):
     filename = "bundesland_" + name + ".png"
     population = Bundeslaender.loc[name, "Population"]
     # row = Bundeslaender.loc[Bundeslaender['Bundesland'] == name]
+    
+    
+    # TODO: Use 'datacolumns' instead of dropping 
     row = Bundeslaender.drop(["Population"], axis=1).loc[[name]]
     
     cumulative=row.values[0].tolist()
