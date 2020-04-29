@@ -43,8 +43,7 @@ def generate_all():
 def copy_all():
     print (os.getcwd()) 
     fromTo = [[PICS_PATH, WWW_REPO_PICS], 
-              [PAGES_PATH, WWW_REPO_PAGES],
-              [INDEX_PATH, WWW_REPO_INDEX]]
+              [PAGES_PATH, WWW_REPO_PAGES]]
     for s, d in fromTo:
         try:
             shutil.rmtree(d)
@@ -54,10 +53,13 @@ def copy_all():
         print (dst)
         os.remove(os.path.join(d, ".gitignore"))
 
+    dst = shutil.copy(INDEX_PATH, WWW_REPO_INDEX)
+    print (dst)
     
     return True
     
 def git_commit_and_push(path=WWW_REPO_PATH, script=WWW_REPO_PATH_GIT_SCRIPT):
+    print ("\ngit script '%s' please be patient ..." % script)
     try:
         before = os.getcwd()
         os.chdir(path)
@@ -86,7 +88,7 @@ if __name__ == '__main__':
         
         if success2:
             print ()
-            # success3 = git_commit_and_push()
+            success3 = git_commit_and_push()
             print ("successful" if success3 else "not successful")
             
     print (success1, success2, success3)
