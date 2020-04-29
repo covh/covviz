@@ -158,8 +158,41 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     return os.path.abspath(fn)
 
+
+def fourbyfour(Bundeslaender_sorted):
+    
+    print ("\ngenerating 4x4 html table, for overview of 16 Bundeslaender in Germany:")
+    BLs=sorted(Bundeslaender_sorted.index.tolist())
+    BLs = [BL for BL in BLs if BL not in ("Dummyland", "Deutschland")]
+    
+    global page
+    page=""
+    c=0
+    
+    class page(object):
+        page=""
+        def a(self, t):
+            self.page+=t+"\n"
+           
+    p=page()
+    p.a("<table>")
+    for i in range(4):
+        p.a("<tr>")
+        for j in range(4):
+            print(c, BLs[c])
+            imgprop='src="https://covh.github.io/cov19de/pics/bundesland_%s.png" alt="bundesland_%s.png"'%(BLs[c],BLs[c])
+            p.a('<td><a href="%s.html"><img %s width="458" height="268"></a></td>' % (BLs[c], imgprop))
+            c+=1
+        p.a("</tr>")
+    p.a("</table>")
+    print (p.page)
+
+
 if __name__ == '__main__':
+    
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
+    fourbyfour(Bundeslaender_sorted); exit()
+    
     distances = districtDistances.load_distances()
     print()
     print()
