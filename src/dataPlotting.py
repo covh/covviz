@@ -91,13 +91,13 @@ def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
     for AGS in Kreise_AGS:
         daily, cumulative, title, filename = dataMangling.get_Kreis(ts, bnn, AGS)
         plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False)
+        done.append((title, filename))
         if ifPrint:
             print (title, filename)
         else:
             print (".", end="")
             if len(done)%60 == 0:
                 print()
-        done.append((title, filename))
     if not ifPrint:
         print()
     return done
