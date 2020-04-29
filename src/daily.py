@@ -11,8 +11,6 @@ from dataFiles import PICS_PATH, PAGES_PATH, WWW_REPO_PICS, WWW_REPO_PAGES, WWW_
 
 def generate_all():
     
-    print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
-    
     dataFiles.downloadData()
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
@@ -22,7 +20,7 @@ def generate_all():
     print ("plot_all_Bundeslaender: %d items" % len(done))
     
     listOfAGSs = ts["AGS"].tolist()
-    print ("Plotting %d images, for each Kreis. Patience please: " % len(listOfAGSs), end="")
+    print ("Plotting %d images, for each Kreis. Patience please: " % len(listOfAGSs))
     done = dataPlotting.plot_Kreise(ts, bnn, dates, datacolumns, listOfAGSs, ifPrint=False)
     print ("plot_Kreise done: %d items" % len(done))
     print()
@@ -39,6 +37,7 @@ def generate_all():
     print ("\nFinished at", ("%s" % datetime.datetime.now()) [:19])
     
     return True
+
 
 def copy_all():
     print (os.getcwd()) 
@@ -78,6 +77,8 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
+    print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
+    
     success1, success2, success3 = False, False, False
     
     success = generate_all()
@@ -93,4 +94,6 @@ if __name__ == '__main__':
             
     print (success1, success2, success3)
     
-        
+    print ("Finished at", ("%s" % datetime.datetime.now()) [:19],"\n")
+    
+    

@@ -95,6 +95,8 @@ def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
             print (title, filename)
         else:
             print (".", end="")
+            if len(done)%60 == 0:
+                print()
         done.append((title, filename))
     if not ifPrint:
         print()

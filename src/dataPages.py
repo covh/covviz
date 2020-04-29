@@ -77,7 +77,9 @@ def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances
         filename_HTML = filename_HTML.replace("bundesland_", "")
 
         fn = bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km)
-        filenames.append((BL_name, fn ))
+        fn_abs = os.path.abspath(fn)
+        
+        filenames.append((BL_name, fn_abs ))
         population += pop_BL
     print ("\nTotal population covered:", population)
     print ("%d filenames written: %s" % (len(filenames), filenames))
@@ -154,7 +156,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     with open(fn, "w") as f:
         f.write(page)
     
-    return fn
+    return os.path.abspath(fn)
 
 if __name__ == '__main__':
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
