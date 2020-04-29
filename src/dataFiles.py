@@ -31,11 +31,12 @@ OPENDATASOFT_PATH = os.path.join(DATA_PATH, "landkreise-in-germany.csv")
 DISTANCES_PATH = os.path.join(DATA_PATH, "distances.csv")
 
 def downloadData():
-    print ("TODO daily")
+
     print (RISKLAYER_URL01)
     filename = wget.download(RISKLAYER_URL01, out=DATA_PATH)
     print ("downloaded:", filename)
-    ts=pandas.read_csv(filename)
+    
+    ts=pandas.read_csv(filename, encoding='cp1252') # encoding='utf-8')
     last_col = ts.columns[2:].tolist()[-1]
     print ("newest column:", last_col)
     d=last_col.split(".")
@@ -53,17 +54,17 @@ def downloadData():
     
 def repairData(ts, bnn):
     print ("repair dirty risklayer data:")
-    print ("e.g. 12.03.20203 --> 12.03.2020")
-    print ("TODO: ... e.g. 10000 --> 1000 in bnn!k2")
     newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
+    if newcols!=ts.columns.tolist():
+        print ("found and fixed 12.03.20203 --> 12.03.2020")
     ts.columns = newcols
-    # print (ts.columns)
+    print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)")
     return ts, bnn 
 
     
 
 def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE):
-    ts=pandas.read_csv(ts_f)
+    ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
     bnn=pandas.read_csv(bnn_f)
     print ("\nLoading data from RiskLayer. This is their message:")
     print ("\n".join(ts[ts.ADMIN.isna()]["AGS"].tolist()))
@@ -100,8 +101,8 @@ def data(withSynthetic=True):
 
 if __name__ == '__main__':
 
-    downloadData(); exit()
-    # load_data(); exit()
+    downloadData(); # exit()
+    load_data(); exit()
 
     ts, bnn = data(withSynthetic=True)
     
