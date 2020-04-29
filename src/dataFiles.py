@@ -20,11 +20,11 @@ WWW_REPO_PICS = os.path.join(WWW_REPO_PATH, "pics")
 WWW_REPO_PAGES = os.path.join(WWW_REPO_PATH, "pages")
 WWW_REPO_PATH_GIT_SCRIPT = "./git-add-commit-push.sh"
 
-ALSO_TO_BE_COPIED = ["index.html", "history.txt", "todo.md"]
+ALSO_TO_BE_COPIED = ["index.html", "history.txt", "todo.md", "log.txt"]
 
 
 RISKLAYER_URL01 = "http://risklayer-explorer.com/media/data/events/GermanyValues.csv"
-RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/" 
+RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/"
 RISKLAYER_URL02_SHEET = "bnn"
 
 OPENDATASOFT_URL01 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/table/"
@@ -37,7 +37,7 @@ def downloadData():
     print (RISKLAYER_URL01)
     filename = wget.download(RISKLAYER_URL01, out=DATA_PATH)
     print ("downloaded:", filename)
-    
+
     ts=pandas.read_csv(filename, encoding='cp1252') # encoding='utf-8')
     last_col = ts.columns[2:].tolist()[-1]
     print ("newest column:", last_col)
@@ -52,24 +52,24 @@ def downloadData():
     # print ("TODO perhaps")
     # print (RISKLAYER_URL02)
     # print ("sheet", RISKLAYER_URL02_SHEET)
-    
-    
+
+
 def repairData(ts, bnn):
     print ("repair dirty risklayer data:")
     newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
     if newcols!=ts.columns.tolist():
         print ("found and fixed 12.03.20203 --> 12.03.2020")
     ts.columns = newcols
-    
+
     print ("huge drop of some values for 28.4.2020, e.g. Heinsberg: 1733.0  -->   1.739  -->  1743.0")
     print ("temporary fix: interpolate 28. from 27. and 29.")
     ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
-    
+
     print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)")
     print()
-    return ts, bnn 
+    return ts, bnn
 
-    
+
 
 def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE):
     ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
@@ -84,14 +84,14 @@ def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE):
 
 
 def add_synthetic_data(ts, bnn, flatUntil = 14, steps=[10, 20, 50, 100, 130, 140, 150]):
-    
+
     # infections: plus 20 plus 60 plus 20 then nothing new.
-    
+
     synthetic_data = [0]*flatUntil  + steps + ([steps[-1]] * (len(ts.columns)-2-flatUntil-len(steps)))
     row = pandas.Series(["00000", "Dummykreis"]+synthetic_data, index=ts.columns)
     ts=ts.append(row, ignore_index=True)
-    
-    # some deterministic demography data, e.g. for unit testing 
+
+    # some deterministic demography data, e.g. for unit testing
     synthetic_landkreis = [0, "Dummykreis", "Landkreis", 150000, 100, 0.67,
                            0, 300,"Dummyland", 400000, 0.75]
     row = pandas.Series(synthetic_landkreis, index=bnn.columns)
@@ -113,9 +113,9 @@ if __name__ == '__main__':
     load_data(); exit()
 
     ts, bnn = data(withSynthetic=True)
-    
+
     print()
-    
+
     # TODO: Use 'datacolumns' instead of dropping
     print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist())
     pass
