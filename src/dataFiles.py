@@ -7,7 +7,8 @@ Created on 25 Apr 2020
 import os, shutil
 import pandas, wget
 
-DATA_PATH = os.path.join("..", "data")
+REPO_PATH = ".."
+DATA_PATH = os.path.join(REPO_PATH, "data")
 BNN_FILE = os.path.join(DATA_PATH, "GermanyKreisebene_Risklayer_bnn-20200425.csv")
 TS_FILE =  os.path.join(DATA_PATH, "GermanyValues_RiskLayer-20200425.csv")
 TS_NEWEST =  os.path.join(DATA_PATH, "GermanyValues_RiskLayer.csv")
@@ -18,8 +19,9 @@ WWW_REPO_PATH = os.path.join(DATA_PATH, "..", "..", "cov19de")
 WWW_REPO_PICS = os.path.join(WWW_REPO_PATH, "pics")
 WWW_REPO_PAGES = os.path.join(WWW_REPO_PATH, "pages")
 WWW_REPO_PATH_GIT_SCRIPT = "./git-add-commit-push.sh"
-WWW_REPO_INDEX = os.path.join(WWW_REPO_PATH, "index.html")
-INDEX_PATH = os.path.join(DATA_PATH, "..", "index.html")
+
+ALSO_TO_BE_COPIED = ["index.html", "history.txt", "todo.md"]
+
 
 RISKLAYER_URL01 = "http://risklayer-explorer.com/media/data/events/GermanyValues.csv"
 RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/" 

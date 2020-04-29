@@ -7,7 +7,7 @@ Created on 28 Apr 2020
 import os, datetime, shutil, subprocess
 
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable, dataPages
-from dataFiles import PICS_PATH, PAGES_PATH, WWW_REPO_PICS, WWW_REPO_PAGES, WWW_REPO_PATH, WWW_REPO_PATH_GIT_SCRIPT, WWW_REPO_INDEX, INDEX_PATH 
+from dataFiles import PICS_PATH, PAGES_PATH, WWW_REPO_PICS, WWW_REPO_PAGES, WWW_REPO_PATH, WWW_REPO_PATH_GIT_SCRIPT, REPO_PATH, ALSO_TO_BE_COPIED
 
 def generate_all():
     
@@ -52,8 +52,9 @@ def copy_all():
         print (dst)
         os.remove(os.path.join(d, ".gitignore"))
 
-    dst = shutil.copy(INDEX_PATH, WWW_REPO_INDEX)
-    print (dst)
+    for single_file in ALSO_TO_BE_COPIED:
+        dst = shutil.copy(os.path.join(REPO_PATH, single_file), WWW_REPO_PATH)
+        print (dst)
     
     return True
     
