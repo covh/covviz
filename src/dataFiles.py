@@ -58,7 +58,13 @@ def repairData(ts, bnn):
     if newcols!=ts.columns.tolist():
         print ("found and fixed 12.03.20203 --> 12.03.2020")
     ts.columns = newcols
+    
+    print ("huge drop of some values for 28.4.2020, e.g. Heinsberg: 1733.0  -->   1.739  -->  1743.0")
+    print ("temporary fix: interpolate 28. from 27. and 29.")
+    ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
+    
     print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)")
+    print()
     return ts, bnn 
 
     
