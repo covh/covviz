@@ -80,7 +80,7 @@ if __name__ == '__main__':
     
     success1, success2, success3 = False, False, False
     
-    # success = generate_all()
+    success = generate_all()
     success1=True
     
     if success1:
