@@ -32,7 +32,46 @@ OPENDATASOFT_URL02 = "https://public.opendatasoft.com/explore/dataset/landkreise
 OPENDATASOFT_PATH = os.path.join(DATA_PATH, "landkreise-in-germany.csv")
 DISTANCES_PATH = os.path.join(DATA_PATH, "distances.csv")
 
-def downloadData():
+
+def repairData(ts, bnn):
+    print ("\nRepair dirty risklayer data:")
+    newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
+    if newcols!=ts.columns.tolist():
+        print ("found and fixed 12.03.20203 --> 12.03.2020 (problem on 25/4/2020)")
+    
+    newcols2 = ["AGS" if x=='ï»¿AGS' else x for x in newcols]
+    if newcols2!=newcols:
+        print ("found and fixed ï»¿AGS --> AGS  (problem on 29/4/2020)")
+        
+    ts.columns = newcols2
+
+    before = ts[ts["AGS"]=="05370"]["27.04.2020"]
+    after  = ts[ts["AGS"]=="05370"]["28.04.2020"]
+    # print (float(after) / float(before) ) 
+    if float(after) / float(before) < 0.5:
+        print ("huge drop of some values for 28.4.2020, e.g. Heinsberg: 1733.0  -->   1.739  -->  1743.0 (was a problem on 29/4/2020)")
+        print ("temporary fix: interpolate 28. from 27. and 29.")
+        ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
+
+    print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)")
+    print()
+    return ts, bnn
+
+
+def inspectNewestData(ts):
+    ts, _ = repairData(ts, [])
+    
+    # print (ts.columns)
+    last3columns=ts.columns[-3:].tolist() + ["ADMIN"]
+    df = ts[last3columns]
+    print ("\nJust visual inspection - unless the following tables get VERY LONG - all is probably good ...\n(TODO: Automate this with two thresholds (number of, amount of drop)?)")
+    print ("\nvalues going down for previous:")
+    print (df[df[last3columns[1]]<df[last3columns[0]]])
+    print ("\nvalues going down for newest:")
+    print (df[df[last3columns[2]]<df[last3columns[1]]])
+    
+
+def downloadData(andStore=True):
 
     print (RISKLAYER_URL01)
     filename = wget.download(RISKLAYER_URL01, out=DATA_PATH)
@@ -41,45 +80,36 @@ def downloadData():
     ts=pandas.read_csv(filename, encoding='cp1252') # encoding='utf-8')
     last_col = ts.columns[2:].tolist()[-1]
     print ("newest column:", last_col)
-    d=last_col.split(".")
-    d.reverse()
-    last_date = "".join(d)
-    newfilename = TS_FILE.replace("20200425", last_date)
-    shutil.move(filename,newfilename)
-    print (newfilename)
-    shutil.copy(newfilename, TS_NEWEST)
-    print (TS_NEWEST)
+    if andStore:
+        d=last_col.split(".")
+        d.reverse()
+        last_date = "".join(d)
+        newfilename = TS_FILE.replace("20200425", last_date)
+        shutil.move(filename,newfilename)
+        print (newfilename)
+        shutil.copy(newfilename, TS_NEWEST)
+        print (TS_NEWEST)
+    else:
+        warn = ("*" * 57 + "\n")*3
+        print("\n" + warn + "ALERT: dev mode ... NOT storing this data\n"+ warn)
+    
+    inspectNewestData(ts)
     # print ("TODO perhaps")
     # print (RISKLAYER_URL02)
     # print ("sheet", RISKLAYER_URL02_SHEET)
-
-
-def repairData(ts, bnn):
-    print ("repair dirty risklayer data:")
-    newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
-    if newcols!=ts.columns.tolist():
-        print ("found and fixed 12.03.20203 --> 12.03.2020")
-    ts.columns = newcols
-
-    print ("huge drop of some values for 28.4.2020, e.g. Heinsberg: 1733.0  -->   1.739  -->  1743.0")
-    print ("temporary fix: interpolate 28. from 27. and 29.")
-    ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
-
-    print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)")
-    print()
-    return ts, bnn
 
 
 
 def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE):
     ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
     bnn=pandas.read_csv(bnn_f)
+    ts, bnn = repairData(ts, bnn)
     print ("\nLoading data from RiskLayer. This is their message:")
     print ("\n".join(ts[ts.ADMIN.isna()]["AGS"].tolist()))
     print()
     # now drop those info lines which are not data:
     ts.drop(ts[ts.ADMIN.isna()].index, inplace=True)
-    ts, bnn = repairData(ts, bnn)
+    # ts, bnn = repairData(ts, bnn)
     return ts, bnn
 
 
@@ -108,6 +138,8 @@ def data(withSynthetic=True):
 
 
 if __name__ == '__main__':
+
+    # downloadData(andStore=False); exit()
 
     downloadData(); # exit()
     load_data(); exit()
