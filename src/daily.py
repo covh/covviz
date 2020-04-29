@@ -74,18 +74,15 @@ def git_commit_and_push(path=WWW_REPO_PATH, script=WWW_REPO_PATH_GIT_SCRIPT):
         os.chdir(before)
 
 
-if __name__ == '__main__':
-    
-    # git_commit_and_push(); exit()
-    
+def daily_update(regenerate_all_plots=False):
     print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
     
     success1, success2, success3 = False, False, False
     
-    success = generate_all()
-    success1=True
+    if regenerate_all_plots:
+        success1 = generate_all()
     
-    if success1:
+    if success1 or not regenerate_all_plots:
         success2 = copy_all()
         
         if success2:
@@ -93,8 +90,17 @@ if __name__ == '__main__':
             success3 = git_commit_and_push()
             print ("successful" if success3 else "not successful")
             
-    print (success1, success2, success3)
+    print ("regenerate: %s, copy: %s, git push: %s" % (success1, success2, success3))
     
     print ("Finished at", ("%s" % datetime.datetime.now()) [:19],"\n")
+    
+    
+
+
+if __name__ == '__main__':
+    
+    # git_commit_and_push(); exit()
+    
+    daily_update(regenerate_all_plots=True)
     
     
