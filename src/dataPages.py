@@ -14,6 +14,13 @@ import matplotlib
 
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable
 
+
+def footerlink():
+    text = '<hr><a href="https://covh.github.io/cov19de">tiny.cc/cov19de</a>'
+    dt = ("%s" % datetime.datetime.now())[:19]
+    text +=" page generated %s." % dt
+    return text
+
 def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
     page = dataTable.PAGE % BL_name
 
@@ -22,14 +29,14 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     page +='<a name="top">'
     page +='Up to <a href="about.html">about.html</a> or to overview of <a href="Deutschland.html">Germany</a>\n'
     flagimg = dataTable.flag_image(BL_name, pop_BL, height=20)
-    page +="<h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, BL_name, len(district_AGSs), datacolumns[-1])
+    page +="<hr><h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, BL_name, len(district_AGSs), datacolumns[-1])
     page +='<img src="%s"/><p/>' % ("../pics/" + filename_PNG)
     page +='total cases: <span style="color:#1E90FF">%s</span><br>\n' % (list(map(int, cumulative)))
     prevalence = 1000000.0 * cumulative[-1] / pop_BL 
     page += "population: {:,}".format(pop_BL)
     page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
     
-    page +="<h2>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
+    page +="<hr><h2>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
     page +="<h3>Sorted by 'center day'</h3>\n"
     
     districtsHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, 
@@ -44,7 +51,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         AGS_5digits = ("00000%s" % AGS) [-5:] 
         anchor = "AGS%s" % (AGS_5digits)
-        page +="<h3 id=%s>%s AGS=%s</h3>\n" % (anchor, title, AGS)
+        page +="<hr><h3 id=%s>%s AGS=%s</h3>\n" % (anchor, title, AGS)
         # print (cumulative)
         page +="Neighbours within %d km: %s<p/>\n" % (km, nearby_links)
         filename_kreis_PNG = "Kreis_" + ("00000"+str(AGS))[-5:] + ".png"
@@ -57,6 +64,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         
         page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
+    page +=footerlink()
     page += dataTable.PAGE_END
     
     fn=os.path.join(dataFiles.PAGES_PATH, filename_HTML)
@@ -116,13 +124,46 @@ def Deutschland_simple(Bundeslaender_filenames, filename_HTML="Deutschland_simpl
     
     return fn
     
+    
+GOOGLESHEET_HTML="""
+
+<hr><h4 id=googlesheet>401 Kreise - Sorting by PREVALENCE or by MORTALITY</h4>
+Note that the <b>old sorting by prevalence</b> (how many cases per
+1 million population) is now also linking every Kreis (district) to
+this website here, so that is your second way how the regions can be
+sorted. Click on the LEFT image for the <b>prevalence sorting</b>, and the
+RIGHT image for the <b>mortality sorting</b>. Perhaps remember the --&gt; shortcut to
+that googlesheet --&gt; <a href="http://tiny.cc/kreise">tiny.cc/kreise</a><br>
+<br>
+<table border="0" cellspacing="2" cellpadding="2">
+<tbody>
+<tr>
+<td><a href="http://docs.google.com/spreadsheets/d/1KbNjq2OPsSRzmyDDidbXD4pcPnAPfY0SsS693duadLw/#gid=1731382963">
+<img src="../pics/googlesheet-prevalence-top-20200430.png" 
+     alt="table of Kreise sorted by prevalence (googlesheet)" 
+     border="0" width="590" height="320"/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</a><br></td>
+<td>
+<a href="https://docs.google.com/spreadsheets/d/1KbNjq2OPsSRzmyDDidbXD4pcPnAPfY0SsS693duadLw/#gid=1644486167">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="../pics/googlesheet-mortality-top-20200430.png"
+     alt="table of Kreise sorted by mortality" border="0" width="583" height="320"/>
+</a><br>
+</td></tr>
+</tbody>
+</table>
+<br>
+"""
 
 def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filename_HTML="Deutschland.html"):
     page = dataTable.PAGE % "Deutschland"
     page +='<a name="top">'
-    page +='Up to <a href="about.html">about.html</a>\n'
+    page +='UP to <a href="about.html">about.html</a> \n'
+    page +='| or DOWN to <a href="#Bundeslaender">16 Bundesländer</a> or <a href="#Kreise">401 Kreise</a> '
+    page +='or 401 Kreise sorted by <a href="#googlesheet">prevalence / mortality</a> (googlesheet table).'
     
-    page +="<h1>Germany</h1>\n" 
+    page +='<hr><h1 id="de">Germany</h1>\n' 
     page +='<img src="%s"/><p/>' % ("../pics/Deutschland.png")
     
     DE=Bundeslaender_sorted.drop(["Deutschland", "Dummyland"]).sum()
@@ -134,7 +175,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page += "population: {:,}".format(DE["Population"])
     page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
     
-    page +='<h2 id="Bundeslaender">16 Bundesländer</h2>\n'
+    page +='<hr><h2 id="Bundeslaender">16 Bundesländer</h2>\n'
     
     BL_names = Bundeslaender_sorted.index.tolist()
     fn, bulaHTML= dataTable.BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, BL_names, cmap, table_filename=None, rolling_window_size=3, header="\n", footer="\n")
@@ -144,7 +185,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page +="<p>Click on name of Bundesland to see more detailed data.</p>"
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
-    page +='<h2 id="Kreise">401 Kreise (districts)</h2>\n'
+    page +='<hr><h2 id="Kreise">401 Kreise (districts)</h2>\n'
     
     district_AGSs = ts_sorted.index.tolist()
     fn, kreiseHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", header="\n", footer="\n")
@@ -152,6 +193,14 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     page +="<p>Click on name of Kreis (or Bundesland) to see more detailed data.</p>"
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+    
+    page +=GOOGLESHEET_HTML
+
+    page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+    
+    page +=footerlink()
+    
+    page += dataTable.PAGE_END
     
     fn=os.path.join(dataFiles.PAGES_PATH, filename_HTML)
     with open(fn, "w") as f:
