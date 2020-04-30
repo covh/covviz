@@ -68,6 +68,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
 def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
     print ("Creating HTML files for all 'Bundeslaender'")
     filenames, population = [], 0
+    rootpath = os.path.abspath(dataFiles.REPO_PATH)
     for BL_name in Bundeslaender.index.tolist():
         if BL_name == "Deutschland":
             continue
@@ -77,7 +78,7 @@ def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances
         filename_HTML = filename_HTML.replace("bundesland_", "")
 
         fn = bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km)
-        fn_abs = os.path.abspath(fn)
+        fn_abs = os.path.abspath(fn).replace(rootpath, "")
         
         filenames.append((BL_name, fn_abs ))
         population += pop_BL
@@ -191,7 +192,7 @@ def fourbyfour(Bundeslaender_sorted):
 if __name__ == '__main__':
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
-    fourbyfour(Bundeslaender_sorted); exit()
+    # fourbyfour(Bundeslaender_sorted); exit()
     
     distances = districtDistances.load_distances()
     print()
