@@ -53,7 +53,7 @@ def repairData(ts, bnn):
         print ("temporary fix: interpolate 28. from 27. and 29.")
         ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
 
-    print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)")
+    # print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)") # solved in source table
     print()
     return ts, bnn
 
