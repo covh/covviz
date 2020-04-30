@@ -101,6 +101,7 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
+    daily_update(regenerate_all_plots=False); exit()
     daily_update(regenerate_all_plots=True)
     
     
