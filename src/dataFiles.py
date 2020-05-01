@@ -139,7 +139,7 @@ def data(withSynthetic=True):
 
 if __name__ == '__main__':
 
-    # downloadData(andStore=False); exit()
+    downloadData(andStore=False); exit()
 
     downloadData(); # exit()
     load_data(); exit()
