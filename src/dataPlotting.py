@@ -60,7 +60,7 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
 
     text = "source data @RiskLayer up to " + ("%s"%max(dates))[:10]
     text += "\nplot @DrAndreasKruger " + ("%s" % datetime.datetime.now())[:16]
-    text += "\ndaily cases --> 'center date' = "+center_date
+    text += "\ndaily: (GREEN) 'center date' = "+center_date
 
     plt.legend(lines, labs, loc='best', facecolor="#f7f7f7", framealpha=0.9, 
                title=text, prop={'size': 8}, title_fontsize = 8)
