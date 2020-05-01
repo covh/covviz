@@ -71,8 +71,9 @@ td span
 
 th
 {
-  vertical-align: bottom;
+  vertical-align: middle;
   text-align: center;
+  border: 1px solid black;
 }
 
 th span
@@ -131,7 +132,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     
     tid="table_districts"
     page = header + '<table id="%s">\n' % tid
-    caption="Click on column header name, to sort by that column."
+    caption="Click on column header name, to sort by that column; click again for other direction."
     page += '<caption style="text-align:right;">%s</caption>' % caption
     page +="<tr>"
     
@@ -140,8 +141,11 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     
     colcount=len(datacolumns)
     # print (datacolumns, colcount); exit()
-    cols = [("Kreis", True),
-            ("Prev. p. 1mio", True),
+    cols = [("14days new cases", True),
+            ("Kreis", True),
+            ("Prev. p.1mio", True),
+            ("14days Incid.p.1mio", True),
+            # ("7days Incid.p.1mio", True),
             ("Population", True),
             ("center day", True),
             ("Bundesland", True),
@@ -162,8 +166,12 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
         name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(bnn, AGS)
         # print (AGS)
         # nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
-        labels = [districtDistances.kreis_link(bnn, AGS)[2]]
+        labels=[]
+        labels += ['%d' % (ts_sorted["new_last14days"][AGS])]
+        labels += [districtDistances.kreis_link(bnn, AGS)[2]]
         labels += ["%d" % prevalence(datatable=ts_sorted, row_index=AGS, datacolumns=datacolumns, population=pop)]
+        labels += ['%d' % (1000000*ts_sorted["new_last14days"][AGS] / pop)]
+        # labels += ['%d' % (1000000*ts_sorted["new_last7days"][AGS] / pop)]
         labels += ['{:,}'.format(pop)]
         labels += ["%.1f"% (ts_sorted["centerday"][AGS])]
         labels += [bulaLink(name_BL)]
@@ -188,7 +196,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     
     tid="table_bundeslaender"
     page = header + '<table id="%s">\n' % tid
-    caption="Click on column header name, to sort by that column."
+    caption="Click on column header name, to sort by that column; click again for other direction."
     page += '<caption style="text-align:right;">%s</caption>' % caption
     page +="<tr>"
 
@@ -196,7 +204,8 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
         page += "<th><span>%s</span></th>" % col
     colcount=len(datacolumns)
        
-    cols = ["Bundesland", "info", "Prev. per 1mio", "Population", "center day" ]
+    cols = ["14days new cases", "Bundesland", "info", "Prev. p.1mio", "14days Incid.p.1mio", "Population", "center day" ]
+    
     for i, colName in enumerate(cols):
         cellid = "\'hc%d\'" % (i + colcount)
         page += '<th onclick="sortTable(\'%s\', %d, %s)" id=%s>%s</th>' % (tid, i + colcount, cellid, cellid, colName)
@@ -205,9 +214,11 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     for name_BL in BL_names:
         labels=[]
         daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, name_BL)
+        labels += ['%d' % (Bundeslaender["new_last14days"][name_BL])]
         labels += [bulaLink(name_BL)]
         labels += [flag_image(name_BL)]
         labels += ["%d" % prevalence(datatable=Bundeslaender, row_index=name_BL, datacolumns=datacolumns, population=pop_BL)]
+        labels += ['%d' % (1000000*Bundeslaender["new_last14days"][name_BL] / pop_BL)]
         labels += ['{:,}'.format(pop_BL)]
         labels += ["%.2f"% (Bundeslaender["centerday"][name_BL])]
         page += toHTMLRow(Bundeslaender, name_BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
