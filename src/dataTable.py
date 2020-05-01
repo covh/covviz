@@ -154,7 +154,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     for i, col in enumerate(cols):
         colName, sorting = col
         if sorting:
-            cellid = "\'hc%d\'" % (i + colcount)
+            cellid = "\'%shc%d\'" % (tid, i + colcount)
             page += '<th onclick="sortTable(\'%s\', %d, %s)" id=%s>%s</th>' % (tid, i + colcount, cellid, cellid, colName)
         else:
             page += '<th>%s</th>' % (colName)
@@ -207,7 +207,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     cols = ["14days new cases", "Bundesland", "info", "Prev. p.1mio", "14days Incid.p.1mio", "Population", "center day" ]
     
     for i, colName in enumerate(cols):
-        cellid = "\'hc%d\'" % (i + colcount)
+        cellid = "\'%shc%d\'" % (tid, i + colcount)
         page += '<th onclick="sortTable(\'%s\', %d, %s)" id=%s>%s</th>' % (tid, i + colcount, cellid, cellid, colName)
     page +="</tr>"
     
