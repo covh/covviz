@@ -127,7 +127,7 @@ def Deutschland_simple(Bundeslaender_filenames, filename_HTML="Deutschland_simpl
     
 GOOGLESHEET_HTML="""
 
-<hr><h4 id=googlesheet>401 Kreise - Sorting by PREVALENCE or by MORTALITY</h4>
+<hr><h3 id=googlesheet>401 Kreise - Ranked by PREVALENCE or by MORTALITY</h3>
 Note that the <b>old sorting by prevalence</b> (how many cases per
 1 million population) is now also linking every Kreis (district) to
 this website here, so that is your second way how the regions can be
@@ -156,11 +156,43 @@ that googlesheet --&gt; <a href="http://tiny.cc/kreise">tiny.cc/kreise</a><br>
 <br>
 """
 
+
+def fourbyfour(Bundeslaender_sorted, ifPrint=False):
+    
+    print ("\ngenerating 4x4 html table, for overview of 16 Bundeslaender in Germany:")
+    BLs=sorted(Bundeslaender_sorted.index.tolist())
+    BLs = [BL for BL in BLs if BL not in ("Dummyland", "Deutschland")]
+    
+    global page
+    page=""
+    c=0
+    
+    class page(object):
+        page=""
+        def a(self, t):
+            self.page+=t+"\n"
+           
+    p=page()
+    p.a("<table>")
+    for i in range(4):
+        p.a("<tr>")
+        for j in range(4):
+            print(c, BLs[c])
+            imgprop='src="https://covh.github.io/cov19de/pics/bundesland_%s.png" alt="bundesland_%s.png"'%(BLs[c],BLs[c])
+            p.a('<td><a href="%s.html">%s<br/><img %s width="458" height="268"></a></td>' % (BLs[c], BLs[c], imgprop))
+            c+=1
+        p.a("</tr>")
+    p.a("</table>")
+    if ifPrint:
+        print (p.page)
+    return p.page
+
+
 def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filename_HTML="Deutschland.html"):
     page = dataTable.PAGE % "Deutschland"
     page +='<a name="top">'
     page +='UP to <a href="about.html">about.html</a> \n'
-    page +='| or DOWN to <a href="#Bundeslaender">16 Bundesländer</a> or <a href="#Kreise">401 Kreise</a> '
+    page +='| or DOWN to <a href="#Bundeslaender">16 Bundesländer</a>, or Bundesländer plots <a href="#Bundeslaender_4by4">alphabetically</a> or <a href="#Kreise">401 Kreise</a> '
     page +='or 401 Kreise sorted by <a href="#googlesheet">prevalence / mortality</a> (googlesheet table).'
     
     page +='<hr><h1 id="de">Germany</h1>\n' 
@@ -176,6 +208,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
     
     page +='<hr><h2 id="Bundeslaender">16 Bundesländer</h2>\n'
+    page +='<h3 id="Bundeslaender_centerday">ranked by "center day"</h3>\n'
     
     BL_names = Bundeslaender_sorted.index.tolist()
     fn, bulaHTML= dataTable.BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, BL_names, cmap, table_filename=None, rolling_window_size=3, header="\n", footer="\n")
@@ -185,7 +218,16 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page +="<p>Click on name of Bundesland to see more detailed data.</p>"
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
+    page +='<hr><h3 id="Bundeslaender_4by4">alphabetically</h3>\n'
+    page += fourbyfour(Bundeslaender_sorted)
+    
+    page +="<p>Click on the image of a Bundesland to enter its page, with all its districts.</p>"
+    page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+    
+    
     page +='<hr><h2 id="Kreise">401 Kreise (districts)</h2>\n'
+    page +='<h3>ranked by "center day"</h3>\n'
+    page +='<a href="#">Back to top</a><p/>\n'
     
     district_AGSs = ts_sorted.index.tolist()
     fn, kreiseHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", header="\n", footer="\n")
@@ -209,34 +251,6 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     return os.path.abspath(fn)
 
 
-def fourbyfour(Bundeslaender_sorted):
-    
-    print ("\ngenerating 4x4 html table, for overview of 16 Bundeslaender in Germany:")
-    BLs=sorted(Bundeslaender_sorted.index.tolist())
-    BLs = [BL for BL in BLs if BL not in ("Dummyland", "Deutschland")]
-    
-    global page
-    page=""
-    c=0
-    
-    class page(object):
-        page=""
-        def a(self, t):
-            self.page+=t+"\n"
-           
-    p=page()
-    p.a("<table>")
-    for i in range(4):
-        p.a("<tr>")
-        for j in range(4):
-            print(c, BLs[c])
-            imgprop='src="https://covh.github.io/cov19de/pics/bundesland_%s.png" alt="bundesland_%s.png"'%(BLs[c],BLs[c])
-            p.a('<td><a href="%s.html"><img %s width="458" height="268"></a></td>' % (BLs[c], imgprop))
-            c+=1
-        p.a("</tr>")
-    p.a("</table>")
-    print (p.page)
-
 
 if __name__ == '__main__':
     
@@ -249,7 +263,7 @@ if __name__ == '__main__':
     cmap = dataTable.colormap()
     # print ( bundesland("Hessen", "bundesland_Hessen.png", "Hessen", 7777, [8,9,10], "Hessen.html", ts, ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
     
-    Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50); print (Bundeslaender_filenames)
+    # Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50); print (Bundeslaender_filenames)
     # Bundeslaender_filenames = [('Brandenburg', '../data/../pages/Brandenburg.html'), ('Bremen', '../data/../pages/Bremen.html'), ('Thüringen', '../data/../pages/Thüringen.html'), ('Bayern', '../data/../pages/Bayern.html'), ('Saarland', '../data/../pages/Saarland.html'), ('Hessen', '../data/../pages/Hessen.html'), ('Schleswig-Holstein', '../data/../pages/Schleswig-Holstein.html'), ('Baden-Württemberg', '../data/../pages/Baden-Württemberg.html'), ('Niedersachsen', '../data/../pages/Niedersachsen.html'), ('Sachsen-Anhalt', '../data/../pages/Sachsen-Anhalt.html'), ('Sachsen', '../data/../pages/Sachsen.html'), ('Hamburg', '../data/../pages/Hamburg.html'), ('Berlin', '../data/../pages/Berlin.html'), ('Rheinland-Pfalz', '../data/../pages/Rheinland-Pfalz.html'), ('Nordrhein-Westfalen', '../data/../pages/Nordrhein-Westfalen.html'), ('Mecklenburg-Vorpommern', '../data/../pages/Mecklenburg-Vorpommern.html'), ('Dummyland', '../data/../pages/Dummyland.html')]
     # Deutschland_simple(Bundeslaender_filenames)
     
