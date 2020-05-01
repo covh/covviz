@@ -92,11 +92,19 @@ th span
 
 </STYLE>
 <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed|Teko&display=swap" rel="stylesheet">
+
 </head>
 <body>
 """
 
+# It is a best practice to put JavaScript <script> tags 
+# just before the closing </body> tag 
+# rather than in the <head> section of your HTML. 
+# The reason for this is that HTML loads from top to bottom. 
+# The head loads first, then the body, and then everything inside the body.
+ 
 PAGE_END="""
+<script type="text/javascript" src="sort-table.js"></script>
 </body>
 </html>
 """
@@ -121,13 +129,32 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
-    page = header + "<table><tr>\n"
+    tid="table_districts"
+    page = header + '<table id="%s">\n' % tid
+    caption="Click on column header name, to sort by that column."
+    page += '<caption style="text-align:right;">%s</caption>' % caption
+    page +="<tr>"
+    
     for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
     
-    cols = ["Kreis", "Prev. p. 1mio", "Population", "center day", "Bundesland", "info" ] # , "<= %d km" % km]
-    for col in cols:
-        page += "<th>%s</th>" % col
+    colcount=len(datacolumns)
+    # print (datacolumns, colcount); exit()
+    cols = [("Kreis", True),
+            ("Prev. p. 1mio", True),
+            ("Population", True),
+            ("center day", True),
+            ("Bundesland", True),
+            ("info", False) ] 
+    
+    for i, col in enumerate(cols):
+        colName, sorting = col
+        if sorting:
+            cellid = "\'hc%d\'" % (i + colcount)
+            page += '<th onclick="sortTable(\'%s\', %d, %s)" id=%s>%s</th>' % (tid, i + colcount, cellid, cellid, colName)
+        else:
+            page += '<th>%s</th>' % (colName)
+            
     page +="</tr>"
     
     for AGS in district_AGSs:
@@ -159,13 +186,20 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
-    page = header + "<table><tr>\n"
+    tid="table_bundeslaender"
+    page = header + '<table id="%s">\n' % tid
+    caption="Click on column header name, to sort by that column."
+    page += '<caption style="text-align:right;">%s</caption>' % caption
+    page +="<tr>"
+
     for col in datacolumns:
         page += "<th><span>%s</span></th>" % col
-    
+    colcount=len(datacolumns)
+       
     cols = ["Bundesland", "info", "Prev. per 1mio", "Population", "center day" ]
-    for col in cols:
-        page += "<th>%s</th>" % col
+    for i, colName in enumerate(cols):
+        cellid = "\'hc%d\'" % (i + colcount)
+        page += '<th onclick="sortTable(\'%s\', %d, %s)" id=%s>%s</th>' % (tid, i + colcount, cellid, cellid, colName)
     page +="</tr>"
     
     for name_BL in BL_names:

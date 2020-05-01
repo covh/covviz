@@ -110,7 +110,7 @@ def kreis_link(bnn, AGS):
     name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(bnn, AGS)
     AGS_5digits = ("00000%s" % AGS) [-5:] 
     filename = "%s.html#AGS%s" % (name_BL, AGS_5digits)
-    link='<a href="%s">%s</a>' % (filename, nameAndType)
+    link='<a id="%s" href="%s">%s</a>' % (nameAndType, filename, nameAndType) # also give it an id, so sorting alphabetically works even though the filename starts with bundesland
     return filename, nameAndType, link
 
 def kreis_nearby_links(bnn, distances, AGS, km=50):

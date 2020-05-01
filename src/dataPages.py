@@ -28,6 +28,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     
     page +='<a name="top">'
     page +='Up to <a href="about.html">about.html</a> or to overview of <a href="Deutschland.html">Germany</a>\n'
+    page +='Or down to <a href="#Kreise">Kreise (districts)</a>'
     flagimg = dataTable.flag_image(BL_name, pop_BL, height=20)
     page +="<hr><h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, BL_name, len(district_AGSs), datacolumns[-1])
     page +='<img src="%s"/><p/>' % ("../pics/" + filename_PNG)
@@ -36,13 +37,17 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     page += "population: {:,}".format(pop_BL)
     page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
     
-    page +="<hr><h2>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
+    page +="<hr><h2 id='Kreise'>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
     page +="<h3>Sorted by 'center day'</h3>\n"
+    
+    page +="Click on name of Kreis to see detailed data.<p/>\n"
     
     districtsHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, 
                                                       district_AGSs, cmap, filename=None, 
                                                       rolling_window_size=5, header="\n", footer="\n")
+    
     page+=districtsHTML[1]
+    page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
 
     for AGS in district_AGSs:
         gen, bez, inf, pop = dataMangling.AGS_to_population(bnn, AGS)
@@ -127,35 +132,29 @@ def Deutschland_simple(Bundeslaender_filenames, filename_HTML="Deutschland_simpl
     
 GOOGLESHEET_HTML="""
 
-<hr><h3 id=googlesheet>401 Kreise - Ranked by PREVALENCE or by MORTALITY</h3>
-Note that the <b>old sorting by prevalence</b> (how many cases per
+<hr><h3 id=googlesheet>401 Kreise - Ranked by MORTALITY</h3>
+Note that the <b>old sorting by mortality</b> (how many deads per
 1 million population) is now also linking every Kreis (district) to
-this website here, so that is your second way how the regions can be
-sorted. Click on the LEFT image for the <b>prevalence sorting</b>, and the
-RIGHT image for the <b>mortality sorting</b>. Perhaps remember the --&gt; shortcut to
-that googlesheet --&gt; <a href="http://tiny.cc/kreise">tiny.cc/kreise</a><br>
-<br>
+this website here = so that is another way how the regions can be sorted. <br/>
+Perhaps remember the --&gt; shortcut to
+that googlesheet --&gt; <a href="http://tiny.cc/kreise">tiny.cc/kreise</a><p/>
+
+(Screenshot below is not updated, so:) Click on the image to see a more recent <b>mortality sorting</b>.<p/> 
 <table border="0" cellspacing="2" cellpadding="2">
 <tbody>
 <tr>
-<td><a href="http://docs.google.com/spreadsheets/d/1KbNjq2OPsSRzmyDDidbXD4pcPnAPfY0SsS693duadLw/#gid=1731382963">
-<img src="../pics/googlesheet-prevalence-top-20200430.png" 
-     alt="table of Kreise sorted by prevalence (googlesheet)" 
-     border="0" width="590" height="320"/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</a><br></td>
 <td>
 <a href="https://docs.google.com/spreadsheets/d/1KbNjq2OPsSRzmyDDidbXD4pcPnAPfY0SsS693duadLw/#gid=1644486167">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="../pics/googlesheet-mortality-top-20200430.png"
-     alt="table of Kreise sorted by mortality" border="0" width="583" height="320"/>
+     alt="table of Kreise sorted by mortality" border="0" />
 </a><br>
 </td></tr>
 </tbody>
 </table>
 <br>
 """
-
+# width="583" height="320"
 
 def fourbyfour(Bundeslaender_sorted, ifPrint=False):
     
@@ -193,7 +192,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page +='<a name="top">'
     page +='UP to <a href="about.html">about.html</a> \n'
     page +='| or DOWN to <a href="#Bundeslaender">16 Bundesländer</a>, or Bundesländer plots <a href="#Bundeslaender_4by4">alphabetically</a> or <a href="#Kreise">401 Kreise</a> '
-    page +='or 401 Kreise sorted by <a href="#googlesheet">prevalence / mortality</a> (googlesheet table).'
+    page +='or 401 Kreise sorted by <a href="#googlesheet">mortality</a> (googlesheet table).'
     
     page +='<hr><h1 id="de">Germany</h1>\n' 
     page +='<img src="%s"/><p/>' % ("../pics/Deutschland.png")
@@ -209,13 +208,13 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     page +='<hr><h2 id="Bundeslaender">16 Bundesländer</h2>\n'
     page +='<h3 id="Bundeslaender_centerday">ranked by "center day"</h3>\n'
+    page +="Click on Bundesland name to see detailed data.<p/>\n"
     
     BL_names = Bundeslaender_sorted.index.tolist()
     fn, bulaHTML= dataTable.BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, BL_names, cmap, table_filename=None, rolling_window_size=3, header="\n", footer="\n")
     
     page+=bulaHTML
     
-    page +="<p>Click on name of Bundesland to see more detailed data.</p>"
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
     page +='<hr><h3 id="Bundeslaender_4by4">alphabetically</h3>\n'
@@ -226,19 +225,20 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     
     page +='<hr><h2 id="Kreise">401 Kreise (districts)</h2>\n'
-    page +='<h3>ranked by "center day"</h3>\n'
+    page +='<h3>ranked by "center day" or other measures ...</h3>\n'
     page +='<a href="#">Back to top</a><p/>\n'
+    
+    page +="Click on name of Kreis (or Bundesland) to see detailed data. Click on a table header to sort by that column.\n"
     
     district_AGSs = ts_sorted.index.tolist()
     fn, kreiseHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", header="\n", footer="\n")
     page += kreiseHTML 
     
-    page +="<p>Click on name of Kreis (or Bundesland) to see more detailed data.</p>"
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
     page +=GOOGLESHEET_HTML
-
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+
     
     page +=footerlink()
     
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     cmap = dataTable.colormap()
     # print ( bundesland("Hessen", "bundesland_Hessen.png", "Hessen", 7777, [8,9,10], "Hessen.html", ts, ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
     
-    # Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50); print (Bundeslaender_filenames)
+    Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50); print (Bundeslaender_filenames)
     # Bundeslaender_filenames = [('Brandenburg', '../data/../pages/Brandenburg.html'), ('Bremen', '../data/../pages/Bremen.html'), ('Thüringen', '../data/../pages/Thüringen.html'), ('Bayern', '../data/../pages/Bayern.html'), ('Saarland', '../data/../pages/Saarland.html'), ('Hessen', '../data/../pages/Hessen.html'), ('Schleswig-Holstein', '../data/../pages/Schleswig-Holstein.html'), ('Baden-Württemberg', '../data/../pages/Baden-Württemberg.html'), ('Niedersachsen', '../data/../pages/Niedersachsen.html'), ('Sachsen-Anhalt', '../data/../pages/Sachsen-Anhalt.html'), ('Sachsen', '../data/../pages/Sachsen.html'), ('Hamburg', '../data/../pages/Hamburg.html'), ('Berlin', '../data/../pages/Berlin.html'), ('Rheinland-Pfalz', '../data/../pages/Rheinland-Pfalz.html'), ('Nordrhein-Westfalen', '../data/../pages/Nordrhein-Westfalen.html'), ('Mecklenburg-Vorpommern', '../data/../pages/Mecklenburg-Vorpommern.html'), ('Dummyland', '../data/../pages/Dummyland.html')]
     # Deutschland_simple(Bundeslaender_filenames)
     
