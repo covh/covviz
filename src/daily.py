@@ -9,21 +9,25 @@ import os, datetime, shutil, subprocess
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable, dataPages
 from dataFiles import PICS_PATH, PAGES_PATH, WWW_REPO_PICS, WWW_REPO_PAGES, WWW_REPO_PATH, WWW_REPO_PATH_GIT_SCRIPT, REPO_PATH, ALSO_TO_BE_COPIED
 
-def generate_all():
+def generate_all(alsoDoThePlots=True):
     
     dataFiles.downloadData()
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
     print()
 
-    done = dataPlotting.plot_all_Bundeslaender(ts, bnn, dates, datacolumns, ifPrint=False)
-    print ("plot_all_Bundeslaender: %d items" % len(done))
-    
-    listOfAGSs = ts["AGS"].tolist()
-    print ("Plotting %d images, for each Kreis. Patience please: " % len(listOfAGSs))
-    done = dataPlotting.plot_Kreise(ts, bnn, dates, datacolumns, listOfAGSs, ifPrint=False)
-    print ("plot_Kreise done: %d items" % len(done))
-    print()
+    if not alsoDoThePlots:
+        a="\n" + ("*"*50) + "\n"
+        print (a+"ALERT: skipping the plots"+a)
+    else:
+        done = dataPlotting.plot_all_Bundeslaender(ts, bnn, dates, datacolumns, ifPrint=False)
+        print ("plot_all_Bundeslaender: %d items" % len(done))
+        
+        listOfAGSs = ts["AGS"].tolist()
+        print ("Plotting %d images, for each Kreis. Patience please: " % len(listOfAGSs))
+        done = dataPlotting.plot_Kreise(ts, bnn, dates, datacolumns, listOfAGSs, ifPrint=False)
+        print ("plot_Kreise done: %d items" % len(done))
+        print()
 
     distances = districtDistances.load_distances()
     cmap = dataTable.colormap()
@@ -74,13 +78,13 @@ def git_commit_and_push(path=WWW_REPO_PATH, script=WWW_REPO_PATH_GIT_SCRIPT):
         os.chdir(before)
 
 
-def daily_update(regenerate_all_plots_and_pages=False):
+def daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=True):
     print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
     
     success1, success2, success3 = False, False, False
     
     if regenerate_all_plots_and_pages:
-        success1 = generate_all()
+        success1 = generate_all(alsoDoThePlots)
     
     if success1 or not regenerate_all_plots_and_pages:
         success2 = copy_all()
@@ -101,7 +105,8 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
-    # daily_update(regenerate_all_plots_and_pages=False); exit()
-    daily_update(regenerate_all_plots_and_pages=True)
+    daily_update(regenerate_all_plots_and_pages=False); exit()
+    # daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
+    daily_update()
     
     
