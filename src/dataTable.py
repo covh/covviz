@@ -148,6 +148,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
             # ("7days Incid.p.1mio", True),
             ("Population", True),
             ("center day", True),
+            ("Reff_4_7", True),
             ("Bundesland", True),
             ("info", False) ] 
     
@@ -174,6 +175,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
         # labels += ['%d' % (1000000*ts_sorted["new_last7days"][AGS] / pop)]
         labels += ['{:,}'.format(pop)]
         labels += ["%.1f"% (ts_sorted["centerday"][AGS])]
+        labels += ["%.2f"% (ts_sorted["Reff_4_7_last"][AGS])]
         labels += [bulaLink(name_BL)]
         labels += [flag_image(name_BL, pop_BL)]
         # labels += [nearby_links]
@@ -204,7 +206,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
         page += "<th><span>%s</span></th>" % col
     colcount=len(datacolumns)
        
-    cols = ["14days new cases", "Bundesland", "info", "Prev. p.1mio", "14days Incid.p.1mio", "Population", "center day" ]
+    cols = ["14days new cases", "Bundesland", "info", "Prev. p.1mio", "14days Incid.p.1mio", "Population", "center day", "Reff_4_7" ]
     
     for i, colName in enumerate(cols):
         cellid = "\'%shc%d\'" % (tid, i + colcount)
@@ -221,6 +223,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
         labels += ['%d' % (1000000*Bundeslaender["new_last14days"][name_BL] / pop_BL)]
         labels += ['{:,}'.format(pop_BL)]
         labels += ["%.2f"% (Bundeslaender["centerday"][name_BL])]
+        labels += ["%.2f"% (Bundeslaender["Reff_4_7_last"][name_BL])]
         page += toHTMLRow(Bundeslaender, name_BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
     page += "</table>" + footer
