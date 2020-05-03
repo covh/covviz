@@ -269,24 +269,27 @@ def Reff_4_4(daily,i):
     return result 
 
 
-def Reff_4_7(daily, i=None):
+def Reff_4_7(dailyNewCases, i=None):
     """
     Quotient of day (i) and day (i-4)
     
-    but working on smoothed data, with window length = 7 days:
-      simple moving average, not centered around i, but all days up to i
+    but working on smoothed daily cases, with window length = 7 days.
+     ( simple moving average, not centered around i, but all days up to i )
     
     If i is not given, assume i to be the very last day in the time series.
-      NB: corresponds to 'centered' moving average comparing 3 days ago with 7 days ago.
+     ( corresponds to 3 days ago compared with 7 days ago, in 'centered' moving average)
+    
+    see https://heise.de/-4712676 for explanations
     """
     if not i:
-        i=len(daily)-1
+        i=len(dailyNewCases)-1
     if i<10:
         return numpy.nan
-    d=daily
-    nominator =   d[i]  +d[i-1]+d[i-2]+d[i-3]+d[i-4]+d[i-5]+d[i-6]
-    denominator = d[i-4]+d[i-5]+d[i-6]+d[i-7]+d[i-8]+d[i-9]+d[i-10]
-    Reff = nominator / denominator if denominator else numpy.nan
+    d=dailyNewCases
+    
+    avg_gen_size_now  =   ( d[i]  +d[i-1]+d[i-2]+d[i-3]+d[i-4]+d[i-5]+d[i-6] ) / 7.0
+    avg_gen_size_before = ( d[i-4]+d[i-5]+d[i-6]+d[i-7]+d[i-8]+d[i-9]+d[i-10]) / 7.0
+    Reff = avg_gen_size_now / avg_gen_size_before if avg_gen_size_before else numpy.nan
     return Reff 
 
 
