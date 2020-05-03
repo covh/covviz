@@ -9,7 +9,7 @@ Created on 26 Apr 2020
 
 import os, copy
 import datetime as dt
-import pandas, numpy
+import pandas, numpy, matplotlib
 import dataFiles
 
 
@@ -92,7 +92,7 @@ def AGS_to_Bundesland(bnn, AGS):
 def temporal_center(data):
     """
     find 'center' index of data by 
-    multiplying height with index, and dividing by sum of heights
+    multiplying height with index, and test_Reff(ts_sorted, datacolumns)dividing by sum of heights
     
     TODO: what to do with the negative values?
           Cut them out before summing perhaps?
@@ -242,6 +242,15 @@ def BL_to_cumulative(Bundeslaender_rich, datacolumns, BL_name):
     """
     return Bundeslaender_rich.loc[BL_name][datacolumns].tolist()
 
+def BL_to_daily(Bundeslaender_rich, datacolumns, BL_name):
+    """
+    can perhaps be replaced by AGS_to_daily because identical structure?
+    """
+    cum = pandas.Series ( BL_to_cumulative(Bundeslaender_rich, datacolumns, BL_name) ) 
+    diff = cum.diff()
+    return diff.values.tolist()
+
+
 
 def add_weekly_columns_Bundeslaender(Bundeslaender, datacolumns):
     
@@ -253,6 +262,85 @@ def add_weekly_columns_Bundeslaender(Bundeslaender, datacolumns):
     return Bundeslaender
 
 
+def Reff_4_4(daily,i):
+    if i<7:
+        return numpy.nan
+    d=daily
+    denominator = d[i-4]+d[i-5]+d[i-6]+d[i-7]
+    result = (d[i]+d[i-1]+d[i-2]+d[i-3]) / denominator if denominator else numpy.nan
+    return result 
+
+def Reff_4_7(daily,i=None):
+    """
+    quotient of day (i) with day (i-4), but working on smoothed data:
+    simple moving average, not centered, window of days = 7
+    
+    if no i given, assume it to be the very last day.
+    """
+    if not i:
+        i=len(daily)-1
+    if i<10:
+        return numpy.nan
+    d=daily
+    denominator = d[i-4]+d[i-5]+d[i-6]+d[i-7]+d[i-8]+d[i-9]+d[i-10]
+    result =       (d[i]+d[i-1]+d[i-2]+d[i-3]+d[i-4]+d[i-5]+d[i-6]) / denominator if denominator else numpy.nan
+    return result 
+
+
+
+
+def Reff_comparison(daily):
+    daily_SMA=pandas.DataFrame(daily).rolling(window=7, center=True).mean()[0].values.tolist()
+    daily_SMA
+    # list(zip(cumulative,daily, daily_SMA))
+    
+    R1=[Reff_4_4(daily, i) for i, _ in enumerate(daily)]
+    R2=[Reff_4_7(daily, i) for i, _ in enumerate(daily)]
+    R3=[Reff_4_4(daily_SMA, i) for i, _ in enumerate(daily_SMA)]
+    
+    R1
+    from matplotlib import pyplot as plt
+    # matplotlib.pyplot.plot(R1)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(R1, label="Reff_4_4")
+    ax.plot(R2, label="Reff_4_7")
+    ax.plot(R3, label="Reff_4_4 on 7day-centered-SMA")
+    ax.legend()
+    plt.show()
+    
+    print (Reff_4_7(daily), list(reversed(R2)))
+    
+
+def test_Reff_Kreis(ts_sorted, datacolumns):
+    AGS=9377
+    AGS=9479
+    AGS=16076
+    BL="Niedersachsen"
+    cumulative=ts_sorted.loc[AGS][datacolumns].tolist()
+    daily=ts_sorted.loc[AGS][datacolumns].diff().tolist()
+    Reff_comparison(daily)
+    
+def test_Reff_BL(Bundeslaender, datacolumns, BL):
+    # BL="Niedersachsen"
+    daily=Bundeslaender.loc[BL][datacolumns].diff().tolist()
+    Reff_comparison(daily)
+
+
+def add_column_Kreise(ts_rich, datacolumns, inputseries=AGS_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7):
+
+    ts_rich[operatorname] = [operator( inputseries(ts_rich, datacolumns, AGS) )
+                             for AGS in ts_rich.index.values.tolist() ]
+    return ts_rich
+
+
+def add_column_Bundeslaender(Bundeslaender, datacolumns, inputseries=BL_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7):
+    """
+    can perhaps be replaced by add_column_Kreise because identical structure?
+    """
+    Bundeslaender[operatorname] = [ operator(  inputseries(Bundeslaender, datacolumns, name))
+                                   for name in Bundeslaender.index.tolist() ]
+    return Bundeslaender
+
 
 def dataMangled(withSynthetic=True):
     ts, bnn = dataFiles.data(withSynthetic=withSynthetic)
@@ -261,8 +349,10 @@ def dataMangled(withSynthetic=True):
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
     ts_sorted = add_centerday_column(ts, ts_BuLa)
     ts_sorted = add_weekly_columns(ts_sorted, datacolumns)
+    ts_sorted = add_column_Kreise(ts_sorted, datacolumns, inputseries=AGS_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
     Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender)
     Bundeslaender_sorted = add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)
+    Bundeslaender_sorted = add_column_Bundeslaender(Bundeslaender_sorted , datacolumns, inputseries=BL_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
     return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
 
 
@@ -330,4 +420,9 @@ if __name__ == '__main__':
     
     # print (add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns))
     print (add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)[["new_last14days", "new_last7days"]])
+    
+    # test_Reff_Kreis(ts_sorted, datacolumns)
+    test_Reff_BL(Bundeslaender_sorted, datacolumns, BL="Thüringen")
+    
+    
     
