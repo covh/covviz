@@ -12,4 +12,4 @@ ipython kernel install --user --name="py3science"
 
 ### start here:
 
-[pages/about.html](pages/about.html)
+[index.html](index.html) and then [pages/about.html](pages/about.html)
