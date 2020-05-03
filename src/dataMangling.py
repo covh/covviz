@@ -135,15 +135,13 @@ def join_tables_for_and_aggregate_Bundeslaender(ts, bnn):
     return ts_BuLa, Bundeslaender
 
 
-def get_BuLa(Bundeslaender, name):
+def get_BuLa(Bundeslaender, name, datacolumns):
     # get data and names
     filename = "bundesland_" + name + ".png"
     population = Bundeslaender.loc[name, "Population"]
     # row = Bundeslaender.loc[Bundeslaender['Bundesland'] == name]
     
-    
-    # TODO: Use 'datacolumns' instead of dropping 
-    row = Bundeslaender.drop(["Population"], axis=1).loc[[name]]
+    row = Bundeslaender[datacolumns].loc[[name]]
     
     cumulative=row.values[0].tolist()
     diff = row.diff(axis=1)
@@ -163,8 +161,8 @@ def add_centerday_column(ts, ts_BuLa):
 
     return ts_sorted
 
-def add_centerday_column_Bundeslaender(Bundeslaender):
-    Bundeslaender["centerday"] = [temporal_center(get_BuLa(Bundeslaender, name)[0])[0]
+def add_centerday_column_Bundeslaender(Bundeslaender, datacolumns):
+    Bundeslaender["centerday"] = [temporal_center(get_BuLa(Bundeslaender, name, datacolumns)[0])[0]
                                   for name in Bundeslaender.index.tolist() ]
     Bundeslaender.sort_values("centerday", ascending=False, inplace=True)
     return Bundeslaender
@@ -270,22 +268,26 @@ def Reff_4_4(daily,i):
     result = (d[i]+d[i-1]+d[i-2]+d[i-3]) / denominator if denominator else numpy.nan
     return result 
 
-def Reff_4_7(daily,i=None):
+
+def Reff_4_7(daily, i=None):
     """
-    quotient of day (i) with day (i-4), but working on smoothed data:
-    simple moving average, not centered, window of days = 7
+    Quotient of day (i) and day (i-4)
     
-    if no i given, assume it to be the very last day.
+    but working on smoothed data, with window length = 7 days:
+      simple moving average, not centered around i, but all days up to i
+    
+    If i is not given, assume i to be the very last day in the time series.
+      NB: corresponds to 'centered' moving average comparing 3 days ago with 7 days ago.
     """
     if not i:
         i=len(daily)-1
     if i<10:
         return numpy.nan
     d=daily
+    nominator =   d[i]  +d[i-1]+d[i-2]+d[i-3]+d[i-4]+d[i-5]+d[i-6]
     denominator = d[i-4]+d[i-5]+d[i-6]+d[i-7]+d[i-8]+d[i-9]+d[i-10]
-    result =       (d[i]+d[i-1]+d[i-2]+d[i-3]+d[i-4]+d[i-5]+d[i-6]) / denominator if denominator else numpy.nan
-    return result 
-
+    Reff = nominator / denominator if denominator else numpy.nan
+    return Reff 
 
 
 
@@ -350,7 +352,7 @@ def dataMangled(withSynthetic=True):
     ts_sorted = add_centerday_column(ts, ts_BuLa)
     ts_sorted = add_weekly_columns(ts_sorted, datacolumns)
     ts_sorted = add_column_Kreise(ts_sorted, datacolumns, inputseries=AGS_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
-    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender)
+    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender, datacolumns)
     Bundeslaender_sorted = add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)
     Bundeslaender_sorted = add_column_Bundeslaender(Bundeslaender_sorted , datacolumns, inputseries=BL_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
     return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
@@ -395,14 +397,15 @@ if __name__ == '__main__':
     print ("\nBundesländer")
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
     
-    daily, cumulative, title, filename, population = get_BuLa(Bundeslaender, "Hessen")
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangled(withSynthetic=True)
+    
+    daily, cumulative, title, filename, population = get_BuLa(Bundeslaender, "Hessen", datacolumns)
     print (daily, cumulative)
     print (title, filename, population)
     
     # print ( maxdata(ts_sorted) )
     # total_max_cum, digits = maxdata(ts_sorted)
-
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangled(withSynthetic=True)
+    
     AGS = 0
     AGS=1001
     AGS=5370

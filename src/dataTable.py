@@ -215,7 +215,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     
     for name_BL in BL_names:
         labels=[]
-        daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, name_BL)
+        daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, name_BL, datacolumns)
         labels += ['%d' % (Bundeslaender["new_last14days"][name_BL])]
         labels += [bulaLink(name_BL)]
         labels += [flag_image(name_BL)]

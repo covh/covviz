@@ -82,11 +82,13 @@ def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances
     print ("Creating HTML files for all 'Bundeslaender'")
     filenames, population = [], 0
     rootpath = os.path.abspath(dataFiles.REPO_PATH)
+    
     for BL_name in Bundeslaender.index.tolist():
+    # for BL_name in ["Dummyland"]:
         if BL_name == "Deutschland":
             continue
         print (BL_name, end=" ")
-        daily, cumulative, title, filename_PNG, pop_BL = dataMangling.get_BuLa(Bundeslaender, BL_name)
+        daily, cumulative, title, filename_PNG, pop_BL = dataMangling.get_BuLa(Bundeslaender, BL_name, datacolumns)
         filename_HTML = filename_PNG.replace(".png", ".html")
         filename_HTML = filename_HTML.replace("bundesland_", "")
 

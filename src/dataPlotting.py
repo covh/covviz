@@ -108,7 +108,7 @@ def test_plot_Bundesland(ts, bnn, dates, datacolumns, Bundesland = "Hessen"):
     # Bundesland = "Dummyland"
     
     ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
-    daily, cumulative, title, filename, population = dataMangling.get_BuLa(Bundeslaender, Bundesland)
+    daily, cumulative, title, filename, population = dataMangling.get_BuLa(Bundeslaender, Bundesland, datacolumns)
     plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename)
 
 
@@ -118,7 +118,7 @@ def plot_all_Bundeslaender(ts, bnn, dates, datacolumns, ifPrint=True):
     done=[]
     for BL in Bundeslaender.index.tolist():
         print (BL, end=" ")
-        daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, BL)
+        daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, BL, datacolumns)
         if BL=="Deutschland":
             filename = filename.replace("bundesland_", "")
         plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False)
