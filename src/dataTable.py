@@ -91,11 +91,28 @@ th span
     border:1px solid #777777;
 }
 
+.tablearea {
+    overflow-y: scroll;
+    overflow-x: scroll;
+    width: 100%%;
+    height: 670px;
+}
+
+.fourbyfour {
+    overflow-y: scroll;
+    overflow-x: scroll;
+    width: 100%%;
+    height: 1000px;
+}
+
+
+
+
 </STYLE>
 <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed|Teko&display=swap" rel="stylesheet">
 
 </head>
-<body>
+<body onload="scroll_rightmost()">
 """
 
 # It is a best practice to put JavaScript <script> tags 
@@ -106,6 +123,7 @@ th span
  
 PAGE_END="""
 <script type="text/javascript" src="sort-table.js"></script>
+<script type="text/javascript" src="scroller.js"></script>
 </body>
 </html>
 """
@@ -127,7 +145,7 @@ def bulaLink(name):
     return '<a href="%s.html">%s</a>' % (name, name)
 
 
-ATTRIBUTION = """<small><small>Source data from "Risklayer GmbH (www.risklayer.com) and Center for Disaster Management and Risk Reduction Technology (CEDIM) at Karlsruhe Institute of Technology (KIT) and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors". Data sources can be found under https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/edit?usp=sharing Authors: James Daniell| Johannes Brand| Andreas Schaefer and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors through Risklayer GmbH and Center for Disaster Management and Risk Reduction Technology (CEDIM) at the Karlsruhe Institute of Technology (KIT).</small></small><p/>""" 
+ATTRIBUTION = """<span style="color:#aaaaaa; font-size:x-small;">Source data from "Risklayer GmbH (www.risklayer.com) and Center for Disaster Management and Risk Reduction Technology (CEDIM) at Karlsruhe Institute of Technology (KIT) and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors". Data sources can be found under https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/edit?usp=sharing Authors: James Daniell| Johannes Brand| Andreas Schaefer and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors through Risklayer GmbH and Center for Disaster Management and Risk Reduction Technology (CEDIM) at the Karlsruhe Institute of Technology (KIT).</span><p/>""" 
 
 
 def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", rolling_window_size=5, header=PAGE % "Deutschland Kreise", footer=PAGE_END):
@@ -135,9 +153,11 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     # total_max_cum, digits = maxdata(ts_sorted)
     
     tid="table_districts"
-    page = header + '<table id="%s">\n' % tid
+    page = header 
+    page+= '<div class="tablearea" id="tablediv_kreise">'
+    page+= '<table id="%s">\n' % tid
     caption="Click on column header name, to sort by that column; click again for other direction."
-    page += '<caption style="text-align:right;">%s</caption>' % caption
+    page += '<caption id="caption_kreise" style="text-align:right;">%s</caption>\n' % caption
     page +="<tr>"
     
     for col in datacolumns:
@@ -185,7 +205,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
         # labels += [nearby_links]
         page += toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
-    page += "</table>" + ATTRIBUTION + footer
+    page += "</table>" + "</div>" + ATTRIBUTION + footer
     
     fn=None
     if filename:
@@ -201,7 +221,9 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     # total_max_cum, digits = maxdata(ts_sorted)
     
     tid="table_bundeslaender"
-    page = header + '<table id="%s">\n' % tid
+    page = header
+    page += '<div class="tablearea" id="tablediv_bundeslaender">' 
+    page += '<table id="%s">\n' % tid
     caption="Click on column header name, to sort by that column; click again for other direction."
     page += '<caption style="text-align:right;">%s</caption>' % caption
     page +="<tr>"
@@ -230,7 +252,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
         labels += ["%.2f"% (Bundeslaender["Reff_4_7_last"][name_BL])]
         page += toHTMLRow(Bundeslaender, name_BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
-    page += "</table>" + ATTRIBUTION + footer
+    page += "</table></div>" + ATTRIBUTION + footer
     
     fn=None
     if table_filename:
