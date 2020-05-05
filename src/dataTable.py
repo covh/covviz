@@ -95,7 +95,8 @@ th span
     overflow-y: scroll;
     overflow-x: scroll;
     width: 100%%;
-    height: 670px;
+    max-height: 670px;
+    display: inline-block;
 }
 
 .fourbyfour {
