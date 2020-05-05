@@ -32,10 +32,10 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     flagimg = dataTable.flag_image(BL_name, pop_BL, height=20)
     page +="<hr><h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, BL_name, len(district_AGSs), datacolumns[-1])
     page +='<img src="%s"/><p/>' % ("../pics/" + filename_PNG)
-    page +='total cases: <span style="color:#1E90FF">%s</span><br>\n' % (list(map(int, cumulative)))
-    prevalence = 1000000.0 * cumulative[-1] / pop_BL 
     page += "population: {:,}".format(pop_BL)
-    page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
+    prevalence = 1000000.0 * cumulative[-1] / pop_BL 
+    page += " --> current prevalence: %d known infected per 1 million population<br/>\n" % (prevalence )
+    page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % (list(map(int, cumulative)))
     
     page +="<hr><h2 id='Kreise'>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
     page +="<h3>Sorted by 'center day'</h3>\n"
@@ -61,11 +61,12 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         page +="Neighbours within %d km: %s<p/>\n" % (km, nearby_links)
         filename_kreis_PNG = "Kreis_" + ("00000"+str(AGS))[-5:] + ".png"
         page +='<img src="%s"/><p/>' % ("../pics/" + filename_kreis_PNG)
-        page +='total cases: <span style="color:#1E90FF">%s</span><br>\n' % (list(map(int, cumulative)))
         
         prevalence = cumulative[-1] / pop * 1000000
         page += ("%s %s" % (bez, gen)) + " population: {:,}".format(pop)
-        page += " --> current prevalence: %d known infected per 1 million people.<p/>\n" % (prevalence )
+        page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % (prevalence )
+
+        page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % (list(map(int, cumulative)))
         
         page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
@@ -149,7 +150,7 @@ that googlesheet --&gt; <a href="http://tiny.cc/kreise">tiny.cc/kreise</a><p/>
 <a href="https://docs.google.com/spreadsheets/d/1KbNjq2OPsSRzmyDDidbXD4pcPnAPfY0SsS693duadLw/#gid=1644486167">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="../pics/googlesheet-mortality-top-20200430.png"
-     alt="table of Kreise sorted by mortality" border="0" />
+     alt="table of Kreise sorted by mortality" border="0" width="100%" />
 </a><br>
 </td></tr>
 </tbody>
@@ -180,7 +181,7 @@ def fourbyfour(Bundeslaender_sorted, ifPrint=False):
         for j in range(4):
             print(c, BLs[c])
             imgprop='src="https://covh.github.io/cov19de/pics/bundesland_%s.png" alt="bundesland_%s.png"'%(BLs[c],BLs[c])
-            p.a('<td><a href="%s.html">%s<br/><img %s width="458" height="268"></a></td>' % (BLs[c], BLs[c], imgprop))
+            p.a('<td><a href="%s.html">%s<br/><img %s width="366" height="214"></a></td>' % (BLs[c], BLs[c], imgprop))
             c+=1
         p.a("</tr>")
     p.a("</table>")
@@ -202,11 +203,12 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     DE=Bundeslaender_sorted.drop(["Deutschland", "Dummyland"]).sum()
     cumulative = DE[datacolumns].astype(int).tolist()
     
-    page +='total cases: <span style="color:#1E90FF">%s</span><br>\n' % (list(map(int, cumulative)))
-    
     prevalence = cumulative[-1] / DE["Population"] * 1000000
     page += "population: {:,}".format(DE["Population"])
-    page += " --> current prevalence: %d known infected per 1 million population<p/>\n" % (prevalence )
+    page += " --> current prevalence: %d known infected per 1 million population<br/>\n" % (prevalence )
+    
+    page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % (list(map(int, cumulative)))
+
     
     page +='<hr><h2 id="Bundeslaender">16 Bundesländer</h2>\n'
     page +='<h3 id="Bundeslaender_centerday">ranked by "center day"</h3>\n'
@@ -220,7 +222,10 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
     page +='<hr><h3 id="Bundeslaender_4by4">alphabetically</h3>\n'
+    
+    page += '<div class="fourbyfour">' # give it scrollbars so that it's not crazy wide on mobile
     page += fourbyfour(Bundeslaender_sorted)
+    page += '</div>'
     
     page +="<p>Click on the image of a Bundesland to enter its page, with all its districts.</p>"
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
