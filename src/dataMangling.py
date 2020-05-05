@@ -285,7 +285,9 @@ def Reff_4_7(dailyNewCases, i=None):
         i=len(dailyNewCases)-1
     if i<10:
         return numpy.nan
-    d=dailyNewCases
+    #                               # clip away negative values:
+    d=pandas.DataFrame(dailyNewCases).clip(lower=0)[0].values.tolist()
+    # print ("daily only positives:", d)
     
     avg_gen_size_now  =   ( d[i]  +d[i-1]+d[i-2]+d[i-3]+d[i-4]+d[i-5]+d[i-6] ) / 7.0
     avg_gen_size_before = ( d[i-4]+d[i-5]+d[i-6]+d[i-7]+d[i-8]+d[i-9]+d[i-10]) / 7.0
@@ -320,9 +322,14 @@ def test_Reff_Kreis(ts_sorted, datacolumns):
     AGS=9377
     AGS=9479
     AGS=16076
+    AGS=1061
     BL="Niedersachsen"
+    print ("\nAGS")
     cumulative=ts_sorted.loc[AGS][datacolumns].tolist()
+    print (list(reversed(cumulative)))
+    # daily=ts_sorted.loc[AGS][datacolumns].diff().clip(lower=0).tolist()
     daily=ts_sorted.loc[AGS][datacolumns].diff().tolist()
+    print (list(reversed(daily)))
     Reff_comparison(daily)
     
 def test_Reff_BL(Bundeslaender, datacolumns, BL):
