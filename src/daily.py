@@ -99,14 +99,74 @@ def daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=True):
     print ("Finished at", ("%s" % datetime.datetime.now()) [:19],"\n")
     
     
+# TODO: move the following into some dataRanking perhaps?
+# also make HTML tables from it.
+
+
+def columns_into_integers(ts_sorted, datacolumns):
+    """
+    todo: migrate this to dtaMangling, and adapt to / test with Bundeslaender
+    also do some many tests, to see that all is still good then. 
+    """
+    ts_sorted["new_last14days"]=ts_sorted["new_last14days"].astype(int)
+    ts_sorted["new_last7days"]=ts_sorted["new_last7days"].astype(int)
+    for datecol in datacolumns:
+        ts_sorted[datecol]=ts_sorted[datecol].astype(int)
+        
+    
+def add_incidence_prevalence(ts_sorted, datacolumns):
+    """
+    TODO: can probably also go into dataMangling?
+    """
+    ts_sorted["incidence_1mio_last14days"]=1000000*ts_sorted["new_last14days"]/ts_sorted["Population"]
+    ts_sorted["incidence_1mio_last7days"] =1000000*ts_sorted["new_last7days"]/ts_sorted["Population"]
+    ts_sorted["prevalence_1mio"]=1000000*ts_sorted[datacolumns[-1]]/ts_sorted["Population"]
+
+
+def add_daily(ts_sorted, datacolumns):
+    ts_sorted["new cases"] = ts_sorted[datacolumns[-1]] - ts_sorted[datacolumns[-2]]
+    
+    
+def newColOrder(df, datacolumns):
+    cols = list(df.columns.values)
+    # print (type(datacolumns.tolist()))
+    cNew=["ADMIN", "Population", "Bundesland"] + datacolumns.tolist() + ["prevalence_1mio", "new cases", "new_last7days", "incidence_1mio_last7days", "new_last14days", "incidence_1mio_last14days", "centerday", "Reff_4_7_last"]
+    diffcols = list(set(cols) - set(cNew))
+    if diffcols:
+        print ("Forgotten these columns, adding them:", diffcols)
+    cNew += diffcols
+    return df[cNew]
+    
+def title(text):
+    sep="*"*len(text+" * *")
+    return "\n%s\n* %s *\n%s" %(sep, text, sep)
+    
+    
+def showSomeExtremeValues():
+    print ("\n show some insights\n")
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
+    # print (ts_sorted.columns)
+    columns_into_integers(ts_sorted, datacolumns)
+    add_incidence_prevalence(ts_sorted, datacolumns)
+    add_daily(ts_sorted, datacolumns)
+    ts_sorted = newColOrder(ts_sorted, datacolumns)
+
+    for col in ("new cases", "incidence_1mio_last7days", "Reff_4_7_last"):
+        print(title("sorted by    %s   descending:" % col))
+        ts_sorted.sort_values(col, ascending=False, inplace=True) 
+        print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=10).to_string( float_format='%.1f'))
+
 
 
 if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
-    daily_update(regenerate_all_plots_and_pages=False); exit()
-    # daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
+    #daily_update(regenerate_all_plots_and_pages=False); exit()
+    #daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
     daily_update()
     
+    showSomeExtremeValues()
+    
+    print ("\nREADY.")
     
