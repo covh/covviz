@@ -70,6 +70,16 @@ def inspectNewestData(ts):
     print ("\nvalues going down for newest:")
     print (df[df[last3columns[2]]<df[last3columns[1]]])
     
+    print()
+    print ("Totals:")
+    datecolumns=ts.columns[-4:].tolist()
+    df = ts[datecolumns].sum()
+    # df["diff"]=df.diff()
+    print (df.astype(int).to_string())
+    print ("Diffs:")
+    print (df.diff().dropna().astype(int, errors='ignore').to_string())
+    # print (df)
+    
 
 def downloadData(andStore=True):
 
