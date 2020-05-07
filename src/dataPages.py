@@ -51,7 +51,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
 
     for AGS in district_AGSs:
         gen, bez, inf, pop = dataMangling.AGS_to_population(bnn, AGS)
-        daily, cumulative, title, filename = dataMangling.get_Kreis(ts, bnn, str(AGS))
+        daily, cumulative, title, filename, pop = dataMangling.get_Kreis(ts, bnn, str(AGS))
         
         nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         AGS_5digits = ("00000%s" % AGS) [-5:] 

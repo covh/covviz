@@ -116,7 +116,7 @@ def get_Kreis(ts, bnn, AGS):
     filename = "Kreis_" + ("00000"+AGS)[-5:] + ".png"
     daily = AGS_to_ts_daily(ts, AGS)
     cumulative = AGS_to_ts_total(ts, AGS)
-    return daily, cumulative, title, filename
+    return daily, cumulative, title, filename, pop
 
 
 def join_tables_for_and_aggregate_Bundeslaender(ts, bnn):
@@ -400,9 +400,9 @@ if __name__ == '__main__':
     print ("center at day %.2f" % center)
     
     print ("\nKreis")
-    daily, cumulative, title, filename = get_Kreis(ts, bnn, AGS)
+    daily, cumulative, title, filename, pop = get_Kreis(ts, bnn, AGS)
     print (daily, cumulative)
-    print (title, filename)
+    print (title, filename, pop)
     
     print ("\nBundesländer")
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)

@@ -15,7 +15,7 @@ import matplotlib
 import dataFiles, dataMangling
 
 
-def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifShow=True):
+def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifShow=True, ifCleanup=True, population=None, limitIncidencePerWeekPerMillion=500):
 
     fig, ax = plt.subplots(figsize=(10, 6)) #, constrained_layout=True)
     # plt.tight_layout()
@@ -54,8 +54,14 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
     plt.ylabel("cumulative total cases", color="#1E90FF")
 
     lns5 = ax2.plot(dates, cumulative, label="total cases reported at RiskLayer", color = '#1E90FF')
+    
+    lns6 = []
+    if population:
+        limit = limitIncidencePerWeekPerMillion/7*population/1000000
+        print ("limit:", limit)
+        lns6 = ax.plot([dates[1]]+[dates[-1]],[limit,limit], label="limit 500 / week / million population", color = '#FFFF00')
 
-    lines = lns5 + lns1 + lns2 + lns3
+    lines = lns5 + lns1 + lns2 + lns3 + lns6
     labs = [l.get_label() for l in lines]
 
     text = "source data @RiskLayer up to " + ("%s"%max(dates))[:10]
@@ -67,13 +73,17 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
 
     plt.title(title)
     
-    fig.savefig(os.path.join(dataFiles.PICS_PATH, filename),  bbox_inches='tight')
+    if filename:
+        fig.savefig(os.path.join(dataFiles.PICS_PATH, filename),  bbox_inches='tight')
     
     if ifShow:
         plt.show()
         
-    plt.clf()
-    plt.close("all")
+    if ifCleanup:
+        plt.clf()
+        plt.close("all")
+    
+    return plt, fig, ax, ax2
 
 
 def test_plot_Kreis(ts, bnn, dates, datacolumns):
@@ -82,15 +92,15 @@ def test_plot_Kreis(ts, bnn, dates, datacolumns):
     #AGS = "1001"
     #AGS = "5370"
     #AGS = "9377"
-    daily, cumulative, title, filename = dataMangling.get_Kreis(ts, bnn, AGS)
-    plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename)
+    daily, cumulative, title, filename, pop = dataMangling.get_Kreis(ts, bnn, AGS)
+    plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, population=pop)
 
 
 def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
     done = []
     for AGS in Kreise_AGS:
-        daily, cumulative, title, filename = dataMangling.get_Kreis(ts, bnn, AGS)
-        plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False)
+        daily, cumulative, title, filename, pop = dataMangling.get_Kreis(ts, bnn, AGS)
+        plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False, population=pop)
         done.append((title, filename))
         if ifPrint:
             print (title, filename)
