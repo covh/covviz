@@ -22,19 +22,16 @@ def toHTMLRow(ts_sorted, row_index, datacolumns, cmap, labels, rolling_window_si
 
     window=rolling_window_size
     rolling_mean_cum = row.rolling(window=window, center=True).mean()
-    # return rolling_mean_cum
 
-    # diff= pandas.DataFrame(rolling_mean_cum).diff(axis=0).fillna(0)[AGS].tolist()
-    diff= pandas.DataFrame(rolling_mean_cum).diff(axis=0)[row_index].tolist()
-    # return diff
+    diff_rolling_mean = pandas.DataFrame(rolling_mean_cum).diff(axis=0).clip(lower=0)[row_index].tolist()
+    diffmax = numpy.nanmax(diff_rolling_mean)
+    
     cumulative=row.tolist()
-    # return diff, cumulative
-    diffmax = numpy.nanmax(diff)
-    # return diffmax
     line="<tr>"
-    # for c,d in zip(cumulative, rolling_mean_diff):
-    for c,d in zip(cumulative, diff):
-        rgb = matplotlib.colors.to_hex(cmap(d/diffmax))
+    for c, d in zip(cumulative, diff_rolling_mean):
+        #                                    avoid extreme colors, shifted towards red: 0.30-0.80
+        rgb = matplotlib.colors.to_hex(cmap( 0.30+(d/diffmax)*0.50 ))
+        
         line+='<td bgcolor="%s"><span>%d</span></td>' % (rgb, c)
     for label in labels:
         line+="<td>%s</td>" % label
@@ -149,13 +146,14 @@ def bulaLink(name):
 ATTRIBUTION = """<span style="color:#aaaaaa; font-size:x-small;">Source data from "Risklayer GmbH (www.risklayer.com) and Center for Disaster Management and Risk Reduction Technology (CEDIM) at Karlsruhe Institute of Technology (KIT) and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors". Data sources can be found under https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/edit?usp=sharing Authors: James Daniell| Johannes Brand| Andreas Schaefer and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors through Risklayer GmbH and Center for Disaster Management and Risk Reduction Technology (CEDIM) at the Karlsruhe Institute of Technology (KIT).</span><p/>""" 
 
 
-def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", rolling_window_size=5, header=PAGE % "Deutschland Kreise", footer=PAGE_END):
+def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", rolling_window_size=3, header=PAGE % "Deutschland Kreise", footer=PAGE_END, divEnveloped=True):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
     tid="table_districts"
     page = header 
-    page+= '<div class="tablearea" id="tablediv_kreise">'
+    if divEnveloped:
+        page+= '<div class="tablearea" id="tablediv_kreise">'
     page+= '<table id="%s">\n' % tid
     caption="Click on column header name, to sort by that column; click again for other direction."
     page += '<caption id="caption_kreise" style="text-align:right;">%s</caption>\n' % caption
@@ -166,10 +164,10 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     
     colcount=len(datacolumns)
     # print (datacolumns, colcount); exit()
-    cols = [("14days new cases", True),
+    cols = [("7days new cases", True),
             ("Kreis", True),
             ("Prev. p.1mio", True),
-            ("14days Incid.p.1mio", True),
+            ("7days Incid.p.1mio", True),
             # ("7days Incid.p.1mio", True),
             ("Population", True),
             ("center day", True),
@@ -193,10 +191,10 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
         # print (AGS)
         # nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         labels=[]
-        labels += ['%d' % (ts_sorted["new_last14days"][AGS])]
+        labels += ['%d' % (ts_sorted["new_last7days"][AGS])]
         labels += [districtDistances.kreis_link(bnn, AGS)[2]]
         labels += ["%d" % prevalence(datatable=ts_sorted, row_index=AGS, datacolumns=datacolumns, population=pop)]
-        labels += ['%d' % (1000000*ts_sorted["new_last14days"][AGS] / pop)]
+        labels += ['%d' % (1000000*ts_sorted["new_last7days"][AGS] / pop)]
         # labels += ['%d' % (1000000*ts_sorted["new_last7days"][AGS] / pop)]
         labels += ['{:,}'.format(pop)]
         labels += ["%.1f"% (ts_sorted["centerday"][AGS])]
@@ -206,7 +204,10 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
         # labels += [nearby_links]
         page += toHTMLRow(ts_sorted, AGS, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
-    page += "</table>" + "</div>" + ATTRIBUTION + footer
+    page += "</table>"
+    if divEnveloped:
+        page += "</div>" 
+    page += ATTRIBUTION + footer
     
     fn=None
     if filename:
@@ -217,13 +218,14 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     return fn, page
     
 
-def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3, header = PAGE % "Bundeslaender", footer=PAGE_END):
+def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filename="bundeslaender_Germany.html", rolling_window_size=3, header = PAGE % "Bundeslaender", footer=PAGE_END, divEnveloped=True):
 
     # total_max_cum, digits = maxdata(ts_sorted)
     
     tid="table_bundeslaender"
     page = header
-    page += '<div class="tablearea" id="tablediv_bundeslaender">' 
+    if divEnveloped:
+        page += '<div class="tablearea" id="tablediv_bundeslaender">' 
     page += '<table id="%s">\n' % tid
     caption="Click on column header name, to sort by that column; click again for other direction."
     page += '<caption style="text-align:right;">%s</caption>' % caption
@@ -233,7 +235,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
         page += "<th><span>%s</span></th>" % col
     colcount=len(datacolumns)
        
-    cols = ["14days new cases", "Bundesland", "info", "Prev. p.1mio", "14days Incid.p.1mio", "Population", "center day", "Reff_4_7" ]
+    cols = ["7days new cases", "Bundesland", "info", "Prev. p.1mio", "7days Incid.p.1mio", "Population", "center day", "Reff_4_7" ]
     
     for i, colName in enumerate(cols):
         cellid = "\'%shc%d\'" % (tid, i + colcount)
@@ -243,17 +245,20 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     for name_BL in BL_names:
         labels=[]
         daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, name_BL, datacolumns)
-        labels += ['%d' % (Bundeslaender["new_last14days"][name_BL])]
+        labels += ['%d' % (Bundeslaender["new_last7days"][name_BL])]
         labels += [bulaLink(name_BL)]
         labels += [flag_image(name_BL)]
         labels += ["%d" % prevalence(datatable=Bundeslaender, row_index=name_BL, datacolumns=datacolumns, population=pop_BL)]
-        labels += ['%d' % (1000000*Bundeslaender["new_last14days"][name_BL] / pop_BL)]
+        labels += ['%d' % (1000000*Bundeslaender["new_last7days"][name_BL] / pop_BL)]
         labels += ['{:,}'.format(pop_BL)]
         labels += ["%.2f"% (Bundeslaender["centerday"][name_BL])]
         labels += ["%.2f"% (Bundeslaender["Reff_4_7_last"][name_BL])]
         page += toHTMLRow(Bundeslaender, name_BL, datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
-    page += "</table></div>" + ATTRIBUTION + footer
+    page += "</table>"
+    if divEnveloped:
+        page +=" </div>" 
+    page += ATTRIBUTION + footer
     
     fn=None
     if table_filename:
@@ -264,7 +269,25 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     return fn, page
     
 def colormap():
-    cmap=plt.get_cmap("Wistia")
+    # cmap=plt.get_cmap("Wistia")
+    # cmap=plt.get_cmap("summer")
+    
+    """
+    # too dark:
+    import matplotlib.colors as mcolors
+    cdict = {'red':   ((0.0, 0.0, 0.0),
+                       (0.5, 0.0, 0.0),
+                       (1.0, 1.0, 1.0)),
+             'blue':  ((0.0, 0.0, 0.0),
+                       (1.0, 0.0, 0.0)),
+             'green': ((0.0, 0.0, 1.0),
+                       (0.5, 0.0, 0.0),
+                       (1.0, 0.0, 0.0))}
+    cmap = mcolors.LinearSegmentedColormap('my_colormap', cdict, 100)
+    """
+    # cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["green","yellow","red"])
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["green","yellow","red"])
+    
     cmap.set_bad("white")
     return cmap
 
@@ -286,8 +309,8 @@ if __name__ == '__main__':
     district_AGSs = ts_sorted.index.tolist()
     
     distances = districtDistances.load_distances()
-    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap)[0])
+    print (Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, divEnveloped=False)[0])
     
     # Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
     
-    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender_sorted.index.tolist(), cmap)[0])
+    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender_sorted.index.tolist(), cmap, divEnveloped=False)[0])
