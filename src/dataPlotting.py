@@ -59,7 +59,7 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
     if population:
         limit = limitIncidencePerWeekPerMillion/7*population/1000000
         print ("limit:", limit)
-        lns6 = ax.plot([dates[1]]+[dates[-1]],[limit,limit], label="limit 500 / week / million population", color = '#FFFF00')
+        lns6 = ax.plot([dates[1]]+[dates[-1]],[limit,limit], label="daily %.2f =limit 500/week/1mio pop." % limit, color = '#ef7c7c', linestyle=  (0, (5, 10)))
 
     lines = lns5 + lns1 + lns2 + lns3 + lns6
     labs = [l.get_label() for l in lines]
@@ -90,8 +90,8 @@ def test_plot_Kreis(ts, bnn, dates, datacolumns):
     ## Kreis
     AGS = "0"
     #AGS = "1001"
-    #AGS = "5370"
-    #AGS = "9377"
+    AGS = "5370"
+    # AGS = "9377"
     daily, cumulative, title, filename, pop = dataMangling.get_Kreis(ts, bnn, AGS)
     plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, population=pop)
 
