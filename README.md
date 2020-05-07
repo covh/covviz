@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ipython kernel install --user --name="py3science"
 ```
 
-or redo the virtual env, then try the newest versions of the dependencies:
+or try the newest versions of the Python dependencies:
 ```
 deactivate
 rm -r ./py3science
