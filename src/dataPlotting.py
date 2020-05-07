@@ -58,7 +58,7 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
     lns6 = []
     if population:
         limit = limitIncidencePerWeekPerMillion/7*population/1000000
-        print ("limit:", limit)
+        # print ("limit:", limit)
         lns6 = ax.plot([dates[1]]+[dates[-1]],[limit,limit], label="daily %.2f =limit 500/week/1mio pop." % limit, color = '#ef7c7c', linestyle=  (0, (5, 10)))
 
     lines = lns5 + lns1 + lns2 + lns3 + lns6
