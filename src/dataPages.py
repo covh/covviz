@@ -15,10 +15,29 @@ import matplotlib
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable
 
 
+
+"""
+https://www-ai.cs.tu-dortmund.de/COVID19/index.html#05370 Heinsberg
+https://www-ai.cs.tu-dortmund.de/COVID19/index.html#16 Thüringen
+"""
+TU_DORTMUND='<a target="_blank" href="https://www-ai.cs.tu-dortmund.de/COVID19/index.html#%s">AI.CS.TU-Dortmund #AGS%s</a>'
+
+
 def footerlink():
     text = '<hr><a href="https://covh.github.io/cov19de">tiny.cc/cov19de</a>'
     dt = ("%s" % datetime.datetime.now())[:19]
     text +=" page generated %s." % dt
+    return text
+
+def wikipedia_link(wp, AGS, base_url=dataFiles.WP_URL):
+    text=""
+    try:
+        k=wp.loc[AGS]
+    except:
+        pass # the wikipedia table has only 294 rows while there are 401 districts
+    else:
+        text += 'Wikipedia: Kreis <a target="_blank" href="%s%s">%s</a>'% (base_url, k["Kreis_WP"], k["Kreis"])
+        text += ' Kreissitz <a target="_blank" href="%s%s">%s</a>'% (base_url, k["KreisSitz_WP"], k["KreisSitz"])
     return text
 
 def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
@@ -48,6 +67,8 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     
     page+=districtsHTML[1]
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
+    
+    wp=dataFiles.load_wikipedia_landkreise_table()
 
     for AGS in district_AGSs:
         gen, bez, inf, pop = dataMangling.AGS_to_population(bnn, AGS)
@@ -66,8 +87,12 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         page += ("%s %s" % (bez, gen)) + " population: {:,}".format(pop)
         page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % (prevalence )
 
-        page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % (list(map(int, cumulative)))
-        
+        page +='other sites: %s' % (TU_DORTMUND % (AGS_5digits,AGS_5digits) )
+        wpl = wikipedia_link(wp, int(AGS))
+        if wpl: 
+            page +=', %s' % (wpl)
+        page +='<br/>total cases: <span style="color:#1E90FF; font-size:xx-small;">%s</span>\n' % (list(map(int, cumulative)))
+        page += "<p/>"
         page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
     page +=footerlink()

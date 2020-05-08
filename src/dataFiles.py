@@ -5,11 +5,16 @@ Created on 25 Apr 2020
 '''
 
 import os, shutil
-import pandas, wget
+import pandas, wget, requests 
+import bs4 as bs
+import pandas as pd
 
 REPO_PATH = ".."
 DATA_PATH = os.path.join(REPO_PATH, "data")
 BNN_FILE = os.path.join(DATA_PATH, "GermanyKreisebene_Risklayer_bnn-20200425.csv")
+WP_FILE =  os.path.join(DATA_PATH, "wikipedia_kreise_most.csv")
+WP_URL="https://de.wikipedia.org/"
+
 TS_FILE =  os.path.join(DATA_PATH, "GermanyValues_RiskLayer-20200425.csv")
 TS_NEWEST =  os.path.join(DATA_PATH, "GermanyValues_RiskLayer.csv")
 PICS_PATH = os.path.join(DATA_PATH, "..", "pics")
@@ -109,6 +114,45 @@ def downloadData(andStore=True):
     # print ("sheet", RISKLAYER_URL02_SHEET)
 
 
+def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
+                                   filename=WP_FILE):
+
+    columns=['AGS', 'Kreis', 'Kreis_WP', 'KreisSitz', 'KreisSitz_WP', 'Einwohner', 'Fläche', 'Karte']
+    df = pd.DataFrame(columns=columns)
+
+    f = requests.get(url).text
+    soup = bs.BeautifulSoup(f, 'lxml')
+    parsed_table = soup.find_all('table')[0]
+
+
+    for row in parsed_table.find_all('tr'):
+        cells = list(row.find_all('td'))
+        if cells:
+            AGS=list(cells[0].stripped_strings)[0]
+
+            lk=(list(cells[1].stripped_strings))[0]
+            lk_wp = cells[1].a['href']
+
+            lk_hs= (list(cells[4].stripped_strings))[0]
+            lk_hs_wp = cells[4].a['href']
+
+            lk_ew = int((list(cells[5].stripped_strings))[0].replace(".", ""))
+
+            lk_fl_de = (list(cells[6].stripped_strings))[0]
+            lk_fl = float(lk_fl_de.replace(".", "").replace(".", "").replace(",", "."))
+
+            lk_pic = cells[8].img['src']
+            
+            datarow = [AGS, lk, lk_wp, lk_hs, lk_hs_wp, lk_ew, lk_fl, lk_pic]
+            df=df.append(pd.DataFrame([datarow], columns=columns)) 
+            
+    df.to_csv(filename, index=False)
+    return df
+
+def load_wikipedia_landkreise_table(filepath=WP_FILE):
+    df = pd.read_csv(filepath, index_col="AGS")
+    return df
+
 
 def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE):
     ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
@@ -151,13 +195,21 @@ if __name__ == '__main__':
 
     downloadData(andStore=False); exit()
 
-    downloadData(); # exit()
-    load_data(); exit()
+    # downloadData(); # exit()
+    # load_data(); exit()
 
-    ts, bnn = data(withSynthetic=True)
+    # ts, bnn = data(withSynthetic=True)
 
     print()
 
     # TODO: Use 'datacolumns' instead of dropping
-    print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist())
+    # print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist())
     pass
+
+    # df=get_wikipedia_landkreise_table(); 
+    df=load_wikipedia_landkreise_table();
+    print(df.describe()); print("sum:\n", df[["Einwohner", "Fläche"]].sum())
+    print (df.to_string())
+    print(df.loc[5370])
+    
+    
