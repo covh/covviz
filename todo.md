@@ -79,6 +79,7 @@ what I moved from the above to here:
 * logging: remove base path from files in log
 * integration: link to TU Dortmund project at each district
 * integration: Wikipedia pages for most districts.
+* more comfort: fix the table header row - thanks for idea to heise forum
 
 Much more was done, see e.g. [history.txt](history.txt) and repo commits.
 
