@@ -295,8 +295,26 @@ def Reff_4_7(dailyNewCases, i=None):
     return Reff 
 
 
+def Reff_7_4(cumulative, i=None):
+    """
+    Quotient of weekly differences of totals ( x(i)-x(i-7) ) and ( x(i-7)-x(i-14) ).
+    Then raised to the power 4/7, to transform the 7 days into 4 days generation time.  
+    """
+    if not i:
+        i=len(cumulative)-1
+    if i<14:
+        return numpy.nan
+    c=cumulative
+    
+    avg_gen_size_now  =   ( c[i] -  c[i-7] ) 
+    avg_gen_size_before = ( c[i-7]-c[i-14] )
+    Reff = (avg_gen_size_now / avg_gen_size_before)**(4/7) if avg_gen_size_before else numpy.nan
+    return Reff 
 
-def Reff_comparison(daily):
+
+
+
+def Reff_comparison(daily, cumulative, title, filename=None):
     daily_SMA=pandas.DataFrame(daily).rolling(window=7, center=True).mean()[0].values.tolist()
     daily_SMA
     # list(zip(cumulative,daily, daily_SMA))
@@ -304,16 +322,22 @@ def Reff_comparison(daily):
     R1=[Reff_4_4(daily, i) for i, _ in enumerate(daily)]
     R2=[Reff_4_7(daily, i) for i, _ in enumerate(daily)]
     R3=[Reff_4_4(daily_SMA, i) for i, _ in enumerate(daily_SMA)]
+    R4=[Reff_7_4(cumulative, i) for i, _ in enumerate(cumulative)]
     
-    R1
     from matplotlib import pyplot as plt
     # matplotlib.pyplot.plot(R1)
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.plot(R1, label="Reff_4_4")
     ax.plot(R2, label="Reff_4_7")
     ax.plot(R3, label="Reff_4_4 on 7day-centered-SMA")
+    ax.plot(R4, label="Reff_7_4")
     ax.legend()
-    plt.show()
+    plt.title(title)
+    
+    if not filename:
+        plt.show()
+    else:
+        fig.savefig(os.path.join(dataFiles.PICS_PATH, "R_experiments_" + filename),  bbox_inches='tight')
     
     print (Reff_4_7(daily), list(reversed(R2)))
     
@@ -332,11 +356,11 @@ def test_Reff_Kreis(ts_sorted, datacolumns):
     print (list(reversed(daily)))
     Reff_comparison(daily)
     
-def test_Reff_BL(Bundeslaender, datacolumns, BL):
+def test_Reff_BL(Bundeslaender, datacolumns, BL, filename=None):
     # BL="Niedersachsen"
+    cumulative=Bundeslaender.loc[BL][datacolumns]
     daily=Bundeslaender.loc[BL][datacolumns].diff().tolist()
-    Reff_comparison(daily)
-
+    Reff_comparison(daily, cumulative, title=BL, filename=filename)
 
 def add_column_Kreise(ts_rich, datacolumns, inputseries=AGS_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7):
 
@@ -435,7 +459,10 @@ if __name__ == '__main__':
     print (add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)[["new_last14days", "new_last7days"]])
     
     # test_Reff_Kreis(ts_sorted, datacolumns)
-    test_Reff_BL(Bundeslaender_sorted, datacolumns, BL="Thüringen")
+    # test_Reff_BL(Bundeslaender_sorted, datacolumns, BL="Hamburg")
+    
+    for BL in Bundeslaender_sorted.index:
+        test_Reff_BL(Bundeslaender_sorted, datacolumns, BL=BL, filename=BL+".png")
     
     
     
