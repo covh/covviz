@@ -16,10 +16,20 @@ def generate_all(alsoDoThePlots=True):
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
     print()
 
+    distances = districtDistances.load_distances()
+    cmap = dataTable.colormap()
+    
+    Bundeslaender_filenames = dataPages.Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50);
+    print (Bundeslaender_filenames)
+    
+    fn = dataPages.Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn )
+    print ("\n" + fn)
+
     if not alsoDoThePlots:
         a="\n" + ("*"*50) + "\n"
         print (a+"ALERT: skipping the plots"+a)
     else:
+        print ("\nPlotting takes a bit of time. Patience please. Thanks.")
         done = dataPlotting.plot_all_Bundeslaender(ts, bnn, dates, datacolumns, ifPrint=False)
         print ("plot_all_Bundeslaender: %d items" % len(done))
         
@@ -29,15 +39,6 @@ def generate_all(alsoDoThePlots=True):
         print ("plot_Kreise done: %d items" % len(done))
         print()
 
-    distances = districtDistances.load_distances()
-    cmap = dataTable.colormap()
-    
-    Bundeslaender_filenames = dataPages.Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50);
-    print (Bundeslaender_filenames)
-    
-    fn = dataPages.Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn )
-    print ("\n" + fn)
-    
     print ("\nFinished at", ("%s" % datetime.datetime.now()) [:19])
     
     return True
@@ -162,6 +163,7 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
+    # showSomeExtremeValues()
     #daily_update(regenerate_all_plots_and_pages=False); exit()
     #daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
     daily_update()
