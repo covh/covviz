@@ -104,7 +104,16 @@ th span
 }
 
 
+// fix header row:
+.tableFixHead          { overflow-y: auto; height: 100px; }
+.tableFixHead th { position: sticky; top: 0; background-color: white; }
+      
+// fix borders:
+// .tableFixHead,.tableFixHead td {   box-shadow: inset 1px -1px #000; }
+      
+.tableFixHead th {  box-shadow: inset 1px 1px #000, 0 1px #000; }
 
+      
 
 </STYLE>
 <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed|Teko&display=swap" rel="stylesheet">
@@ -154,7 +163,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     page = header 
     if divEnveloped:
         page+= '<div class="tablearea" id="tablediv_kreise">'
-    page+= '<table id="%s">\n' % tid
+    page+= '<table id="%s" class="tableFixHead">\n' % tid
     caption="Click on column header name, to sort by that column; click again for other direction."
     page += '<caption id="caption_kreise" style="text-align:right;">%s</caption>\n' % caption
     page +="<tr>"
@@ -226,7 +235,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
     page = header
     if divEnveloped:
         page += '<div class="tablearea" id="tablediv_bundeslaender">' 
-    page += '<table id="%s">\n' % tid
+    page += '<table id="%s" class="tableFixHead">\n' % tid
     caption="Click on column header name, to sort by that column; click again for other direction."
     page += '<caption style="text-align:right;">%s</caption>' % caption
     page +="<tr>"
