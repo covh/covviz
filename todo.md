@@ -38,6 +38,9 @@ Anything here is going to happen probably ONLY IF there is feedback, attention, 
 * 7-days-incidence-per-million above/below 500, binary observable and without smoothing. Number in cell: weekly-incidence
   * same for 300 and 350
 
+## plots
+* At the moment, the green bar is only marking a specific DAY, but the HEIGHT of the bar is unused - it could represent something, e.g. the max value of the 1 week average. Or what else ... any suggestions?
+
 ## styling, design, responsive
 * refactor all used colors into a config file  
 * create a more beautiful colorscheme  
@@ -57,6 +60,7 @@ Anything here is going to happen probably ONLY IF there is feedback, attention, 
 
 ## integration
 * Germany map with colored districts.
+* same as 294/401 table scraping get_wikipedia_landkreise_table() also for Liste_der_kreisfreien_Städte_in_Deutschland 
 
 ## navigation
 * some kind of navigation pane, perhaps floating on the page?
@@ -78,7 +82,7 @@ what I moved from the above to here:
 * the googlesheet table (momentary mortality / prevalence) = links from each row to each Landkreis in cov19de
 * logging: remove base path from files in log
 * integration: link to TU Dortmund project at each district
-* integration: Wikipedia pages for most districts.
+* integration: Wikipedia pages for most districts. missing probably only "kreisfreie städte"?
 * more comfort: fix the table header row - thanks for idea to heise forum
 
 Much more was done, see e.g. [history.txt](history.txt) and repo commits.

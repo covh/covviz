@@ -116,6 +116,10 @@ def downloadData(andStore=True):
 
 def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
                                    filename=WP_FILE):
+    
+    """
+    todo: the same for https://de.wikipedia.org/wiki/Liste_der_kreisfreien_St%C3%A4dte_in_Deutschland
+    """
 
     columns=['AGS', 'Kreis', 'Kreis_WP', 'KreisSitz', 'KreisSitz_WP', 'Einwohner', 'Fläche', 'Karte']
     df = pd.DataFrame(columns=columns)
