@@ -35,6 +35,21 @@ SEARCH_ENGINE = {"duckduckgo" : {"kreis" : "https://duckduckgo.com/?q=%s+AND+(co
                 }
 
 
+SPONSORS_IMG_LINK = """
+<a href="https://github.com/sponsors/covh" target="_blank">
+<img src="../pics/sponsor.gif" alt="sponsor me - credit card or paypal" title="sponsor me - credit card or paypal"></a> 
+"""
+
+SPONSORS_IMG_ABOUT_PAGE = """
+<a href="about.html#support">
+<img src="../pics/sponsor.gif" 
+     alt=  "sponsor me - credit card / paypal, or cryptocurrencies" 
+     title="sponsor me - credit card / paypal, or cryptocurrencies"
+     style="top: 5px; right: 5px; position:fixed; z-index: 10;">
+</a> 
+"""
+
+
 def search_URLs(kreis, kreissitz):
     text="search last week, "
     if kreis==kreissitz:
@@ -85,7 +100,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     
     page +='<a name="top">'
     page +='Up to <a href="about.html">about.html</a> or to overview of <a href="Deutschland.html">Germany</a>\n'
-    page +='Or down to <a href="#Kreise">Kreise (districts)</a>'
+    page +='Or down to <a href="#Kreise">Kreise (districts)</a> ' + SPONSORS_IMG_ABOUT_PAGE
     flagimg = dataTable.flag_image(BL_name, pop_BL, height=20)
     page +="<hr><h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, BL_name, len(district_AGSs), datacolumns[-1])
     page +='<img src="%s"/><p/>' % ("../pics/" + filename_PNG)
@@ -262,7 +277,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page +='<a name="top">'
     page +='UP to <a href="about.html">about.html</a> \n'
     page +='| or DOWN to <a href="#Bundeslaender">16 Bundesländer</a>, or Bundesländer plots <a href="#Bundeslaender_4by4">alphabetically</a> or <a href="#Kreise">401 Kreise</a> '
-    page +='or 401 Kreise sorted by <a href="#googlesheet">mortality</a> (googlesheet table).'
+    page +='or 401 Kreise sorted by <a href="#googlesheet">mortality</a> (googlesheet table). ' + SPONSORS_IMG_ABOUT_PAGE
     
     page +='<hr><h1 id="de">Germany</h1>\n' 
     page +='<img src="%s"/><p/>' % ("../pics/Deutschland.png")

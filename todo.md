@@ -69,6 +69,9 @@ Anything here is going to happen probably ONLY IF there is feedback, attention, 
 ## logging
 * all done
 
+## how to support the project
+* [other than](https://www.heise.de/forum/Telepolis/Kommentare/CoronaVirus-Landkreise-brauchen-nun-Aufmerksamkeit/Vielen-Dank-Kann-nicht-oft-genug-gepostet-werden/posting-36638281/show/) cryptocurrencies
+
 ---
 
 # Done
