@@ -10,7 +10,7 @@ import pandas
 import numpy
 from matplotlib import pyplot as plt
 import matplotlib 
-
+import urllib.parse
 
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable
 
@@ -23,6 +23,42 @@ https://www-ai.cs.tu-dortmund.de/COVID19/index.html#16 Thüringen
 TU_DORTMUND='<a target="_blank" href="https://www-ai.cs.tu-dortmund.de/COVID19/index.html#%s">AI.CS.TU-Dortmund #AGS%s</a>'
 
 
+                                # https://duckduckgo.com/?q=bautzen+AND+(corona+OR+covid19)&t=h_&df=w&ia=web
+                                # https://duckduckgo.com/?q=(ammerland+OR+westerstede)+and+(corona+OR+covid19)&t=h_&df=w&ia=web
+SEARCH_ENGINE = {"duckduckgo" : {"kreis" : "https://duckduckgo.com/?q=%s+AND+(corona+OR+covid19)&t=h_&df=w&ia=web",
+                                "kreisUndSitz" : "https://duckduckgo.com/?q=(%s+OR+%s)+and+(corona+OR+covid19)&t=h_&df=w&ia=web"},
+                            # https://duckduckgo.com/?q=bautzen+AND+(corona+OR+covid19)+%21g&t=h_&df=w&ia=web
+                            # https://duckduckgo.com/?q=(ammerland+OR+westerstede)+and+(corona+OR+covid19)+%21g&t=h_&df=w&ia=web
+                            # not the double %% for % encoding
+                "google": {"kreis" : "https://duckduckgo.com/?q=%s+AND+(corona+OR+covid19)+%%21g&t=h_&df=w&ia=web",
+                           "kreisUndSitz" : "https://duckduckgo.com/?q=(%s+OR+%s)+and+(corona+OR+covid19)+%%21g&t=h_&df=w&ia=web"}
+                }
+
+
+def search_URLs(kreis, kreissitz):
+    text="search last week, "
+    if kreis==kreissitz:
+        text += kreis
+    else:
+        text += kreis +" OR " + kreissitz
+    text += ": "
+    links=[]
+    for engine in ("duckduckgo", "google"):
+        choices=SEARCH_ENGINE[engine]
+        ulpqp=urllib.parse.quote_plus # if there are umlauts or whatever
+        if kreis==kreissitz:
+            url = choices["kreis"] % ulpqp(kreis)
+        else:
+            url = choices["kreisUndSitz"] % (ulpqp(kreis), ulpqp(kreissitz))
+        links.append('<a href="%s" target="_blank">%s</a>' % (url, engine))
+    text += ", ".join(links) 
+    return text
+
+def test_search_URLs():
+    for kreis, kreissitz in (("kreis", "kreis"), ("kreis", "kreissitz")):
+        print (search_URLs(kreis, kreissitz))
+                             
+
 def footerlink():
     text = '<hr><a href="https://covh.github.io/cov19de">tiny.cc/cov19de</a>'
     dt = ("%s" % datetime.datetime.now())[:19]
@@ -33,12 +69,14 @@ def wikipedia_link(wp, AGS, base_url=dataFiles.WP_URL):
     text=""
     try:
         k=wp.loc[AGS]
+        kreis, kreissitz = k["Kreis"], k["KreisSitz"]
     except:
         pass # the wikipedia table has only 294 rows while there are 401 districts
+        kreis, kreissitz = None, None
     else:
         text += 'Wikipedia: Kreis <a target="_blank" href="%s%s">%s</a>'% (base_url, k["Kreis_WP"], k["Kreis"])
         text += ' Kreissitz <a target="_blank" href="%s%s">%s</a>'% (base_url, k["KreisSitz_WP"], k["KreisSitz"])
-    return text
+    return text, kreis, kreissitz 
 
 def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
     page = dataTable.PAGE % BL_name
@@ -88,9 +126,12 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % (prevalence )
 
         page +='other sites: %s' % (TU_DORTMUND % (AGS_5digits,AGS_5digits) )
-        wpl = wikipedia_link(wp, int(AGS))
+        wpl, kreis, kreissitz = wikipedia_link(wp, int(AGS))
         if wpl: 
             page +=', %s' % (wpl)
+        else:
+            kreis = kreissitz = gen # we have that wikipedia info about kreissitz only for 294 out of 401, for remainder fall back to kreis name
+        page += ", " + search_URLs(kreis, kreissitz)
         page +='<br/>total cases: <span style="color:#1E90FF; font-size:xx-small;">%s</span>\n' % (list(map(int, cumulative)))
         page += "<p/>"
         page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
@@ -285,6 +326,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
 
 
 if __name__ == '__main__':
+    # test_search_URLs(); exit()
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
     # fourbyfour(Bundeslaender_sorted); exit()
