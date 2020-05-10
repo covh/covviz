@@ -97,7 +97,8 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     page +="<hr><h2 id='Kreise'>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
     page +="<h3>Sorted by 'center day'</h3>\n"
     
-    page +="Click on name of Kreis to see detailed data.<p/>\n"
+    page +='Click on name of Kreis to see detailed data. If not all visible, '
+    page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.<p/>\n'
     
     districtsHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, 
                                                       district_AGSs, cmap, filename=None, 
@@ -299,9 +300,8 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     page +='<hr><h2 id="Kreise">401 Kreise (districts)</h2>\n'
     page +='<h3>ranked by "center day" or other measures ...</h3>\n'
-    page +='<a href="#">Back to top</a><p/>\n'
-    
-    page +="Click on name of Kreis (or Bundesland) to see detailed data. Click on a table header to sort by that column.\n"
+    page +="Click on name of Kreis (or Bundesland) to see detailed data. To see all of them, "
+    page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.<p/>\n'
     
     district_AGSs = ts_sorted.index.tolist()
     fn, kreiseHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", header="\n", footer="\n")
