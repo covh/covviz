@@ -4,7 +4,7 @@ Created on 27 Apr 2020
 @author: andreas
 '''
 
-import os, datetime
+import os, datetime, math
 
 import pandas
 import numpy
@@ -247,8 +247,8 @@ def fourbyfour(Bundeslaender_sorted, ifPrint=False):
     BLs=sorted(Bundeslaender_sorted.index.tolist())
     BLs = [BL for BL in BLs if BL not in ("Dummyland", "Deutschland")]
     
-    global page
-    page=""
+    #global page
+    #page=""
     c=0
     
     class page(object):
@@ -339,14 +339,161 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     return os.path.abspath(fn)
 
 
+def neighbour_districts_table(neighbours, ifPrint=False):
+    """
+    takes neighbours dataframe with columns [title, img, link]
+    create HTML table - square or rectangular
+    returns HTML code 
+    """
+    
+    N=len(neighbours)
+    w=math.ceil(math.sqrt(N))
+    h=math.ceil(N/w)
+    print ("\nTable of %d elements, shape: %d x %d = which leaves %d cells empty." %(N, w, h, w*h-N), end="")
+    print (" Generating html table, for overview of neighbouring districts:")
+    
+    c=0
+    
+    class page(object):
+        page=""
+        def a(self, t):
+            self.page+=t+"\n"
+           
+    rows = list(neighbours.itertuples())
+    p=page()
+    p.a("<table>")
+    for i in range(w):
+        p.a("<tr>")
+        for j in range(h):
+            try:
+                row = rows[c]
+            except:
+                p.a('<td></td>')
+            else:
+                # print (row)
+                imgprop='src="%s" alt="%s" title="%s"'%(row.img, row.title, row.title)
+                p.a('<td>%s<br/><a href="%s"><img %s width="366" height="214"/></a></td>' % (row.title, row.link, imgprop))
+            c+=1
+        p.a("</tr>")
+    p.a("</table>")
+    if ifPrint:
+        print (p.page)
+    return p.page
+
+
+def prepare_list_of_neighbour_districts(AGS, distances, km, bnn):
+    """
+    identify neighbours within distance km, 
+    and create ["link", "title", "img"] information
+    that then can be input for the HTML table
+    
+    returns a dataframe, with more columns
+    """
+    
+    neighbours = districtDistances.nearby (distances, AGS, km).copy() # the .copy gets rid of the slice warning 
+    neighbours.loc[-1, "AGS1"] = AGS
+    neighbours.loc[-1, "AGS2"] = AGS
+    neighbours.loc[-1, "km"] = 0
+    neighbours.sort_values("km", ascending=True, inplace=True)
+    # TODO: insert itself at km 0
+    imgs, titles = [],[]
+    for index, row in neighbours[["AGS2", "km"]].iterrows():
+        AGS2 = int(row["AGS2"])
+        #print (AGS2, row["km"])
+        filename, nameAndType, link = districtDistances.kreis_link(bnn, AGS2)
+        neighbours.loc[index, "link"] = filename
+        filepath_kreis_PNG = "../pics/Kreis_" + ("00000"+str(AGS2))[-5:] + ".png"
+        #print (filepath_kreis_PNG, filename, nameAndType, link )
+        neighbours.loc[index, "img"] = filepath_kreis_PNG
+        title = "%s (%.1f km)" % (nameAndType, row["km"])
+        #print (title)
+        neighbours.loc[index, "title"] = title
+        # imgs += [filepath_kreis_PNG]
+        # titles += [title]
+    # print (neighbours)
+    # neighbours["img"]=imgs
+    # neighbours["title"]=titles
+    
+    #print (neighbours.to_string())
+    return neighbours
+    
+
+
+SIMPLEPAGE="""
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<TITLE>%s</TITLE>
+<STYLE>
+
+table {
+  border-collapse: collapse;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+th, td {
+  text-align:center;
+  font-family: 'Roboto Condensed', sans-serif;
+}
+
+</STYLE>
+<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed&display=swap" rel="stylesheet">
+
+</head>
+<body>
+"""
+ 
+SIMPLEPAGE_END="""
+</body>
+</html>
+"""
+
+
+def neighbour_districts_table_page(AGS, distances, km, bnn):
+    """
+    select neighbours within distance km=...
+    create additional columns, as prep for table
+    make HTML table, square or rectangular
+    write page to HTML file
+    """
+    neighbours = prepare_list_of_neighbour_districts(AGS, distances, km, bnn)
+    table = neighbour_districts_table(neighbours)
+
+    gen, bez, _,_ = dataMangling.AGS_to_population(bnn, AGS)
+    _, nameAndType, _= districtDistances.kreis_link(bnn, AGS)
+    
+    page = SIMPLEPAGE % ("%s (%s) neighbours" % (gen, bez)) 
+    page = page. replace('onload="scroll_rightmost()"', '')
+    page += table
+    page += '<p>Beware that this is a temporary and experimental page - it might get removed, so please do not link to it. Instead link to project <a href="http://tiny.cc/cov19de">http://tiny.cc/cov19de</a>.</p>'
+    page += SIMPLEPAGE_END
+    # print (page)
+    AGS_5digits = ("00000"+str(AGS))[-5:]
+    filename = os.path.join(dataFiles.PAGES_PATH, "kreis_%s_plus_%skm.html" % (AGS_5digits, km))
+    with open(filename, "w") as f:
+        f.write(page)
+    print (filename)
+    return filename
+
 
 if __name__ == '__main__':
+    
+    
     # test_search_URLs(); exit()
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
     # fourbyfour(Bundeslaender_sorted); exit()
     
     distances = districtDistances.load_distances()
+    
+    for AGS in (5558, 16072, 9163, 16076):
+        neighbour_districts_table_page(AGS=AGS, distances=distances, km=70, bnn=bnn)
+    exit()
+    
     print()
     print()
     cmap = dataTable.colormap()
