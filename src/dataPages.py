@@ -491,7 +491,7 @@ if __name__ == '__main__':
     distances = districtDistances.load_distances()
     
     for AGS in (5558, 16072, 9163, 16076):
-        neighbour_districts_table_page(AGS=AGS, distances=distances, km=70, bnn=bnn)
+        neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
     exit()
     
     print()
