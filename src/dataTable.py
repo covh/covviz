@@ -42,7 +42,7 @@ def toHTMLRow(ts_sorted, row_index, datacolumns, cmap, labels, rolling_window_si
 PAGE="""
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <TITLE>%s</TITLE>
 <STYLE>
