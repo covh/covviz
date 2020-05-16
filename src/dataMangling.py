@@ -421,7 +421,7 @@ if __name__ == '__main__':
     print (len(data)) 
     
     center, signal = temporal_center(data)
-    print ("center at day %.2f" % center)
+    print ("expectation value at day %.2f" % center)
     
     print ("\nKreis")
     daily, cumulative, title, filename, pop = get_Kreis(ts, bnn, AGS)

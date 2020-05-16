@@ -110,7 +110,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % (list(map(int, cumulative)))
     
     page +="<hr><h2 id='Kreise'>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
-    page +="<h3>Sorted by 'center day'</h3>\n"
+    page +="<h3>Sorted by 'expectation day'</h3>\n"
     
     page +='Click on name of Kreis to see detailed data. If not all visible, '
     page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.<p/>\n'
@@ -293,7 +293,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
 
     
     page +='<hr><h2 id="Bundeslaender">16 Bundesländer</h2>\n'
-    page +='<h3 id="Bundeslaender_centerday">ranked by "center day"</h3>\n'
+    page +='<h3 id="Bundeslaender_expectationday">ranked by "expectation day"</h3>\n'
     page +="Click on Bundesland name to see detailed data.<p/>\n"
     
     BL_names = Bundeslaender_sorted.index.tolist()
@@ -314,7 +314,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     
     page +='<hr><h2 id="Kreise">401 Kreise (districts)</h2>\n'
-    page +='<h3>ranked by "center day" or other measures ...</h3>\n'
+    page +='<h3>ranked by "expectation day" or other measures ...</h3>\n'
     page +="Click on name of Kreis (or Bundesland) to see detailed data. To see all of them, "
     page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.<p/>\n'
     

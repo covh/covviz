@@ -95,7 +95,7 @@ font-family: 'Roboto Condensed', sans-serif;
           OR <br>
           <br>
         </li>
-        <li>sorted by "<b>center day</b>"<br>
+        <li>sorted by "<b>expectation day</b>"<br>
           &nbsp;<br>
         </li>
         <ul>
@@ -176,24 +176,25 @@ font-family: 'Roboto Condensed', sans-serif;
         daily number of new cases</li>
       <li>tables: the numbers themselves, in the colored table cells, are the
         (real, reported, raw, unaveraged) total number of cases until that day.</li>
-      <li>the following "center day", see (A2), is calculated from the (real,
-        raw, reported, unaveraged) input data of total cases, by taking a
+      <li>the following "expectation day", see (A2), is calculated from the
+        (real, raw, reported, unaveraged) input data of total cases, by taking a
         difference of two consecutive total cases, to get the <b>daily_cases(daynumber)</b>
         which is the input sequence for:<br>
       </li>
     </ul>
-    <h3>(A2) sorting by 'center day'<br>
-    </h3>
+    <h3>(A2) sorting by 'expectation day'</h3>
+    (previously: 'center day')
+    <p></p>
     <p><i>This is used in two places --&gt; </i>The <b><font color="#009900">GREEN</font></b>
-      bar in each <i>plot </i>marks that day. And all comparison heatmap <i>tables</i>
-      are sorted by that 'center day' column.<br>
+      triangle in each <i>plot </i>marks that day. And all comparison heatmap
+      <i>tables</i> are sorted by that 'expectation day' column.<br>
       <i>What is it? --&gt;&nbsp; </i>(At least until 2nd waves are happening
       ...) a good proxy for <b>how <i> relatively dramatic</i> the situation
-        still is in a certain region</b>, is what we call the <b>"center day" </b>of
-      the daily new cases. The<i> longer ago that center day</i>, the more
-      likely the outbreak is under control now.&nbsp; The center day is
-      calculated like this:</p>
-    <pre><font size="+1">     centerday = sum_over_all_daynumbers [ daynumber * daily_cases(daynumber) ] / total_cases</font></pre>
+        still is in a certain region</b>, is what we call the <b>"expectation
+        day" </b>of the daily new cases. The<i> longer ago that expectation day</i>,
+      the more likely the outbreak is under control now.&nbsp; The expectation
+      day is calculated like this:</p>
+    <pre><font size="+1">     expectationday = sum_over_all_daynumbers [ daynumber * daily_cases(daynumber) ] / total_cases</font></pre>
     <p> with<br>
       <b>total_cases </b>= sum_over_all_daynumbers [ daily_cases(daynumber) ]<br>
       <b>daynumber </b>= 0 is the first day for which we have data (and
@@ -202,11 +203,14 @@ font-family: 'Roboto Condensed', sans-serif;
       (note that for the very first day (the day with daynumber = 0) that is
       undefined.)<br>
     </p>
-    <p>in other words, the "center day" is: the <i><b>average day</b>, weighted
-        with the number of new cases for each day = </i>so we get an
+    <p>in other words, the "expectation day" is: the <i><b>average day</b>,
+        weighted with the number of new cases for each day = </i>so we get an
       "expectation value" for the day<i> = </i>randomly picking <i>any</i><i>
-      </i>of the cases, that "center day" is a good estimation for the "when".<i>
-        Should I perhaps call it <b>expectation day</b> instead?<br>
+      </i>of the cases, that "expectation day" is a good estimation for the
+      "when". We had initially called it "<strong>center day</strong>" but that
+      caused some confusion.<i> </i>And <em>expected value</em> or <em>expectation
+        value</em> (<a href="https://duckduckgo.com/?q=expectation+value+%21g">google</a>)
+      is widely used.<i><br>
       </i></p>
     <h3>(A3) sorting by 'anything'</h3>
     <p>Now all <b>tables can be SORTED</b> by specific columns, when clicking
@@ -251,7 +255,7 @@ font-family: 'Roboto Condensed', sans-serif;
       <li><b>last 14 days new cases </b>total --&gt; absolute number, and <b>"</b><b>incidence"</b>
         = divided by population</li>
       <li>also sort by: population, prevalence (total cases per 1 million
-        people), Region name, center day - see (A2)</li>
+        people), Region name, expectation day - see (A2)</li>
     </ul>
     <h3>(A4) other sites with districts level information<i> <img src="../pics/new.gif"
           alt="new" height="15" width="30"></i></h3>

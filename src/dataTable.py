@@ -179,7 +179,7 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
             ("7days Incid.p.1mio", True),
             # ("7days Incid.p.1mio", True),
             ("Population", True),
-            ("center day", True),
+            ("expectation day", True),
             ("Reff_4_7", True),
             ("Bundesland", True),
             ("info", False) ] 
@@ -244,7 +244,7 @@ def BuLas_to_HTML_table(Bundeslaender, datacolumns, BL_names, cmap, table_filena
         page += "<th><span>%s</span></th>" % col
     colcount=len(datacolumns)
        
-    cols = ["7days new cases", "Bundesland", "info", "Prev. p.1mio", "7days Incid.p.1mio", "Population", "center day", "Reff_4_7" ]
+    cols = ["7days new cases", "Bundesland", "info", "Prev. p.1mio", "7days Incid.p.1mio", "Population", "expectation day", "Reff_4_7" ]
     
     for i, colName in enumerate(cols):
         cellid = "\'%shc%d\'" % (tid, i + colcount)
