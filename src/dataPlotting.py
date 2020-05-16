@@ -26,26 +26,35 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
     fig.autofmt_xdate(rotation=60)
 
     # plot data
-    lns1 = ax.plot(dates, daily, label="daily cases, but with weekend flaw", color='lightgray')
+    lns1 = ax.plot(dates, daily, label="daily cases (weekend-flawed), 2 weeks: red", color='lightgray')
+    lns1_2 = ax.plot(dates[-14:], daily[-14:], label="daily cases, last 14 days dark gray", color='red')
+    # print (len(dates[-14:]))
+    
     plt.ylabel("daily cases", color="purple")
     plt.ylim(0, max(daily[1:])*1.5)
 
     # plot averages
     window=7
     rolling_mean = pandas.DataFrame(daily).rolling(window=window, center=True).mean()
-    lns2 = ax.plot(dates, rolling_mean, label='daily: moving average %s days' % window, color='purple')
+    lns2 = ax.plot(dates, rolling_mean, label='daily: centered moving average %s days' % window, color='purple')
     window=14
     rolling_mean = pandas.DataFrame(daily).rolling(window=window, center=True).mean()
-    lns3 = ax.plot(dates, rolling_mean, label='daily: moving average %s days' % window, color='orange', linewidth=4)
+    lns3 = ax.plot(dates, rolling_mean, label='daily: centered moving average %s days' % window, color='orange', linewidth=4)
     # window=21
     # rolling_mean = pandas.DataFrame(daily).rolling(window=window, center=True).mean()
     # ax.plot(dates, rolling_mean, label='SMA %s days' % window, color='pink', linewidth=1)
 
     # plot center bar
     center, signal = dataMangling.temporal_center(daily)
+    # print (center)
     center_date=datacolumns.values[int(round(center))]
-    lns4 = ax.bar(dates, signal, label="'center day': "+center_date, color='green')
-    # lns4 = ax.plot(dates, signal, label="'center day': "+center_date, color='green', kind='bar')
+    # lns4 = ax.bar(dates, signal, label="'expectation day': "+center_date, color='green')
+    
+    # lns4_2 = plt.plot(dates[int(round(center))], max(signal), marker="v", color='green', markersize=15)
+    # lns4_2 = plt.plot(dates[int(round(center))], 0, marker="v", color='green', markersize=15)
+    # lns4_2 = plt.plot(dates[int(round(center))], [max(daily[1:])/20], marker="^", color='green', markersize=30)
+    lns4_2 = plt.plot(dates[int(round(center))], [max(daily[1:])/19], marker="v", color='green', markersize=17)
+
 
     # plot 2nd axis and cumulative data
     ax2 = plt.twinx()
@@ -66,7 +75,7 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
 
     text = "source data @RiskLayer up to " + ("%s"%max(dates))[:10]
     text += "\nplot @DrAndreasKruger " + ("%s" % datetime.datetime.now())[:16]
-    text += "\ndaily: (GREEN) 'center date' = "+center_date
+    text += "\ndaily: (GREEN) 'expectation day' = "+center_date
 
     plt.legend(lines, labs, loc='best', facecolor="#f7f7f7", framealpha=0.9, 
                title=text, prop={'size': 8}, title_fontsize = 8)
