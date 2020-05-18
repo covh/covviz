@@ -22,7 +22,7 @@ rm -r ./py3science
 python3 -m venv ./py3science
 source ./py3science/bin/activate
 pip3 install -U pip wheel
-pip3 install jupyter ipykernel numpy pandas matplotlib wget geopy requests
+pip3 install jupyter ipykernel numpy pandas matplotlib wget geopy requests beautifulsoup4
 ipython kernel install --user --name="py3science"
 ```
 but no guarantees then that my code will still work.
