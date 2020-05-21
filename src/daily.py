@@ -19,7 +19,8 @@ def generate_all(alsoDoThePlots=True):
     distances = districtDistances.load_distances()
     cmap = dataTable.colormap()
     
-    Bundeslaender_filenames = dataPages.Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50);
+    haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
+    Bundeslaender_filenames = dataPages.Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50, haupt=haupt);
     print (Bundeslaender_filenames)
     
     fn = dataPages.Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn )
@@ -164,8 +165,8 @@ if __name__ == '__main__':
     # git_commit_and_push(); exit()
     
     # showSomeExtremeValues()
-    #daily_update(regenerate_all_plots_and_pages=False); exit()
-    #daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
+    # daily_update(regenerate_all_plots_and_pages=False); exit()
+    daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
     daily_update()
     
     showSomeExtremeValues()

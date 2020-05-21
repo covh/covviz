@@ -93,7 +93,18 @@ def wikipedia_link(wp, AGS, base_url=dataFiles.WP_URL):
         text += ' Kreissitz <a target="_blank" href="%s%s">%s</a>'% (base_url, k["KreisSitz_WP"], k["KreisSitz"])
     return text, kreis, kreissitz 
 
-def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
+
+def sources_links(haupt, AGS):
+    if AGS not in haupt.index:
+        return None 
+     
+    links = []
+    for i, url in enumerate(haupt.loc[AGS].urls):
+        links.append('<a href="%s" target="_blank" title="%s">%d</a>' % (url, url, i+1))
+    return ", ".join(links)
+
+
+def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km, haupt):
     page = dataTable.PAGE % BL_name
 
     district_AGSs = ts_sorted[ts_sorted.Bundesland==BL_name].index.tolist()
@@ -141,6 +152,8 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         page += ("%s %s" % (bez, gen)) + " population: {:,}".format(pop)
         page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % (prevalence )
 
+        sources = sources_links(haupt, AGS)
+        page += "sources: %s; " % sources if sources else "" 
         page +='other sites: %s' % (TU_DORTMUND % (AGS_5digits,AGS_5digits) )
         wpl, kreis, kreissitz = wikipedia_link(wp, int(AGS))
         if wpl: 
@@ -161,7 +174,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     
     return fn
 
-def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances, cmap, km):
+def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances, cmap, km, haupt):
     print ("Creating HTML files for all 'Bundeslaender'")
     filenames, population = [], 0
     rootpath = os.path.abspath(dataFiles.REPO_PATH)
@@ -175,7 +188,7 @@ def Bundeslaender_alle(Bundeslaender, ts, ts_sorted, datacolumns, bnn, distances
         filename_HTML = filename_PNG.replace(".png", ".html")
         filename_HTML = filename_HTML.replace("bundesland_", "")
 
-        fn = bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km)
+        fn = bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, ts, ts_sorted, datacolumns, bnn, distances, cmap, km, haupt)
         fn_abs = os.path.abspath(fn).replace(rootpath, "")
         
         filenames.append((BL_name, fn_abs ))
@@ -490,9 +503,9 @@ if __name__ == '__main__':
     
     distances = districtDistances.load_distances()
     
-    for AGS in (5558, 16072, 9163, 16076, 9473, 9263, 9278, 8231, 4011, 5382):
-        neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
-    exit()
+    #for AGS in (5558, 16072, 9163, 16076, 9473, 9263, 9278, 8231, 4011, 5382):
+    #    neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
+    #exit()
     
     print()
     print()
@@ -500,7 +513,8 @@ if __name__ == '__main__':
     # print ( bundesland("Hessen", "bundesland_Hessen.png", "Hessen", 7777, [8,9,10], "Hessen.html", ts, ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
     # print ( bundesland("Saarland", "bundesland_Saarland.png", "Saarland", 7777, [8,9,10], "Saarland.html", ts, ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
     
-    Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50); print (Bundeslaender_filenames)
+    haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
+    Bundeslaender_filenames = Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50, haupt=haupt); print (Bundeslaender_filenames)
     # Bundeslaender_filenames = [('Brandenburg', '../data/../pages/Brandenburg.html'), ('Bremen', '../data/../pages/Bremen.html'), ('Thüringen', '../data/../pages/Thüringen.html'), ('Bayern', '../data/../pages/Bayern.html'), ('Saarland', '../data/../pages/Saarland.html'), ('Hessen', '../data/../pages/Hessen.html'), ('Schleswig-Holstein', '../data/../pages/Schleswig-Holstein.html'), ('Baden-Württemberg', '../data/../pages/Baden-Württemberg.html'), ('Niedersachsen', '../data/../pages/Niedersachsen.html'), ('Sachsen-Anhalt', '../data/../pages/Sachsen-Anhalt.html'), ('Sachsen', '../data/../pages/Sachsen.html'), ('Hamburg', '../data/../pages/Hamburg.html'), ('Berlin', '../data/../pages/Berlin.html'), ('Rheinland-Pfalz', '../data/../pages/Rheinland-Pfalz.html'), ('Nordrhein-Westfalen', '../data/../pages/Nordrhein-Westfalen.html'), ('Mecklenburg-Vorpommern', '../data/../pages/Mecklenburg-Vorpommern.html'), ('Dummyland', '../data/../pages/Dummyland.html')]
     # Deutschland_simple(Bundeslaender_filenames)
     

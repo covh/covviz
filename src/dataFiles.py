@@ -255,7 +255,7 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500")
     print ("added urls column with all websources combined")
     
     df.index=df.AGS.tolist() 
-    print("index == AGS, for easier access")
+    print("index = AGS, for easier access")
     return df
 
 
@@ -263,9 +263,9 @@ if __name__ == '__main__':
     
     # get_master_sheet_haupt(); exit() 
     # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit()
-    haupt = load_master_sheet_haupt(timestamp=""); exit()
+    # haupt = load_master_sheet_haupt(timestamp=""); exit()
 
-    # downloadData(andStore=False); exit()
+    downloadData(andStore=False); exit()
 
     # downloadData(); # exit()
     # load_data(); exit()
