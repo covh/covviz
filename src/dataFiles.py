@@ -253,6 +253,9 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500")
     print ("Last entry was:", lastEntry)
     df=add_urls_column(df)
     print ("added urls column with all websources combined")
+    
+    df.index=df.AGS.tolist() 
+    print("index == AGS, for easier access")
     return df
 
 
