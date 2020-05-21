@@ -80,11 +80,15 @@ def git_commit_and_push(path=WWW_REPO_PATH, script=WWW_REPO_PATH_GIT_SCRIPT):
         os.chdir(before)
 
 
-def daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=True):
+def daily_update(downloadMasterHauptSheet=True, regenerate_all_plots_and_pages=True, alsoDoThePlots=True):
     print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
     
-    success1, success2, success3 = False, False, False
+    success0, success1, success2, success3 = False, False, False, False
     
+    if downloadMasterHauptSheet:
+        success0 = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
+        print()
+        
     if regenerate_all_plots_and_pages:
         success1 = generate_all(alsoDoThePlots)
     
@@ -96,7 +100,7 @@ def daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=True):
             success3 = git_commit_and_push()
             print ("successful" if success3 else "not successful")
             
-    print ("regenerate: %s, copy: %s, git push: %s" % (success1, success2, success3))
+    print ("mastersheet: %s, regenerate: %s, copy: %s, git push: %s" % (success0, success1, success2, success3))
     
     print ("Finished at", ("%s" % datetime.datetime.now()) [:19],"\n")
     
@@ -159,14 +163,13 @@ def showSomeExtremeValues():
         print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=10).to_string( float_format='%.1f'))
 
 
-
 if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
     # showSomeExtremeValues()
-    # daily_update(regenerate_all_plots_and_pages=False); exit()
-    daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
+    daily_update(regenerate_all_plots_and_pages=False); exit()
+    # daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
     daily_update()
     
     showSomeExtremeValues()

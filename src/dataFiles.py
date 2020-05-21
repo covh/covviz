@@ -228,8 +228,12 @@ def save_csv_twice(df, filestump=HAUPT_FILES):
     return filename1, filename2
 
 def get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET_20200521):
+    """
+    TODO: catch exceptions, then return False
+    """
     df = download_sheet_table(sheetID=sheetID)
     files = save_csv_twice(df)
+    return True
 
 
 def add_urls_column(df):
