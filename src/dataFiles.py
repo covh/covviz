@@ -12,6 +12,7 @@ import pandas as pd
 REPO_PATH = ".."
 DATA_PATH = os.path.join(REPO_PATH, "data")
 BNN_FILE = os.path.join(DATA_PATH, "GermanyKreisebene_Risklayer_bnn-20200425.csv")
+HAUPT_FILES = os.path.join(DATA_PATH, "GermanyKreisebene_Risklayer_haupt%s.csv")
 WP_FILE =  os.path.join(DATA_PATH, "wikipedia_kreise_most.csv")
 WP_URL="https://de.wikipedia.org/"
 
@@ -27,11 +28,21 @@ WWW_REPO_PATH_GIT_SCRIPT = "./git-add-commit-push.sh"
 
 ALSO_TO_BE_COPIED = ["index.html", "history.txt", "todo.md", "log.txt"]
 
-
 RISKLAYER_URL01 = "http://risklayer-explorer.com/media/data/events/GermanyValues.csv"
-RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/"
-RISKLAYER_URL02_SHEET = "bnn"
+# RISKLAYER_URL02 = "https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/"
+# RISKLAYER_URL02_SHEET = "bnn"
 
+# naming 'Haupt' (in case they reorder their sheets, then gid=0 would point to the wrong one!)
+# for syntax see https://stackoverflow.com/a/33727897
+#     and https://developers.google.com/chart/interactive/docs/spreadsheets#query-source-ranges
+# 
+# https://docs.google.com/spreadsheets/d/1EZNqMVK6hCccMw4pq-4T30ADJoayulgx9f98Vui7Jmc/gviz/tq?tqx=out:csv&range=A5:AU406&sheet=Haupt
+GOOGLEDOCS_ToCSV_WithSheetname="https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:csv&range=%s&sheet=%s"
+RISKLAYER_MASTER_SHEET_20200521 = "1EZNqMVK6hCccMw4pq-4T30ADJoayulgx9f98Vui7Jmc" # last night snapshot
+RISKLAYER_MASTER_SHEET = "1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s" # Risklayer master
+RISKLAYER_MASTER_SHEET_TABLE = ("Haupt", "A5:AU406")
+
+# distances between districts:
 OPENDATASOFT_URL01 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/table/"
 OPENDATASOFT_URL02 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/download/?format=csv&lang=en&use_labels_for_header=true&csv_separator=%3B"
 OPENDATASOFT_PATH = os.path.join(DATA_PATH, "landkreise-in-germany.csv")
@@ -187,7 +198,6 @@ def add_synthetic_data(ts, bnn, flatUntil = 14, steps=[10, 20, 50, 100, 130, 140
 
     return ts, bnn
 
-
 def data(withSynthetic=True):
     ts, bnn = load_data()
     if withSynthetic:
@@ -195,9 +205,64 @@ def data(withSynthetic=True):
     return ts, bnn
 
 
-if __name__ == '__main__':
+def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_SHEET_TABLE, reindex="AGS"):
+    risklayer_sheet_url = GOOGLEDOCS_ToCSV_WithSheetname % (sheetID, table[1], table[0])
+    print ("Downloading this data:")
+    print (risklayer_sheet_url)
+    df=pandas.read_csv(risklayer_sheet_url) # error_bad_lines=False)
+    if reindex:
+        df.index=df[reindex].tolist() # index == AGS, easier access
+    #print(df.columns.tolist())
+    return df
+    
+def save_csv_twice(df, filestump=HAUPT_FILES):
+    lastEntry=pandas.to_datetime(df.Zeit).max()
+    print ("Last entry was:", lastEntry)
+    timestamp=lastEntry.strftime("%Y%m%d_%H%M%S")
+    filename1=filestump % ("-" + timestamp)
+    df.to_csv(filename1, index=False)
+    print(filename1)
+    filename2=filestump % ""
+    df.to_csv(filename2, index=False)
+    print(filename2)
+    return filename1, filename2
 
-    downloadData(andStore=False); exit()
+def get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET_20200521):
+    df = download_sheet_table(sheetID=sheetID)
+    files = save_csv_twice(df)
+
+
+def add_urls_column(df):
+    """
+    combines all web sources into one column, as list
+    """
+    websources = ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names']
+    df["urls"]= [sorted(list(set( [url 
+                            for url in urllist 
+                            if url!=""] )))    # remove the nans
+                 for urllist in df[websources].fillna("").values.tolist()] 
+    return df
+
+def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500"):
+    filename =filestump % timestamp
+    print ("Reading from", filename)
+    df = pandas.read_csv(filename)
+    sum=df["Fälle Heute bis 00Uhr"].sum()
+    print ("Sum", sum, end=" ")
+    lastEntry=pandas.to_datetime(df.Zeit).max()
+    print ("Last entry was:", lastEntry)
+    df=add_urls_column(df)
+    print ("added urls column with all websources combined")
+    return df
+
+
+if __name__ == '__main__':
+    
+    # get_master_sheet_haupt(); exit() 
+    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit()
+    haupt = load_master_sheet_haupt(timestamp=""); exit()
+
+    # downloadData(andStore=False); exit()
 
     # downloadData(); # exit()
     # load_data(); exit()
