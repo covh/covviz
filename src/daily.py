@@ -9,9 +9,18 @@ import os, datetime, shutil, subprocess
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable, dataPages
 from dataFiles import PICS_PATH, PAGES_PATH, WWW_REPO_PICS, WWW_REPO_PAGES, WWW_REPO_PATH, WWW_REPO_PATH_GIT_SCRIPT, REPO_PATH, ALSO_TO_BE_COPIED
 
+def download_all():
+    new_CSV = dataFiles.downloadData()
+    print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
+
+    new_master_state = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
+    print ("\ndownloaded mastersheet has new state: %s \n" % new_master_state)
+    
+    return new_CSV, new_master_state 
+    
+
 def generate_all(alsoDoThePlots=True):
     
-    dataFiles.downloadData()
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
     print()
@@ -20,6 +29,7 @@ def generate_all(alsoDoThePlots=True):
     cmap = dataTable.colormap()
     
     haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
+    print()
     Bundeslaender_filenames = dataPages.Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50, haupt=haupt);
     print (Bundeslaender_filenames)
     
@@ -85,9 +95,8 @@ def daily_update(downloadMasterHauptSheet=True, regenerate_all_plots_and_pages=T
     
     success0, success1, success2, success3 = False, False, False, False
     
-    if downloadMasterHauptSheet:
-        success0 = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
-        print()
+    new_CSV, new_master_state = download_all()
+    # TODO: use these results
         
     if regenerate_all_plots_and_pages:
         success1 = generate_all(alsoDoThePlots)
@@ -168,7 +177,7 @@ if __name__ == '__main__':
     # git_commit_and_push(); exit()
     
     # showSomeExtremeValues()
-    daily_update(regenerate_all_plots_and_pages=False); exit()
+    daily_update(regenerate_all_plots_and_pages=False); exit() # only download
     # daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
     daily_update()
     
