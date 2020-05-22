@@ -4,7 +4,7 @@ Created on 25 Apr 2020
 @author: andreas
 '''
 
-import os, shutil
+import os, shutil, hashlib
 import pandas, wget, requests 
 import bs4 as bs
 import pandas as pd
@@ -96,6 +96,29 @@ def inspectNewestData(ts):
     print (df.diff().dropna().astype(int, errors='ignore').to_string())
     # print (df)
     
+def hash_file(filename):
+    with open(filename,"rb") as f:
+        bytes = f.read() # read entire file as bytes
+        readable_hash = hashlib.sha256(bytes).hexdigest();
+    print(readable_hash)
+    return readable_hash
+    
+def true_if_exist_and_equal(filenames):
+    if len(filenames)<2:
+        raise Exception("must compare more than one file.") 
+    hashes=[]
+    for filename in filenames:
+        try:
+            hashes.append(hash_file(filename))
+        except Exception as e:
+            print(type(e), e) # TOO: comment away
+            return False
+    unique=list(set(hashes)) 
+    return len(unique)==1
+
+def test_comparison():
+    for filenames in [["test1.txt", "test2.txt"], ["test1.txt", "test3.txt"]]: 
+        print (filenames, true_if_exist_and_equal(filenames))
 
 def downloadData(andStore=True):
 
@@ -106,12 +129,15 @@ def downloadData(andStore=True):
     ts=pandas.read_csv(filename, encoding='cp1252') # encoding='utf-8')
     last_col = ts.columns[2:].tolist()[-1]
     print ("newest column:", last_col)
-    if andStore:
-        d=last_col.split(".")
-        d.reverse()
-        last_date = "".join(d)
-        newfilename = TS_FILE.replace("20200425", last_date)
-        shutil.move(filename,newfilename)
+    
+    d=last_col.split(".")
+    d.reverse()
+    last_date = "".join(d)
+    newfilename = TS_FILE.replace("20200425", last_date)
+    equal = true_if_exist_and_equal([filename, newfilename])
+
+    if andStore:        
+        shutil.move(filename, newfilename)
         print (newfilename)
         shutil.copy(newfilename, TS_NEWEST)
         print (TS_NEWEST)
@@ -123,6 +149,7 @@ def downloadData(andStore=True):
     # print ("TODO perhaps")
     # print (RISKLAYER_URL02)
     # print ("sheet", RISKLAYER_URL02_SHEET)
+    return not equal
 
 
 def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
@@ -220,20 +247,21 @@ def save_csv_twice(df, filestump=HAUPT_FILES):
     print ("Last entry was:", lastEntry)
     timestamp=lastEntry.strftime("%Y%m%d_%H%M%S")
     filename1=filestump % ("-" + timestamp)
+    existed = os.path.isfile(filename1)
     df.to_csv(filename1, index=False)
     print(filename1)
     filename2=filestump % ""
     df.to_csv(filename2, index=False)
     print(filename2)
-    return filename1, filename2
+    return existed, (filename1, filename2)
 
 def get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET_20200521):
     """
     TODO: catch exceptions, then return False
     """
     df = download_sheet_table(sheetID=sheetID)
-    files = save_csv_twice(df)
-    return True
+    existed, files = save_csv_twice(df)
+    return not existed
 
 
 def add_urls_column(df):
@@ -264,12 +292,14 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500")
 
 
 if __name__ == '__main__':
+    # test_comparison(); exit()
     
     # get_master_sheet_haupt(); exit() 
     # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit()
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
+    # equal = downloadData(andStore=False);
 
-    downloadData(andStore=False); exit()
+    newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
     # downloadData(); # exit()
     # load_data(); exit()
