@@ -388,6 +388,7 @@ def neighbour_districts_table(neighbours, ifPrint=False):
                 p.a('<td>%s<br/><a href="%s"><img %s width="366" height="214"/></a></td>' % (row.title, row.link, imgprop))
             c+=1
         p.a("</tr>")
+    # p.a("<caption>test</caption>")
     p.a("</table>")
     if ifPrint:
         print (p.page)
@@ -482,7 +483,7 @@ def neighbour_districts_table_page(AGS, distances, km, bnn):
     page = SIMPLEPAGE % ("%s (%s) neighbours" % (gen, bez)) 
     page = page. replace('onload="scroll_rightmost()"', '')
     page += table
-    page += '<p>Beware that this is a temporary and experimental page - it might get removed, so please do not link to it. Instead link to project <a href="http://tiny.cc/cov19de">http://tiny.cc/cov19de</a>.</p>'
+    page += '<p>All plots are regenerated with new data every night. Beware this temporary <a href="https://covh.github.io/cov19de/pages/hotspots.html">hotspot</a> is an experimental page - it might get removed, so please do not link to it. Instead link to project <a href="http://tiny.cc/cov19de">http://tiny.cc/cov19de</a>.</p>'
     page += SIMPLEPAGE_END
     # print (page)
     AGS_5digits = ("00000"+str(AGS))[-5:]
@@ -503,9 +504,9 @@ if __name__ == '__main__':
     
     distances = districtDistances.load_distances()
     
-    #for AGS in (5558, 16072, 9163, 16076, 9473, 9263, 9278, 8231, 4011, 5382):
-    #    neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
-    #exit()
+    for AGS in (5558, 16072, 9163, 16076, 9473, 9263, 9278, 8231, 4011, 5382, 9362, 9478, 5370):
+        neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
+    exit()
     
     print()
     print()
