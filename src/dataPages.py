@@ -295,7 +295,7 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page +='<hr><h1 id="de">Germany</h1>\n' 
     page +='<img src="%s"/><p/>' % ("../pics/Deutschland.png")
     
-    DE=Bundeslaender_sorted.drop(["Deutschland", "Dummyland"]).sum()
+    DE=Bundeslaender_sorted.drop(["Deutschland", "Dummyland"], errors='ignore').sum() # errors='ignore' in case Dummyland is not part of the dataset anyways
     cumulative = DE[datacolumns].astype(int).tolist()
     
     prevalence = cumulative[-1] / DE["Population"] * 1000000
