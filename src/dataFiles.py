@@ -100,7 +100,7 @@ def hash_file(filename):
     with open(filename,"rb") as f:
         bytes = f.read() # read entire file as bytes
         readable_hash = hashlib.sha256(bytes).hexdigest();
-    print(readable_hash)
+    # print(readable_hash)
     return readable_hash
     
 def true_if_exist_and_equal(filenames):
@@ -111,7 +111,8 @@ def true_if_exist_and_equal(filenames):
         try:
             hashes.append(hash_file(filename))
         except Exception as e:
-            print(type(e), e) # TOO: comment away
+            print(type(e), e) # TOO: perhaps comment away?
+            print ("didn't exist, means new data available, downloaded, and stored:")
             return False
     unique=list(set(hashes)) 
     return len(unique)==1
@@ -136,7 +137,8 @@ def downloadData(andStore=True):
     newfilename = TS_FILE.replace("20200425", last_date)
     equal = true_if_exist_and_equal([filename, newfilename])
 
-    if andStore:        
+    if andStore:
+        print ("Saving into files:")
         shutil.move(filename, newfilename)
         print (newfilename)
         shutil.copy(newfilename, TS_NEWEST)
