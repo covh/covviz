@@ -9,114 +9,8 @@ import os, datetime, shutil, subprocess
 import dataFiles, dataMangling, dataPlotting, districtDistances, dataTable, dataPages
 from dataFiles import PICS_PATH, PAGES_PATH, WWW_REPO_PICS, WWW_REPO_PAGES, WWW_REPO_PATH, WWW_REPO_PATH_GIT_SCRIPT, REPO_PATH, ALSO_TO_BE_COPIED
 
-def download_all():
-    new_CSV = dataFiles.downloadData()
-    print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
-
-    new_master_state = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
-    print ("\ndownloaded mastersheet has new state: %s \n" % new_master_state)
-    
-    return new_CSV, new_master_state 
-    
-
-def generate_all(alsoDoThePlots=True):
-    
-    
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
-    print()
-
-    distances = districtDistances.load_distances()
-    cmap = dataTable.colormap()
-    
-    haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
-    print()
-    Bundeslaender_filenames = dataPages.Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50, haupt=haupt);
-    print (Bundeslaender_filenames)
-    
-    fn = dataPages.Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn )
-    print ("\n" + fn)
-
-    if not alsoDoThePlots:
-        a="\n" + ("*"*50) + "\n"
-        print (a+"ALERT: skipping the plots"+a)
-    else:
-        print ("\nPlotting takes a bit of time. Patience please. Thanks.")
-        done = dataPlotting.plot_all_Bundeslaender(ts, bnn, dates, datacolumns, ifPrint=False)
-        print ("plot_all_Bundeslaender: %d items" % len(done))
-        
-        listOfAGSs = ts["AGS"].tolist()
-        print ("Plotting %d images, for each Kreis. Patience please: " % len(listOfAGSs))
-        done = dataPlotting.plot_Kreise(ts, bnn, dates, datacolumns, listOfAGSs, ifPrint=False)
-        print ("plot_Kreise done: %d items" % len(done))
-        print()
-
-    print ("\nFinished at", ("%s" % datetime.datetime.now()) [:19])
-    
-    return True
-
-
-def copy_all():
-    print (os.getcwd()) 
-    fromTo = [[PICS_PATH, WWW_REPO_PICS], 
-              [PAGES_PATH, WWW_REPO_PAGES]]
-    for s, d in fromTo:
-        try:
-            shutil.rmtree(d)
-        except:  # ignore error if not existed
-            pass
-        dst = shutil.copytree(s, d)
-        print (dst)
-        os.remove(os.path.join(d, ".gitignore"))
-
-    for single_file in ALSO_TO_BE_COPIED:
-        dst = shutil.copy(os.path.join(REPO_PATH, single_file), WWW_REPO_PATH)
-        print (dst)
-    
-    return True
-    
-def git_commit_and_push(path=WWW_REPO_PATH, script=WWW_REPO_PATH_GIT_SCRIPT):
-    print ("\ngit script '%s' please be patient ..." % script)
-    try:
-        before = os.getcwd()
-        os.chdir(path)
-        answer = subprocess.check_output([script], shell=True)
-    except Exception as e:
-        print ("git ERROR:", type(e), e)
-        return False
-    else:
-        print (answer.decode("utf-8"))
-        return True
-    finally: 
-        os.chdir(before)
-
-
-def daily_update(downloadMasterHauptSheet=True, regenerate_all_plots_and_pages=True, alsoDoThePlots=True):
-    print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
-    
-    success0, success1, success2, success3 = False, False, False, False
-    
-    new_CSV, new_master_state = download_all()
-    # TODO: use these results
-        
-    if regenerate_all_plots_and_pages:
-        success1 = generate_all(alsoDoThePlots)
-    
-    if success1 or not regenerate_all_plots_and_pages:
-        success2 = copy_all()
-        
-        if success2:
-            print ()
-            success3 = git_commit_and_push()
-            print ("successful" if success3 else "not successful")
-            
-    print ("mastersheet: %s, regenerate: %s, copy: %s, git push: %s" % (success0, success1, success2, success3))
-    
-    print ("Finished at", ("%s" % datetime.datetime.now()) [:19],"\n")
-    
-    
-# TODO: move the following into some dataRanking perhaps?
+# TODO: move the following (up to showSomeExtremeValues()) into some dataRanking perhaps?
 # also make HTML tables from it.
-
 
 def columns_into_integers(ts_sorted, datacolumns):
     """
@@ -171,17 +65,139 @@ def showSomeExtremeValues():
         ts_sorted.sort_values(col, ascending=False, inplace=True) 
         print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=10).to_string( float_format='%.1f'))
 
+## download and process:
+
+def download_all(showExtremes=True):
+    new_CSV = dataFiles.downloadData()
+    print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
+
+    new_master_state = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
+    print ("\ndownloaded mastersheet has new state: %s \n" % new_master_state)
+    
+    if showExtremes:
+        showSomeExtremeValues()
+    
+    return new_CSV, new_master_state 
+    
+
+def generate_all_pages(withSyntheticData=True):
+    
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=withSyntheticData)
+    print()
+
+    distances = districtDistances.load_distances()
+    cmap = dataTable.colormap()
+    
+    haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
+    print()
+    Bundeslaender_filenames = dataPages.Bundeslaender_alle(Bundeslaender_sorted, ts, ts_sorted, datacolumns, bnn, distances, cmap, km=50, haupt=haupt);
+    print (Bundeslaender_filenames)
+    
+    fn = dataPages.Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn )
+    print ("\n" + fn)
+    
+    return True
+    
+
+def generate_all_plots(withSyntheticData=True):
+
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=withSyntheticData)
+    print()
+    
+    print ("Plotting takes a bit of time. Patience please. Thanks.")
+    done = dataPlotting.plot_all_Bundeslaender(ts, bnn, dates, datacolumns, ifPrint=False)
+    print ("plot_all_Bundeslaender: %d items" % len(done))
+    
+    listOfAGSs = ts["AGS"].tolist()
+    print ("Plotting %d images, for each Kreis. Patience please: " % len(listOfAGSs))
+    done = dataPlotting.plot_Kreise(ts, bnn, dates, datacolumns, listOfAGSs, ifPrint=False)
+    print ("plot_Kreise done: %d items" % len(done))
+    print()
+
+    return True
+
+
+def copy_all():
+    print (os.getcwd()) 
+    fromTo = [[PICS_PATH, WWW_REPO_PICS], 
+              [PAGES_PATH, WWW_REPO_PAGES]]
+    for s, d in fromTo:
+        try:
+            shutil.rmtree(d)
+        except:  # ignore error if not existed
+            pass
+        dst = shutil.copytree(s, d)
+        print (dst)
+        os.remove(os.path.join(d, ".gitignore"))
+
+    for single_file in ALSO_TO_BE_COPIED:
+        dst = shutil.copy(os.path.join(REPO_PATH, single_file), WWW_REPO_PATH)
+        print (dst)
+    
+    return True
+    
+def git_commit_and_push(path=WWW_REPO_PATH, script=WWW_REPO_PATH_GIT_SCRIPT):
+    print ("\ngit script '%s' please be patient ..." % script)
+    try:
+        before = os.getcwd()
+        os.chdir(path)
+        answer = subprocess.check_output([script], shell=True)
+    except Exception as e:
+        print ("git ERROR:", type(e), e)
+        return False
+    else:
+        print (answer.decode("utf-8"))
+        return True
+    finally: 
+        os.chdir(before)
+
+
+def daily_update(regenerate_pages_regardless_if_new_data=False, regenerate_plots_regardless_if_new_data=False, publish=True, showExtremes=True, withSyntheticData=True):
+    print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
+    
+    success1, success2, success3, success4, success5  = False, False, False, False, False
+    
+    print ("Downloading risklayer data:")
+    new_CSV, new_master_state = download_all(showExtremes=showExtremes)
+    success1 = True
+
+    line = "\n" + ("*"*50) + "\n"
+        
+    if new_CSV or regenerate_pages_regardless_if_new_data:
+        success2 = generate_all_pages(withSyntheticData=withSyntheticData)
+    else:
+        print (line+"ALERT: no new pages generated"+line)
+        
+    if not regenerate_plots_regardless_if_new_data and not new_CSV:
+        print (line+"ALERT: no new plots generated"+line)
+    else:
+        success3 = generate_all_plots()
+        
+    if publish: 
+        success4 = copy_all()
+            
+        if success4:
+            print ()
+            success5 = git_commit_and_push()
+            print ("git push:" + ("successful" if success5 else "not successful"))
+            
+    print ("\ndownload data: %s, regenerate pages: %s, regenerate plots: %s, copy: %s, git push: %s" % (success1, success2, success3, success4, success5))
+    
+    print ("Finished at", ("%s" % datetime.datetime.now()) [:19],"\n")
+    
+    
+
 
 if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
     # showSomeExtremeValues()
-    daily_update(regenerate_all_plots_and_pages=False); exit() # only download
+    daily_update(regenerate_pages_regardless_if_new_data=True); exit()
     # daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
     daily_update()
     
-    showSomeExtremeValues()
+    # showSomeExtremeValues()
     
     print ("\nREADY.")
     
