@@ -193,7 +193,8 @@ if __name__ == '__main__':
     # git_commit_and_push(); exit()
     
     # showSomeExtremeValues()
-    daily_update(regenerate_pages_regardless_if_new_data=True, withSyntheticData=False); exit()
+    daily_update(publish=True, withSyntheticData=False); exit()
+    # daily_update(regenerate_pages_regardless_if_new_data=True, withSyntheticData=False); exit()
     # daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
     daily_update()
     
