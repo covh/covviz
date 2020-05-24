@@ -200,7 +200,7 @@ def load_wikipedia_landkreise_table(filepath=WP_FILE):
     return df
 
 
-def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE):
+def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True):
     ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
     bnn=pandas.read_csv(bnn_f)
     ts, bnn = repairData(ts, bnn)
@@ -229,8 +229,8 @@ def add_synthetic_data(ts, bnn, flatUntil = 14, steps=[10, 20, 50, 100, 130, 140
 
     return ts, bnn
 
-def data(withSynthetic=True):
-    ts, bnn = load_data()
+def data(withSynthetic=True, ifPrint=True):
+    ts, bnn = load_data(ifPrint=ifPrint)
     if withSynthetic:
         ts, bnn = add_synthetic_data(ts, bnn)
     return ts, bnn
