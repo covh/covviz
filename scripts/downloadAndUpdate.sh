@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git pull
+
 source  ./py3science/bin/activate
 cd src
 
