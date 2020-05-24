@@ -123,9 +123,11 @@ def copy_all():
               [PAGES_PATH, WWW_REPO_PAGES]]
     for s, d in fromTo:
         try:
+            # this was responsible for the site disappearing when using 2nd machine.
+            # eventually it is good though, so instead once run 'scripts/initialize.sh'
             shutil.rmtree(d)
-        except:  # ignore error if not existed
-            pass
+        except:  
+            pass # ignore error if folder did not exist
         dst = shutil.copytree(s, d)
         print (dst)
         os.remove(os.path.join(d, ".gitignore"))

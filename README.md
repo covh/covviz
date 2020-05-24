@@ -28,11 +28,15 @@ ipython kernel install --user --name="py3science"
 but no guarantees then that my code will still work.
 
 ### execute
-recreate site, copy content into cov19de repo, git-add-commit-push, done. 
+first time: important!
+
+    ./scripts/initialize.sh
+
+later: pull code & site; recreate site, copy content into cov19de repo, git-add-commit-push, done. 
 
     ./scripts/downloadAndUpdate.sh
     
-That also shows some initial insights into the newest data already.
+That script also shows some initial insights into the newest data already.
 
 ### interactive notebook - runs Python in your browser!
 
