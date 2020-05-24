@@ -141,7 +141,7 @@ def compare_risklayer_with_opendatasoft(bnn):
 if __name__ == '__main__':
     
     AGS1,km = 5370, 50
-    generateNew = False
+    generateNew = True
     if generateNew:
         
         filename = OPENDATASOFT_PATH

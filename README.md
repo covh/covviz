@@ -30,6 +30,7 @@ but no guarantees then that my code will still work.
 ### execute
 first time: important!
 
+    sudo apt install expect # or remove the 2 'unbuffer' commands from the following script, and just be patient:
     ./scripts/initialize.sh
 
 later: pull code & site; recreate site, copy content into cov19de repo, git-add-commit-push, done. 
