@@ -163,24 +163,25 @@ if __name__ == '__main__':
         print("testing with AGS=%d and km=%d:" % (AGS1, km))
         print (distances[(distances.km<km) & (distances.AGS1==AGS1)])
 
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
+    print ("\ns**t that had been inconsistent data:")
+    compare_risklayer_with_opendatasoft(bnn)
+
+    print ("\nall good.")
+    
     distances = load_distances()
     AGS1,km = distances["AGS1"][0], 50
     print ("\nwhole table contains %d pairs with distance max %.1f km" % (number_of_pairs_max_dist(distances, km), km))
     print ("example for AGS1=" , AGS1)
     print (nearby (distances, AGS1, km))
+
     
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
-    
-    print ("\ns**t inconsistent data:")
-    compare_risklayer_with_opendatasoft(bnn)
-    
-    
-    print()
-    print (kreis_link(bnn, 0))
-    print (kreis_link(bnn, 1001))
+    #print()
+    #print (kreis_link(bnn, 0))
+    #print (kreis_link(bnn, 1001))
     # print (kreis_link(bnn, 3152))
     
     # print (districtDistances.nearby(distances, 1001, 50))
-    AGS=1001
-    print( kreis_nearby_links(bnn, distances, AGS, km=50) )
+    #AGS=1001
+    #print( kreis_nearby_links(bnn, distances, AGS, km=50) )
 

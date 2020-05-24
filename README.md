@@ -28,7 +28,7 @@ ipython kernel install --user --name="py3science"
 but no guarantees then that my code will still work.
 
 ### execute
-first time: important!
+first time: important! downloads districts GPS positions, generates pairwise distances, creates all pages and pics once:
 
     sudo apt install expect # or remove the 2 'unbuffer' commands from the following script, and just be patient:
     ./scripts/initialize.sh
