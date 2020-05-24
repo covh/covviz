@@ -144,8 +144,8 @@ if __name__ == '__main__':
     generateNew = True
     if generateNew:
         
-        filename = OPENDATASOFT_PATH
-        # filename = download_kreise_locations()
+        # filename = OPENDATASOFT_PATH
+        filename = download_kreise_locations()
     
         LKG = load_kreise_locations(filename)
         
