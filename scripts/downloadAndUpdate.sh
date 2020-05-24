@@ -6,6 +6,9 @@ LOGFILE="logs/$(date +%Y%m%d-%H%M)_downloadAndUpdate.log"
 git pull | tee -a $LOGFILE
 
 # merge with newer site data possibly generated on different machine 
+# remaining problem: plots contain the time so they will always be rewritten.
+# (Perhaps also differing matplotlib different PNG binaries?)
+# --> Either do NOT often switch machines ... or remove the time from the plots?
 cd ../cov19de
 echo $(pwd) | tee -a ../covviz/$LOGFILE
 git pull | tee -a ../covviz/$LOGFILE
