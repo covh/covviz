@@ -20,6 +20,6 @@ cd src
 echo $(pwd) | tee -a ../$LOGFILE
 
 # the whole shebang
-python downloadAndUpdate.py | tee -a ../$LOGFILE
+unbuffer python downloadAndUpdate.py | tee -a ../$LOGFILE
 
 
