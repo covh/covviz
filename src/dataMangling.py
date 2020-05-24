@@ -378,8 +378,8 @@ def add_column_Bundeslaender(Bundeslaender, datacolumns, inputseries=BL_to_daily
     return Bundeslaender
 
 
-def dataMangled(withSynthetic=True):
-    ts, bnn = dataFiles.data(withSynthetic=withSynthetic)
+def dataMangled(withSynthetic=True, ifPrint=True):
+    ts, bnn = dataFiles.data(withSynthetic=withSynthetic, ifPrint=ifPrint)
     dates = dates_list(ts)
     datacolumns = ts.columns[2:]
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
