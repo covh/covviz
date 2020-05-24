@@ -34,4 +34,6 @@ echo $(pwd) | tee -a ../$LOGFILE
 # remove the unbuffer command OR install unbuffer for this to work:    sudo apt install expect
 unbuffer python downloadAndUpdate.py | tee -a ../$LOGFILE
 
+exit done.
+
 
