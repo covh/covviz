@@ -12,15 +12,10 @@ cd src
 echo $(pwd) | tee -a ../$LOGFILE
 
 
-# generate the 401*400/2 distances table
+# download databases, scrape pages, generate distances - and make all pages and pics once
 echo ... | tee -a ../$LOGFILE
-echo python districtDistances.py | tee -a ../$LOGFILE
-unbuffer python districtDistances.py | tee -a ../$LOGFILE
+echo python initialize.py | tee -a ../$LOGFILE
 
-
-# generate all pages and pics
-echo ... | tee -a ../$LOGFILE
-echo python initializePlotsAndPages.py | tee -a ../$LOGFILE
-unbuffer python initializePlotsAndPages.py | tee -a ../$LOGFILE
+unbuffer python initialize.py | tee -a ../$LOGFILE
 
 

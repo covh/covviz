@@ -1,3 +1,5 @@
 *.csv
 *.ods
+*.bak
 
+/landkreise-in-germany.csv.bak

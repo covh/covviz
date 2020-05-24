@@ -161,6 +161,8 @@ def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_
     todo: the same for https://de.wikipedia.org/wiki/Liste_der_kreisfreien_St%C3%A4dte_in_Deutschland
     """
 
+    print ("\nscrape wikipedia page:")
+
     columns=['AGS', 'Kreis', 'Kreis_WP', 'KreisSitz', 'KreisSitz_WP', 'Einwohner', 'Fläche', 'Karte']
     df = pd.DataFrame(columns=columns)
 
@@ -292,6 +294,14 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500")
     print("index = AGS, for easier access")
     return df
 
+def scrape_and_test_wikipedia_pages():
+    get_wikipedia_landkreise_table();
+    df=load_wikipedia_landkreise_table();
+    print("\ndescribe:\n%s" % df.describe())
+    print("\nsum:\n%s" % df[["Einwohner", "Fläche"]].sum().to_string())
+    print("\nexample:\n %s" % df.loc[5370].to_string())
+    return df
+    
 
 if __name__ == '__main__':
     # test_comparison(); exit()
@@ -301,7 +311,9 @@ if __name__ == '__main__':
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
     # equal = downloadData(andStore=False);
 
-    newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
+
+    # newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
+
 
     # downloadData(); # exit()
     # load_data(); exit()
@@ -314,10 +326,6 @@ if __name__ == '__main__':
     # print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist())
     pass
 
-    # df=get_wikipedia_landkreise_table(); 
-    df=load_wikipedia_landkreise_table();
-    print(df.describe()); print("sum:\n", df[["Einwohner", "Fläche"]].sum())
-    print (df.to_string())
-    print(df.loc[5370])
-    
-    
+    df=scrape_and_test_wikipedia_pages()
+    # print (df.to_string())
+

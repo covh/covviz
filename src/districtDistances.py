@@ -4,7 +4,7 @@ Created on 27 Apr 2020
 @author: andreas
 '''
 
-import io, sys
+import io, sys, shutil
 
 import pandas
 import requests
@@ -19,6 +19,10 @@ def download_kreise_locations(url1=OPENDATASOFT_URL01, url2=OPENDATASOFT_URL02, 
     print ("Downloading large table with Kreise locations. For infos see")
     print (url1)
     print ("Patience please ...", end=" ")
+    try:
+        shutil.move(out, out+".bak")
+    except:
+        pass
     filename = wget.download(url2, out=out)
     print ("Done -->", filename)
     return filename
@@ -138,30 +142,41 @@ def compare_risklayer_with_opendatasoft(bnn):
     names2=([bnn["GEN"][bnn["AGS"]==AGS].tolist()[0] for AGS in diff2])
     print ("RSL-ODS: %s = %s"% (diff2, names2))
 
+
+def downloadFromOpendatasoft_and_generatePairwiseDistancesFile():
+    
+    print ("\nWe want the neighbour districts. So first download the GPS midpoints and then calculate the pairwise distances, and sort them.\n")
+     
+    # filename = OPENDATASOFT_PATH
+    filename = download_kreise_locations()
+
+    LKG = load_kreise_locations(filename)
+    
+    AGS_to_geopoint = accelerate_lookup(LKG)
+    print ("sample distance", geo_distance(AGS_to_geopoint, 1001, 1002))
+
+    all_AGS=LKG["Cca 2"].dropna().astype(int).tolist()
+    # all_AGS=all_AGS[:40] # reduce number for dev'ing
+    print("now pairwise distances for %d locations" % len(all_AGS))
+    print()
+    
+    distances, filename = make_distances_table(AGS_to_geopoint, all_AGS)
+    
+    AGS1, km = all_AGS[0], 150
+    print("testing with AGS=%d and km=%d:" % (AGS1, km))
+    print (distances[(distances.km<km) & (distances.AGS1==AGS1)])
+
+    return filename
+    
+
 if __name__ == '__main__':
     
     AGS1,km = 5370, 50
-    generateNew = True
+    generateNew = False
+    
     if generateNew:
-        
-        # filename = OPENDATASOFT_PATH
-        filename = download_kreise_locations()
-    
-        LKG = load_kreise_locations(filename)
-        
-        AGS_to_geopoint = accelerate_lookup(LKG)
-        print ("sample distance", geo_distance(AGS_to_geopoint, 1001, 1002))
-    
-        all_AGS=LKG["Cca 2"].dropna().astype(int).tolist()
-        # all_AGS=all_AGS[:40] # reduce number for dev'ing
-        print("now pairwise distances for %d locations" % len(all_AGS))
-        print()
-        
-        distances, filename = make_distances_table(AGS_to_geopoint, all_AGS)
-        
-        AGS1, km = all_AGS[0], 150
-        print("testing with AGS=%d and km=%d:" % (AGS1, km))
-        print (distances[(distances.km<km) & (distances.AGS1==AGS1)])
+        downloadFromOpendatasoft_and_generatePairwiseDistancesFile()
+       
 
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
     print ("\ns**t that had been inconsistent data:")
@@ -175,7 +190,6 @@ if __name__ == '__main__':
     print ("example for AGS1=" , AGS1)
     print (nearby (distances, AGS1, km))
 
-    
     #print()
     #print (kreis_link(bnn, 0))
     #print (kreis_link(bnn, 1001))
