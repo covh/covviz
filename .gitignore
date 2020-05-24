@@ -2,6 +2,7 @@
 .project
 .pydevproject
 .settings
+py3science
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

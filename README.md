@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ipython kernel install --user --name="py3science"
 ```
 
-or try the newest versions of the Python dependencies:
+or try the newest versions of the Python dependencies (also helps if your system has an **older version of python**) :
 ```
 deactivate
 rm -r ./py3science
@@ -30,10 +30,9 @@ but no guarantees then that my code will still work.
 ### execute
 recreate site, copy content into cov19de repo, git-add-commit-push, done. 
 
-	cd src
-	python3 daily.py
+    ./scripts/downloadAndUpdate.sh
     
-Finally also shows some initial insights into the newest data already.
+That also shows some initial insights into the newest data already.
 
 ### interactive notebook - runs Python in your browser!
 
