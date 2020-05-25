@@ -53,11 +53,11 @@ def repairData(ts, bnn):
     print ("\nRepair dirty risklayer data:")
     newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
     if newcols!=ts.columns.tolist():
-        print ("found and fixed 12.03.20203 --> 12.03.2020 (problem on 25/4/2020)")
+        print ("found and fixed 12.03.20203 --> 12.03.2020 (problem since 25/4/2020)")
     
     newcols2 = ["AGS" if x=='ï»¿AGS' else x for x in newcols]
     if newcols2!=newcols:
-        print ("found and fixed ï»¿AGS --> AGS  (problem on 29/4/2020)")
+        print ("found and fixed ï»¿AGS --> AGS  (problem since 29/4/2020)")
         
     ts.columns = newcols2
 
@@ -72,7 +72,7 @@ def repairData(ts, bnn):
     # print (ts.index.tolist()); exit()
     colproblem, colgood= "10.03.2020", "09.03.2020"
     
-    typo='docs'
+    typo='docs' # problem appeared in 25.05.2020 file:
     ii=ts[ts[colproblem].astype(str)==typo].index.values.tolist()
     # print(ii)
     if ii:
