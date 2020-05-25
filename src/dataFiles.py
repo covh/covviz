@@ -70,29 +70,24 @@ def repairData(ts, bnn):
         ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
 
     # print (ts.index.tolist()); exit()
-    if ts[ts["AGS"]=="09377"]["10.03.2020"].values[0]=='0':
+    colproblem, colgood= "10.03.2020", "09.03.2020"
+    
+    typo='docs'
+    ii=ts[ts[colproblem].astype(str)==typo].index.values.tolist()
+    # print(ii)
+    if ii:
+        print ("found typo '%s' in datafile at positions [%s, %s]" % (typo, ii, colproblem), end=" ")
+        if len(ii)>1:
+            raise Exception("ALARM: SEVERAL")
+        i=ii[0]
+        # print(ts.loc[i,"10.03.2020"])
+        ts.loc[i,colproblem]=ts.loc[i,colgood]
+        # print(ts.loc[i,"10.03.2020"])
         
-        print("\nVERY strange pandas.read_csv() import problem - why?")
-        strangeLine=ts[ts["AGS"]=="09377"]
-        for d in ("09","10","11"):
-            date="%s.03.2020"%d
-            v=strangeLine[date].values
-            print ("%s --> %s --> type %s" % (date, v, type(v[0])))
-            
-        print("Manually changing that flaw", end=" ... ")
-        datebad1, datebad2, datebad3 = "10.03.2020", "11.03.2020", "09.03.2020"
-        i=strangeLine[datebad1].index[0]
-        dategood="05.03.2020"
-        ts.loc[i, datebad1]=numpy.float64(ts.loc[i, dategood])
-        # ts.loc[i, datebad2]=ts.loc[i, dategood]
-        # ts.loc[i, datebad3]=ts.loc[i, dategood]
-        
-        print ("repaired:")
-        strangeLine=ts[ts["AGS"]=="09377"]
-        for d in ("09","10","11"):
-            date="%s.03.2020"%d
-            v=strangeLine[date].values
-            print ("%s --> %s --> type %s" % (date, v, type(v[0])))
+        # ts=ts.drop([401, 402, 403])
+        print ("overwritten with previous day value. Now cast whole column to 'float':", end=" ")
+        ts[colproblem]=ts[colproblem].astype(float)
+        print ("Done.")
 
     # print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)") # solved in source table
     print()
@@ -213,7 +208,7 @@ def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_
             lk_fl = float(lk_fl_de.replace(".", "").replace(".", "").replace(",", "."))
 
             lk_pic = cells[8].img['src']
-            
+            exit()
             datarow = [AGS, lk, lk_wp, lk_hs, lk_hs_wp, lk_ew, lk_fl, lk_pic]
             df=df.append(pd.DataFrame([datarow], columns=columns)) 
             
@@ -228,12 +223,12 @@ def load_wikipedia_landkreise_table(filepath=WP_FILE):
 def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True):
     ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
     bnn=pandas.read_csv(bnn_f)
-    ts, bnn = repairData(ts, bnn)
     print ("\nLoading data from RiskLayer. This is their message:")
-    print ("\n".join(ts[ts.ADMIN.isna()]["AGS"].tolist()))
+    print ("\n".join(ts[ts.ADMIN.isna()][ts.columns[0]].tolist()))
     print()
     # now drop those info lines which are not data:
     ts.drop(ts[ts.ADMIN.isna()].index, inplace=True)
+    ts, bnn = repairData(ts, bnn)
     # ts, bnn = repairData(ts, bnn)
     return ts, bnn
 
