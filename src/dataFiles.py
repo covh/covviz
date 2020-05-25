@@ -5,7 +5,7 @@ Created on 25 Apr 2020
 '''
 
 import os, shutil, hashlib
-import pandas, wget, requests 
+import pandas, wget, requests, numpy
 import bs4 as bs
 import pandas as pd
 
@@ -68,6 +68,31 @@ def repairData(ts, bnn):
         print ("huge drop of some values for 28.4.2020, e.g. Heinsberg: 1733.0  -->   1.739  -->  1743.0 (was a problem on 29/4/2020)")
         print ("temporary fix: interpolate 28. from 27. and 29.")
         ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
+
+    # print (ts.index.tolist()); exit()
+    if ts[ts["AGS"]=="09377"]["10.03.2020"].values[0]=='0':
+        
+        print("\nVERY strange pandas.read_csv() import problem - why?")
+        strangeLine=ts[ts["AGS"]=="09377"]
+        for d in ("09","10","11"):
+            date="%s.03.2020"%d
+            v=strangeLine[date].values
+            print ("%s --> %s --> type %s" % (date, v, type(v[0])))
+            
+        print("Manually changing that flaw", end=" ... ")
+        datebad1, datebad2, datebad3 = "10.03.2020", "11.03.2020", "09.03.2020"
+        i=strangeLine[datebad1].index[0]
+        dategood="05.03.2020"
+        ts.loc[i, datebad1]=numpy.float64(ts.loc[i, dategood])
+        # ts.loc[i, datebad2]=ts.loc[i, dategood]
+        # ts.loc[i, datebad3]=ts.loc[i, dategood]
+        
+        print ("repaired:")
+        strangeLine=ts[ts["AGS"]=="09377"]
+        for d in ("09","10","11"):
+            date="%s.03.2020"%d
+            v=strangeLine[date].values
+            print ("%s --> %s --> type %s" % (date, v, type(v[0])))
 
     # print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)") # solved in source table
     print()
@@ -315,8 +340,8 @@ if __name__ == '__main__':
     # newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
 
-    # downloadData(); # exit()
-    # load_data(); exit()
+    # downloadData(); exit()
+    load_data(); exit()
 
     # ts, bnn = data(withSynthetic=True)
 
