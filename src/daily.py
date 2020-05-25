@@ -160,6 +160,7 @@ def daily_update(regenerate_pages_regardless_if_new_data=False, regenerate_plots
     success1, success2, success3, success4, success5  = False, False, False, False, False
     
     print ("Downloading risklayer data:")
+    # new_CSV, new_master_state = True, True
     new_CSV, new_master_state = download_all(showExtremes=showExtremes)
     success1 = True
 
@@ -195,9 +196,9 @@ if __name__ == '__main__':
     # git_commit_and_push(); exit()
     
     # showSomeExtremeValues()
-    daily_update(publish=True, withSyntheticData=False); exit()
+    # daily_update(publish=True, withSyntheticData=False); exit()
     # daily_update(regenerate_pages_regardless_if_new_data=True, withSyntheticData=False); exit()
-    # daily_update(regenerate_all_plots_and_pages=True, alsoDoThePlots=False); exit()
+    
     daily_update()
     
     # showSomeExtremeValues()
