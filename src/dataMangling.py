@@ -52,7 +52,9 @@ def AGS_to_ts_daily(ts, AGS):
     row = ts.loc[ts['AGS'] == AGS]
     
     # TODO: Use 'datacolumns' instead of dropping
+    # print (row.drop(['AGS', 'ADMIN'], axis=1).columns); exit()
     row = row.drop(['AGS', 'ADMIN'], axis=1)
+    # print(row.values); exit()
     # return row
     diff = row.diff(axis=1)
     return diff.values[0].tolist()
@@ -378,22 +380,7 @@ def add_column_Bundeslaender(Bundeslaender, datacolumns, inputseries=BL_to_daily
     return Bundeslaender
 
 
-def dataMangled(withSynthetic=True, ifPrint=True):
-    ts, bnn = dataFiles.data(withSynthetic=withSynthetic, ifPrint=ifPrint)
-    dates = dates_list(ts)
-    datacolumns = ts.columns[2:]
-    ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
-    ts_sorted = add_centerday_column(ts, ts_BuLa)
-    ts_sorted = add_weekly_columns(ts_sorted, datacolumns)
-    ts_sorted = add_column_Kreise(ts_sorted, datacolumns, inputseries=AGS_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
-    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender, datacolumns)
-    Bundeslaender_sorted = add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)
-    Bundeslaender_sorted = add_column_Bundeslaender(Bundeslaender_sorted , datacolumns, inputseries=BL_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
-    return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
-
-
-
-if __name__ == '__main__':
+def test_some_mangling():
     ts, bnn = dataFiles.data(withSynthetic=True)
     
     print (find_AGS(ts, "Osnabrück"))
@@ -405,6 +392,8 @@ if __name__ == '__main__':
     AGS = "1001"
     AGS = "5370"
     AGS = "9377"
+    
+    print ("AGS=%s" % AGS)
     print(AGS_to_ts_total(ts, AGS))
     print(AGS_to_ts_daily(ts, AGS))
     
@@ -413,14 +402,14 @@ if __name__ == '__main__':
     name, inf_BL, pop_BL = AGS_to_Bundesland(bnn, AGS)
     print (name, inf_BL, pop_BL )
     nameAndType = AGS_to_name_and_type(bnn, AGS)
-    print (nameAndType ); # exit()
+    print (nameAndType ); exit()
     
-    data = AGS_to_ts_daily(ts, "0")
-    print (len(data))
-    data = AGS_to_ts_daily(ts, "00000")
-    print (len(data)) 
+    dailyIncrease = AGS_to_ts_daily(ts, "0")
+    print (len(dailyIncrease))
+    dailyIncrease = AGS_to_ts_daily(ts, "00000")
+    print (len(dailyIncrease)) 
     
-    center, signal = temporal_center(data)
+    center, signal = temporal_center(dailyIncrease)
     print ("expectation value at day %.2f" % center)
     
     print ("\nKreis")
@@ -464,5 +453,27 @@ if __name__ == '__main__':
     for BL in Bundeslaender_sorted.index:
         test_Reff_BL(Bundeslaender_sorted, datacolumns, BL=BL, filename=BL+".png")
     
+    
+
+def dataMangled(withSynthetic=True, ifPrint=True):
+    ts, bnn = dataFiles.data(withSynthetic=withSynthetic, ifPrint=ifPrint)
+    dates = dates_list(ts)
+    datacolumns = ts.columns[2:]
+    print ("Newest column = '%s'" % datacolumns[-1])
+    ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
+    ts_sorted = add_centerday_column(ts, ts_BuLa)
+    ts_sorted = add_weekly_columns(ts_sorted, datacolumns)
+    ts_sorted = add_column_Kreise(ts_sorted, datacolumns, inputseries=AGS_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
+    Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender, datacolumns)
+    Bundeslaender_sorted = add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)
+    Bundeslaender_sorted = add_column_Bundeslaender(Bundeslaender_sorted , datacolumns, inputseries=BL_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
+    return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
+
+
+
+if __name__ == '__main__':
+    test_some_mangling(); exit()
+    
+    # ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangled(withSynthetic=True)
     
     
