@@ -87,7 +87,21 @@ If it does, your last step is to configure the github pages, in YOUR fork of htt
 Done.
 
 
-## interactive notebook - runs Python in your browser!
+## source data
+
+> Data can be used for reproduction with attribution to "Risklayer GmbH (www.risklayer.com) and Center for Disaster Management and Risk Reduction Technology (CEDIM) at Karlsruhe Institute of Technology (KIT) and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors".  
+> Data sources can be found under https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/edit?usp=sharing  
+> Authors: James Daniell| Johannes Brand| Andreas Schaefer and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors through Risklayer GmbH and Center for Disaster Management and Risk Reduction Technology (CEDIM) at the Karlsruhe Institute of Technology (KIT). 
+
+### initial dataset - but not uptodate
+When initializing a new machine, it was just simpler to have an initial dataset available. Thus, I have now checked in the `26.05.2020` state of the risklayer source data (as it overrides the `.gitignore`, with forced `git add -f GermanyValues_RiskLayer.csv`). BUT I don't want to always update this repo when there is a -daily- new column. And a command is supposed to help with that. So ... I suggest you do that manually:
+
+    git update-index --assume-unchanged data/GermanyValues_RiskLayer.csv
+
+(the undoing would be `--no-assume-unchanged`).
+
+
+### interactive notebook - runs Python in your browser!
 
 experimental: 
 
