@@ -59,7 +59,7 @@ later: pull code & site; recreate site, copy content into cov19de repo, git-add-
 That script also shows some initial insights into the newest data already.
 
 #### git push
-git push (the last step in downloadAndUpdate.sh) will only work if you have write access to the repo, i.e. you must adapt the following to your fork of the repo (for example, swap out `covh` for *your* github username), and you must create and [upload an SSH key, see here](https://github.com/settings/keys), then edit the .git config of your site repo fork: 
+git push (the last step of `downloadAndUpdate.sh`) will only properly work if you have write access to the repo, i.e. you must adapt the following to *your fork* of that repo (for example, swap out `covh` for *your* github username), and you must create and [upload an SSH key, see here](https://github.com/settings/keys), then edit the `.git config` of your site repo fork: 
 
     gedit covh/cov19de/config
 
@@ -75,6 +75,14 @@ and change it so that it contains something like this:
     name = Your Name
     email = your@email.address
 ```
+
+Run this simple script (after editing any file in that repo) in the site repo, to try out whether the ssh git push works:
+
+[./git-add-commit-push.sh](https://github.com/covh/cov19de/blob/master/git-add-commit-push.sh)
+
+If it does, your last step is to configure the github pages, in YOUR fork of https://github.com/covh/cov19de/settings (i.e. with `covh` changed to your username), to "Source master branch = Your GitHub Pages site is currently being built from the master branch."
+
+Done.
 
 
 ## interactive notebook - runs Python in your browser!
