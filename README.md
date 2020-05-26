@@ -84,7 +84,9 @@ Run this simple script (after editing any file in that repo) in the site repo, t
 
 If it does, your last step is to configure the github pages, in YOUR fork of https://github.com/covh/cov19de/settings (i.e. with `covh` changed to your username), to "Source master branch = Your GitHub Pages site is currently being built from the master branch."
 
-Done.
+**Done**.
+
+Perhaps you want to also sync the timezone on that machine, so that the plots show German time: `sudo timedatectl set-timezone Europe/Berlin`.
 
 
 ## source data
