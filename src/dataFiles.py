@@ -208,7 +208,7 @@ def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_
             lk_fl = float(lk_fl_de.replace(".", "").replace(".", "").replace(",", "."))
 
             lk_pic = cells[8].img['src']
-            exit()
+
             datarow = [AGS, lk, lk_wp, lk_hs, lk_hs_wp, lk_ew, lk_fl, lk_pic]
             df=df.append(pd.DataFrame([datarow], columns=columns)) 
             
