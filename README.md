@@ -1,9 +1,13 @@
 # covid19 time series visualization - districts of Germany
 generates a static website from daily updated infections data in Germany.
 
-### start here:
+### start here, to learn about the purpose of the project
 
-[index.html](index.html) and then [pages/about.html](pages/about.html)
+[index.html](https://covh.github.io/cov19de/index.html) and then [pages/about.html](https://covh.github.io/cov19de/pages/about.html)
+
+## architecture:
+* covh/covviz = code. Python, bash scripts, instructions, static pages, etc = sparse, small, lots of .gitignore.
+* covh/cov19de = site. Copies of all (generated & static) HTML pages, plot images, etc = the github pages at [covh.github.io/cov19de](https://covh.github.io/cov19de)  
 
 ### dependencies, clone, install
 needed machine wide dependencies: git for github, virtualenv for python, expect for unbuffer
