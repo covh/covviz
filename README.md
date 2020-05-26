@@ -63,7 +63,7 @@ That script also shows some initial insights into the newest data already.
 #### git push
 git push (the last step of `downloadAndUpdate.sh`) will only properly work if you have write access to the repo, i.e. you must adapt the following to *your fork* of that repo (for example, swap out `covh` for *your* github username), and you must create and [upload an SSH key, see here](https://github.com/settings/keys), then edit the `.git config` of your site repo fork: 
 
-    gedit covh/cov19de/config
+    nano covh/cov19de/.git/config
 
 and change it so that it contains something like this:
 
