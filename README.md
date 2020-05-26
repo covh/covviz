@@ -9,6 +9,8 @@ generates a static website from daily updated infections data in Germany.
 * covh/covviz = code. Python, bash scripts, instructions, static pages, etc = sparse, small, lots of .gitignore.
 * covh/cov19de = site. Copies of all (generated & static) HTML pages, plot images, etc = the github pages at [covh.github.io/cov19de](https://covh.github.io/cov19de)  
 
+If you want to work with this, and make your own copy of the site, fork both repositories. Swap out `covh` for your username everywhere below.
+
 ### dependencies, clone, install
 needed machine wide dependencies: git for github, virtualenv for python, expect for unbuffer
 
