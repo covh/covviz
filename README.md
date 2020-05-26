@@ -77,13 +77,13 @@ and change it so that it contains something like this:
 ```
 
 
-### interactive notebook - runs Python in your browser!
+## interactive notebook - runs Python in your browser!
 
 experimental: 
 
 * first try working with the raw data: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/covh/covviz/master?filepath=notebooks%2Frisklayer-pandas.ipynb) (starts a Jupyter notebook, with the whole repo preloaded, all dependencies installed, etc.).
 
-### see also:
+## see also:
 
 [todo.md](todo.md), [history.txt](history.txt), [log.txt](log.txt)
 
