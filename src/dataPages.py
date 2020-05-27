@@ -498,7 +498,7 @@ def generate_hotspot_files():
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(ifPrint=False)
     distances = districtDistances.load_distances()
-    for AGS in (5558, 16072, 9163, 16076, 9473, 9263, 9278, 8231, 4011, 5382, 9362, 9478, 5370, 3459, 9463, 9376, 9475):
+    for AGS in (5558, 16072, 9163, 16076, 9473, 9263, 9278, 8231, 4011, 5382, 9362, 9478, 5370, 3459, 9463, 9376, 9475, 5554, 8231):
         neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
 
 
