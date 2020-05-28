@@ -102,10 +102,21 @@ def temporal_center(data):
           So perhaps better to leave them in?
     """
     ddata = data[1:] # drop the nan in the first cell, i.e. shift left
+    # print (ddata)
     productsum = sum([d*(i+1) for i,d in enumerate(ddata)]) # add one i.e. shift right
     center = productsum/sum(ddata) # + 1 - 1 # shift left and right equalize each other
     # synthetic "data" with one peak near center:
     signal = [0]*len(data)
+    
+    # TODO: this could also be a signal that the source data is errorenous.
+    #       perhaps let it fail instead of this workaround to keep going?
+    if center < 0:
+        print ("ALERT: centerday index negative = %.2f" % center)
+        center = 0 
+    if int(round(center)) > len(data)-1:
+        print ("ALERT: int(round(centerday)) index larger than array length = %.2f" % center)
+        center = len(data)-1
+    
     signal[int(round(center))]=max(ddata)*0.25
     return center, signal
     
@@ -402,7 +413,7 @@ def test_some_mangling():
     name, inf_BL, pop_BL = AGS_to_Bundesland(bnn, AGS)
     print (name, inf_BL, pop_BL )
     nameAndType = AGS_to_name_and_type(bnn, AGS)
-    print (nameAndType ); exit()
+    print (nameAndType )
     
     dailyIncrease = AGS_to_ts_daily(ts, "0")
     print (len(dailyIncrease))
@@ -411,6 +422,7 @@ def test_some_mangling():
     
     center, signal = temporal_center(dailyIncrease)
     print ("expectation value at day %.2f" % center)
+    # exit()
     
     print ("\nKreis")
     daily, cumulative, title, filename, pop = get_Kreis(ts, bnn, AGS)
