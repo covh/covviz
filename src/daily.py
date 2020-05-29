@@ -195,8 +195,8 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
-    # showSomeExtremeValues()
-    # daily_update(publish=True, withSyntheticData=False); exit()
+    # showSomeExtremeValues(); exit()
+    daily_update(publish=False, withSyntheticData=False); exit()
     # daily_update(regenerate_pages_regardless_if_new_data=True, withSyntheticData=False); exit()
     
     daily_update()
