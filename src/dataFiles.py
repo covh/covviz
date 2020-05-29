@@ -4,7 +4,7 @@ Created on 25 Apr 2020
 @author: andreas
 '''
 
-import os, shutil, hashlib
+import os, shutil, hashlib, time
 import pandas, wget, requests, numpy
 import bs4 as bs
 import pandas as pd
@@ -76,7 +76,7 @@ def repairData(ts, bnn):
     ii=ts[ts[colproblem].astype(str)==typo].index.values.tolist()
     # print(ii)
     if ii:
-        print ("found typo '%s' in datafile at positions [%s, %s]" % (typo, ii, colproblem), end=" ")
+        print ("found typo '%s' in datafile at positions [%s, %s] (was a problem on 25/5/2020)" % (typo, ii, colproblem), end=" ")
         if len(ii)>1:
             raise Exception("ALARM: SEVERAL")
         i=ii[0]
@@ -98,17 +98,40 @@ def inspectNewestData(ts):
     ts, _ = repairData(ts, [])
     
     # print (ts.columns)
-    last3columns=ts.columns[-3:].tolist() + ["ADMIN"]
-    df = ts[last3columns]
-    print ("\nJust visual inspection - unless the following tables get VERY LONG - all is probably good ...\n(TODO: Automate this with two thresholds (number of, amount of drop)?)")
-    print ("\nvalues going down for previous:")
-    print (df[df[last3columns[1]]<df[last3columns[0]]])
-    print ("\nvalues going down for newest:")
-    print (df[df[last3columns[2]]<df[last3columns[1]]])
+    lastColumns=["ADMIN"] + ts.columns[-5:].tolist()
+    df = ts[lastColumns]
+    print ("\nJust visual inspection - unless the following tables get VERY LONG - all is probably good ...\n(TODO: Automate this with two thresholds (number of, amount of drop)?)\n")
+    
+    pandas.set_option('display.max_columns', None)
+    pandas.set_option('display.width', 200)
+    pandas.set_option('display.max_rows', None)
+    
+    # TODO: 
+    # when this became 91 rows, with sometimes > 1500 cases dropped
+    # it helped to find out that the source data was errorenous.
+    # perhaps in the future, let the script fail? Send an email to admin?
+    # for now it simply prints an ALERT, but only by number of rows
+    # and not yet by total negative diff.
+    down_prev=df[df[lastColumns[-2]]<df[lastColumns[-3]]]
+    if len(down_prev)>20:
+        print (("*"*100 + "\n")*3)
+        print ("ALERT: Alarmingly many - ", end=" ")
+    print ("%d values going DOWN for previous day:" % len(down_prev))
+    time.sleep(2)
+    print (down_prev)
+    print()
+    
+    down_last=df[df[lastColumns[-1]]<df[lastColumns[-2]]]
+    if len(down_last)>20:
+        print ("ALERT: Alarmingly many - ", end=" ")
+    print ("%d values going DOWN for newest day:" % len(down_last))
+    time.sleep(2)
+    print (down_last)
+    print()
     
     print()
     print ("Totals:")
-    datecolumns=ts.columns[-4:].tolist()
+    datecolumns=ts.columns[-6:].tolist()
     df = ts[datecolumns].sum()
     # df["diff"]=df.diff()
     print (df.astype(int).to_string())
@@ -335,7 +358,7 @@ if __name__ == '__main__':
     # newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
 
-    # downloadData(); exit()
+    downloadData(); exit()
     load_data(); exit()
 
     # ts, bnn = data(withSynthetic=True)
