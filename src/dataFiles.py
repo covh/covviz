@@ -235,8 +235,8 @@ def inspectNewestData(ts):
     
 def hash_file(filename):
     with open(filename,"rb") as f:
-        bytes = f.read() # read entire file as bytes
-        readable_hash = hashlib.sha256(bytes).hexdigest();
+        allbytes = f.read() # read entire file as bytes
+        readable_hash = hashlib.sha256(allbytes).hexdigest();
     # print(readable_hash)
     return readable_hash
     
@@ -431,8 +431,8 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500")
     filename =filestump % timestamp
     print ("Reading from", filename)
     df = pandas.read_csv(filename)
-    sum=df["Fälle Heute bis 00Uhr"].sum()
-    print ("Sum", sum, end=" ")
+    daysum=df["Fälle Heute bis 00Uhr"].sum()
+    print ("Sum", daysum, end=" ")
     lastEntry=pandas.to_datetime(df.Zeit).max()
     print ("Last entry was:", lastEntry)
     df=add_urls_column(df)
