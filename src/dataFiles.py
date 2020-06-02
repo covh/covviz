@@ -49,8 +49,74 @@ OPENDATASOFT_PATH = os.path.join(DATA_PATH, "landkreise-in-germany.csv")
 DISTANCES_PATH = os.path.join(DATA_PATH, "distances.csv")
 
 
+def swap_specific_typo_cells(df, correct_type, wrong='o', correct='0'):
+    """
+    Every few days, riskLayer makes another typo in the CSV file. 
+    
+    This is hopefully useful as an abstraction to fix that faster in future cases.
+    It will always need manual interaction but this should speed it up.
+    
+    1 search for any occurence of 'o'
+    2 go through all rows (indices) affected
+    3 find the specific columns with 'o'
+    4 correct the data, by overwriting with '0'
+    5 cast all those affected columns to <class 'numpy.float64'>
+    6 return a corrected dataframe, and the rows - if the latter is empty, nothing had happened.
+    """
+    
+    print("Searching for '%s' instead of '%s':" %(wrong, correct))
+    typos = df[df.astype(str).eq(wrong).any(1)]
+    affected_cols=[]
+    for i in typos.index:
+        print ("row index", i)
+        cols=df.columns[df.loc[i].astype(str)==wrong].tolist()
+        # print(cols)
+        for col in cols:
+            print(col, ":", df.loc[i,col], end=" --> ")
+            df.loc[i,col]=correct
+            print(df.loc[i,col])
+        affected_cols.extend(cols)
+    
+    if affected_cols:
+        print ("Done. Now casting affected columns %s to %s" % (affected_cols, correct_type))
+        for col in affected_cols:
+            df[col]=df[col].astype(correct_type)
+        
+    return df, affected_cols
+
+        
+def testing_swap_specific_typo_cells():
+    df=pandas.read_csv(TS_NEWEST, encoding='cp1252')
+    
+    print("\ndefault example with 'o' instead of '0':")
+    swap_specific_typo_cells(df, correct_type=type(df.loc[1, "01.06.2020"]))
+    
+    print("\nexample with 'docs' instead of '0':")
+    df, cols=swap_specific_typo_cells(df, correct_type=type(df.loc[1, "01.06.2020"]), wrong='docs', correct=0)
+    if not cols:
+        print("Looks like they've repaired it.")
+    
+    print("\nexample with several findings:")
+    swap_specific_typo_cells(df, correct_type=type(df.loc[1, "01.06.2020"]), wrong='601.0', correct=601.0)
+
+
+
 def repairData(ts, bnn):
+    """
+    The CSV contains data typos every few days.
+    This will only get better when they automate the procedure to create the CSV, see their "Fragen und Antworten" sheet.
+    These problems are patched here:
+    
+    12.03.20203
+    ï»¿AGS
+    1733.0  -->   1.739  -->  1743.0
+    'docs'
+    'o'
+    """
+    
     print ("\nRepair dirty risklayer data:")
+    
+    
     newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
     if newcols!=ts.columns.tolist():
         print ("found and fixed 12.03.20203 --> 12.03.2020 (problem since 25/4/2020)")
@@ -60,6 +126,7 @@ def repairData(ts, bnn):
         print ("found and fixed ï»¿AGS --> AGS  (problem since 29/4/2020)")
         
     ts.columns = newcols2
+    
 
     before = ts[ts["AGS"]=="05370"]["27.04.2020"]
     after  = ts[ts["AGS"]=="05370"]["28.04.2020"]
@@ -69,6 +136,7 @@ def repairData(ts, bnn):
         print ("temporary fix: interpolate 28. from 27. and 29.")
         ts["28.04.2020"]=(ts["29.04.2020"]+ts["27.04.2020"])/2
 
+    
     # print (ts.index.tolist()); exit()
     colproblem, colgood= "10.03.2020", "09.03.2020"
     
@@ -89,9 +157,19 @@ def repairData(ts, bnn):
         ts[colproblem]=ts[colproblem].astype(float)
         print ("Done.")
 
+    
+    wrong, correct='o',0 # typo 'o' instead of 0
+    df, cols = swap_specific_typo_cells(ts, correct_type=type(ts.loc[1, "01.06.2020"]), wrong=wrong, correct=correct)
+    if cols:
+        print("found and fixed typo '%s' which had cast whole column/s %s to string. Corrected that now. (appeared on June 2nd 2020)" % (wrong, cols))
+        ts=df
+    else:
+        print("They fixed that problem (which had appeared on June 2nd).")
+    
     # print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)") # solved in source table
     print()
     return ts, bnn
+
 
 def pandas_settings_full_table():
     pandas.set_option('display.max_columns', None)
@@ -121,7 +199,8 @@ def inspectNewestData(ts):
         print ("ALERT: Alarmingly many - ", end=" ")
     print ("%d values going DOWN for previous day:" % len(down_prev))
     time.sleep(2)
-    print (down_prev)
+    if len(down_prev):
+        print (down_prev)
     print()
     
     down_last=df[df[lastColumns[-1]]<df[lastColumns[-2]]]
@@ -129,7 +208,8 @@ def inspectNewestData(ts):
         print ("ALERT: Alarmingly many - ", end=" ")
     print ("%d values going DOWN for newest day:" % len(down_last))
     time.sleep(2)
-    print (down_last)
+    if len(down_last):
+        print (down_last)
     print()
     
     print()
@@ -295,7 +375,7 @@ def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_
 def save_csv_twice(df, filestump=HAUPT_FILES):
     
     pandas_settings_full_table()
-    print ("df.Zeit\n", df.Zeit)
+    # print ("df.Zeit\n", df.Zeit)
     
     # became more complicated on June 1st because pandas read 01/06/2020 as 6th of January. The dropna is probably not needed? But anyways, we focus on the newest date only so typos don't matter....
     to_datetimes = pandas.to_datetime(df.Zeit, format="%d/%m/%Y %H:%M", errors='coerce')
@@ -304,7 +384,7 @@ def save_csv_twice(df, filestump=HAUPT_FILES):
     to_datetimes_strings = to_datetimes.dropna().dt.strftime("%Y%m%d_%H%M%S")
     #print("to_datetimes_strings", to_datetimes_strings)  
     lastEntry = to_datetimes_strings.max()
-    print ("Last entry was:", lastEntry)
+    print ("Newest entry was:", lastEntry)
     
     timestamp=lastEntry
     filename1=filestump % ("-" + timestamp)
@@ -361,9 +441,10 @@ def scrape_and_test_wikipedia_pages():
     
 
 if __name__ == '__main__':
+    # testing_swap_specific_typo_cells(); exit()
     # test_comparison(); exit()
     
-    get_master_sheet_haupt(); exit() 
+    # get_master_sheet_haupt(); exit() 
     # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit()
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
     # equal = downloadData(andStore=False);
@@ -372,7 +453,7 @@ if __name__ == '__main__':
     # newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
 
-    downloadData(); exit()
+    # downloadData(); exit()
     load_data(); exit()
 
     # ts, bnn = data(withSynthetic=True)
