@@ -100,6 +100,12 @@ def testing_swap_specific_typo_cells():
     swap_specific_typo_cells(df, correct_type=type(df.loc[1, "01.06.2020"]), wrong='601.0', correct=601.0)
 
 
+def show_problematic_columns(df, type_wanted=numpy.float64, how_many_different=2):
+    cols = df.columns[df.dtypes!=type_wanted].tolist()
+    if len(cols)>how_many_different:
+        print("There are columns which are not '%s': %s" % (type_wanted, cols))
+        
+
 
 def repairData(ts, bnn):
     """
@@ -115,6 +121,8 @@ def repairData(ts, bnn):
     """
     
     print ("\nRepair dirty risklayer data:")
+    
+    show_problematic_columns(ts)
     
     
     newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
@@ -165,6 +173,9 @@ def repairData(ts, bnn):
         ts=df
     else:
         print("They fixed that problem (which had appeared on June 2nd).")
+    
+    # perhaps there are still columns that need fixing:
+    show_problematic_columns(ts)
     
     # print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)") # solved in source table
     print()
