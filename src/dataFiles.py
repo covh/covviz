@@ -93,6 +93,11 @@ def repairData(ts, bnn):
     print()
     return ts, bnn
 
+def pandas_settings_full_table():
+    pandas.set_option('display.max_columns', None)
+    pandas.set_option('display.width', 200)
+    pandas.set_option('display.max_rows', None)
+
 
 def inspectNewestData(ts):
     ts, _ = repairData(ts, [])
@@ -102,9 +107,7 @@ def inspectNewestData(ts):
     df = ts[lastColumns]
     print ("\nJust visual inspection - unless the following tables get VERY LONG - all is probably good ...\n(TODO: Automate this with two thresholds (number of, amount of drop)?)\n")
     
-    pandas.set_option('display.max_columns', None)
-    pandas.set_option('display.width', 200)
-    pandas.set_option('display.max_rows', None)
+    pandas_settings_full_table()
     
     # TODO: 
     # when this became 91 rows, with sometimes > 1500 cases dropped
@@ -285,14 +288,25 @@ def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_
     print (risklayer_sheet_url)
     df=pandas.read_csv(risklayer_sheet_url) # error_bad_lines=False)
     if reindex:
-        df.index=df[reindex].tolist() # index == AGS, easier access
+        df.index=df[reindex].tolist() # index == AGS, easier accessprint("to_datetimes\n", to_datetimes)
     #print(df.columns.tolist())
     return df
     
 def save_csv_twice(df, filestump=HAUPT_FILES):
-    lastEntry=pandas.to_datetime(df.Zeit).max()
+    
+    pandas_settings_full_table()
+    print ("df.Zeit\n", df.Zeit)
+    
+    # became more complicated on June 1st because pandas read 01/06/2020 as 6th of January. The dropna is probably not needed? But anyways, we focus on the newest date only so typos don't matter....
+    to_datetimes = pandas.to_datetime(df.Zeit, format="%d/%m/%Y %H:%M", errors='coerce')
+    # print("to_datetimes\n", to_datetimes)
+    #print("to_datetimes dropna\n", to_datetimes.dropna())
+    to_datetimes_strings = to_datetimes.dropna().dt.strftime("%Y%m%d_%H%M%S")
+    #print("to_datetimes_strings", to_datetimes_strings)  
+    lastEntry = to_datetimes_strings.max()
     print ("Last entry was:", lastEntry)
-    timestamp=lastEntry.strftime("%Y%m%d_%H%M%S")
+    
+    timestamp=lastEntry
     filename1=filestump % ("-" + timestamp)
     existed = os.path.isfile(filename1)
     df.to_csv(filename1, index=False)
@@ -349,7 +363,7 @@ def scrape_and_test_wikipedia_pages():
 if __name__ == '__main__':
     # test_comparison(); exit()
     
-    # get_master_sheet_haupt(); exit() 
+    get_master_sheet_haupt(); exit() 
     # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit()
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
     # equal = downloadData(andStore=False);
