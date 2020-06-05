@@ -225,7 +225,7 @@ def inspectNewestData(ts):
     
     print()
     print ("Totals:")
-    datecolumns=ts.columns[-6:].tolist()
+    datecolumns=ts.columns[-9:].tolist()
     df = ts[datecolumns].sum()
     # df["diff"]=df.diff()
     print (df.astype(int).to_string())
@@ -464,7 +464,7 @@ if __name__ == '__main__':
     # newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
 
-    # downloadData(); exit()
+    downloadData(); exit()
     load_data(); exit()
 
     # ts, bnn = data(withSynthetic=True)
