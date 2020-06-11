@@ -293,6 +293,15 @@ def downloadData(andStore=True):
     return not equal, ts
 
 
+def downloadDataNotStoring():
+    """
+    good for readonly files system like on heroku 
+    """
+    print (RISKLAYER_URL01)
+    ts=pandas.read_csv(RISKLAYER_URL01, encoding='cp1252') # encoding='utf-8')
+    return ts
+
+
 def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
                                    filename=WP_FILE):
     

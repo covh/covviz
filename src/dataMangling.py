@@ -466,9 +466,10 @@ def test_some_mangling():
         test_Reff_BL(Bundeslaender_sorted, datacolumns, BL=BL, filename=BL+".png")
     
     
-
-def dataMangled(withSynthetic=True, ifPrint=True):
-    ts, bnn = dataFiles.data(withSynthetic=withSynthetic, ifPrint=ifPrint)
+def additionalColumns(ts,bnn):
+    """
+    this can operate on data in RAM
+    """
     dates = dates_list(ts)
     datacolumns = ts.columns[2:]
     print ("Newest column = '%s'" % datacolumns[-1])
@@ -479,6 +480,16 @@ def dataMangled(withSynthetic=True, ifPrint=True):
     Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender, datacolumns)
     Bundeslaender_sorted = add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)
     Bundeslaender_sorted = add_column_Bundeslaender(Bundeslaender_sorted , datacolumns, inputseries=BL_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
+    return  ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
+
+def dataMangled(withSynthetic=True, ifPrint=True):
+    """
+    this loads from disk first
+    """
+    ts, bnn = dataFiles.data(withSynthetic=withSynthetic, ifPrint=ifPrint)
+
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = additionalColumns(ts,bnn)
+    
     return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
 
 
