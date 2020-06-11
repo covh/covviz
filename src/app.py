@@ -1,6 +1,7 @@
 ﻿import os, sys
 
 import bottle
+from dataFiles import inspectNewestData
 bottle.TEMPLATE_PATH.insert(0, '../views') # corrects path for local machine
 
 from bottle import route, template, redirect, static_file, error, run
@@ -24,9 +25,9 @@ def csvtest():
     old_stdout = sys.stdout
     sys.stdout = mystdout = StringIO()
     
-    new_CSV, ts = dataFiles.downloadData(andStore=False)
-    print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
-   
+    ts = dataFiles.downloadDataNotStoring()
+    print ("\ndownloaded timeseries CSV DataFrame size: %s x %s \n" % (len(ts.columns), len(ts)))
+    inspectNewestData(ts)
 
     sys.stdout = old_stdout
     data = mystdout.getvalue()
