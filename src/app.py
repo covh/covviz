@@ -1,7 +1,12 @@
-﻿import os
+﻿import os, sys
+
+import bottle
+bottle.TEMPLATE_PATH.insert(0, '../views') # corrects path for local machine
 
 from bottle import route, template, redirect, static_file, error, run
+from io import StringIO
 
+import dataFiles
 
 @route('/home')
 def show_home():
@@ -14,9 +19,19 @@ def handle_root_url():
 
 
 @route('/csvtest')
-def make_request():
-    # make an API request here
-    data="test123"
+def csvtest():
+    
+    old_stdout = sys.stdout
+    sys.stdout = mystdout = StringIO()
+    
+    new_CSV = dataFiles.downloadData()
+    print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
+    
+    
+
+    sys.stdout = old_stdout
+    data = mystdout.getvalue()
+    # data="test123"
     return template('csvtest', output=data)
 
 
