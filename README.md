@@ -44,7 +44,7 @@ rm -r ./py3science
 python3 -m venv ./py3science
 source ./py3science/bin/activate
 pip3 install -U pip wheel
-pip3 install jupyter ipykernel numpy pandas matplotlib wget geopy requests beautifulsoup4 lxml
+pip3 install jupyter ipykernel numpy pandas matplotlib wget geopy requests beautifulsoup4 lxml bottle
 ipython kernel install --user --name="py3science"
 ```
 but no guarantees then that my code will still work.
@@ -108,6 +108,29 @@ When initializing a new machine, it was just simpler to have an initial dataset 
 experimental: 
 
 * first try working with the raw data: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/covh/covviz/master?filepath=notebooks%2Frisklayer-pandas.ipynb) (starts a Jupyter notebook, with the whole repo preloaded, all dependencies installed, etc.).
+
+## interactive app
+This is unready. Deployed to heroku with these commands:
+
+```
+heroku login
+
+heroku create cov19de
+heroku apps
+heroku git:remote -a cov19de
+git remote -v
+
+git push heroku master
+heroku open
+heroku logs --tail
+```
+
+or run locally with
+
+```
+source ./py3science/bin/activate
+python3 src/app.py
+```
 
 ## see also:
 
