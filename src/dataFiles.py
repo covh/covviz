@@ -288,7 +288,9 @@ def downloadData(andStore=True):
     # print ("TODO perhaps")
     # print (RISKLAYER_URL02)
     # print ("sheet", RISKLAYER_URL02_SHEET)
-    return not equal
+
+    # Say if a new file was created. Also return the dataFrame itself, for use on readonly filesystem (heroku):
+    return not equal, ts
 
 
 def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
@@ -461,10 +463,10 @@ if __name__ == '__main__':
     # get_master_sheet_haupt(); exit() 
     # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit() 
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
-    # equal = downloadData(andStore=False);
+    # equal, ts = downloadData(andStore=False);
 
 
-    # newData = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
+    # newData, ts = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
 
     downloadData(); exit()

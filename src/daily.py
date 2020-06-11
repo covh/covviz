@@ -68,7 +68,7 @@ def showSomeExtremeValues():
 ## download and process:
 
 def download_all(showExtremes=True):
-    new_CSV = dataFiles.downloadData()
+    new_CSV, _ = dataFiles.downloadData()
     print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
 
     new_master_state = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
