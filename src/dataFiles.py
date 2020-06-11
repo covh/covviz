@@ -107,7 +107,7 @@ def show_problematic_columns(df, type_wanted=numpy.float64, how_many_different=2
         
 
 
-def repairData(ts, bnn):
+def repairData(ts):
     """
     The CSV contains data typos every few days.
     This will only get better when they automate the procedure to create the CSV, see their "Fragen und Antworten" sheet.
@@ -177,9 +177,8 @@ def repairData(ts, bnn):
     # perhaps there are still columns that need fixing:
     show_problematic_columns(ts)
     
-    # print ("Still unfixed: 10000 --> 1000 in bnn!k2 (i.e. fixed manually)") # solved in source table
     print()
-    return ts, bnn
+    return ts
 
 
 def pandas_settings_full_table():
@@ -189,7 +188,7 @@ def pandas_settings_full_table():
 
 
 def inspectNewestData(ts):
-    ts, _ = repairData(ts, [])
+    ts = repairData(ts)
     
     # print (ts.columns)
     lastColumns=["ADMIN"] + ts.columns[-5:].tolist()
@@ -356,8 +355,7 @@ def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True):
     print()
     # now drop those info lines which are not data:
     ts.drop(ts[ts.ADMIN.isna()].index, inplace=True)
-    ts, bnn = repairData(ts, bnn)
-    # ts, bnn = repairData(ts, bnn)
+    ts = repairData(ts)
     return ts, bnn
 
 
