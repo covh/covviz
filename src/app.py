@@ -24,7 +24,7 @@ def csvtest():
     old_stdout = sys.stdout
     sys.stdout = mystdout = StringIO()
     
-    new_CSV, ts = dataFiles.downloadData()
+    new_CSV, ts = dataFiles.downloadData(andStore=False)
     print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
    
 
