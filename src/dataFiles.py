@@ -416,18 +416,21 @@ def get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET_20200521):
     return not existed
 
 
-def add_urls_column(df):
+def add_urls_column(df, hauptversion="v02"):
     """
     combines all web sources into one column, as list
     """
-    websources = ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names']
+    print (df.columns); exit()
+    quellenspalten={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
+                    "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'] }
+    websources = quellenspalten[hauptversion] 
     df["urls"]= [sorted(list(set( [url 
                             for url in urllist 
-                            if url!=""] )))    # remove the nans
+                            if url!="" and url!="nn"] )))    # remove the nans
                  for urllist in df[websources].fillna("").values.tolist()] 
     return df
 
-def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500"):
+def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500", hauptversion="v02"):
     filename =filestump % timestamp
     print ("Reading from", filename)
     df = pandas.read_csv(filename)
@@ -435,7 +438,7 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500")
     print ("Sum", daysum, end=" ")
     lastEntry=pandas.to_datetime(df.Zeit).max()
     print ("Last entry was:", lastEntry)
-    df=add_urls_column(df)
+    df=add_urls_column(df, hauptversion=hauptversion)
     print ("added urls column with all websources combined")
     
     df.index=df.AGS.tolist() 
@@ -456,7 +459,7 @@ if __name__ == '__main__':
     # test_comparison(); exit()
     
     # get_master_sheet_haupt(); exit() 
-    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit()
+    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit() 
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
     # equal = downloadData(andStore=False);
 
