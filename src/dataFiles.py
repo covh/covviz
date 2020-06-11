@@ -429,7 +429,7 @@ def add_urls_column(df, hauptversion="v02"):
     """
     combines all web sources into one column, as list
     """
-    print (df.columns); exit()
+    # print (df.columns); exit()
     quellenspalten={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
                     "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'] }
     websources = quellenspalten[hauptversion] 
