@@ -53,7 +53,7 @@ def title(text):
     
 def showSomeExtremeValues():
     print ("\n show some insights\n")
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True) # TODO: next - make this RAM only too.
     # print (ts_sorted.columns)
     columns_into_integers(ts_sorted, datacolumns)
     add_incidence_prevalence(ts_sorted, datacolumns)
