@@ -346,16 +346,26 @@ def load_wikipedia_landkreise_table(filepath=WP_FILE):
     df = pd.read_csv(filepath, index_col="AGS")
     return df
 
-
-def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True):
-    ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
-    bnn=pandas.read_csv(bnn_f)
+def attribution_and_repair(ts):
+    """
+    print the 3 infolines, then drop them. repair the typos.
+    """
     print ("\nLoading data from RiskLayer. This is their message:")
     print ("\n".join(ts[ts.ADMIN.isna()][ts.columns[0]].tolist()))
     print()
     # now drop those info lines which are not data:
     ts.drop(ts[ts.ADMIN.isna()].index, inplace=True)
     ts = repairData(ts)
+    return ts
+
+
+def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True):
+    """
+    load timeseries and population sizes; incl attribution_and_repair(ts); 
+    """
+    bnn=pandas.read_csv(bnn_f)
+    ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
+    ts = attribution_and_repair(ts)
     return ts, bnn
 
 
