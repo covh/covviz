@@ -293,12 +293,12 @@ def downloadData(andStore=True):
     return not equal, ts
 
 
-def downloadDataNotStoring():
+def downloadDataNotStoring(url=RISKLAYER_URL01):
     """
     good for readonly files system like on heroku 
     """
-    print (RISKLAYER_URL01)
-    ts=pandas.read_csv(RISKLAYER_URL01, encoding='utf-8') # 'cp1252') # encoding='utf-8')
+    print (url)
+    ts=pandas.read_csv(url, encoding='utf-8') # 'cp1252') # encoding='utf-8')
     return ts
 
 
