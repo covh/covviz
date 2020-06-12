@@ -472,7 +472,7 @@ def additionalColumns(ts,bnn):
     """
     dates = dates_list(ts)
     datacolumns = ts.columns[2:]
-    print ("Newest column = '%s'" % datacolumns[-1])
+    print ("\nNewest column = '%s'" % datacolumns[-1])
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
     ts_sorted = add_centerday_column(ts, ts_BuLa)
     ts_sorted = add_weekly_columns(ts_sorted, datacolumns)

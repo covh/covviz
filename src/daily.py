@@ -53,7 +53,7 @@ def title(text):
 
 # TODO: move this elsewhere:
 
-def showSomeExtremeValues(ts_sorted, datacolumns):
+def showSomeExtremeValues(ts_sorted, datacolumns, n=10):
     columns_into_integers(ts_sorted, datacolumns)
     add_incidence_prevalence(ts_sorted, datacolumns)
     add_daily(ts_sorted, datacolumns)
@@ -62,7 +62,7 @@ def showSomeExtremeValues(ts_sorted, datacolumns):
     for col in ("new cases", "incidence_1mio_last7days", "Reff_4_7_last"):
         print(title("sorted by    %s   descending:" % col))
         ts_sorted.sort_values(col, ascending=False, inplace=True) 
-        print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=10).to_string( float_format='%.1f'))
+        print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=n).to_string( float_format='%.1f'))
     
     
 def loadAndShowSomeExtremeValues():

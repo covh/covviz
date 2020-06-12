@@ -187,8 +187,9 @@ def pandas_settings_full_table():
     pandas.set_option('display.max_rows', None)
 
 
-def inspectNewestData(ts):
-    ts = repairData(ts)
+def inspectNewestData(ts, alreadyRepaired=False):
+    if not alreadyRepaired:
+        ts = repairData(ts)
     
     # print (ts.columns)
     lastColumns=["ADMIN"] + ts.columns[-5:].tolist()
@@ -297,7 +298,7 @@ def downloadDataNotStoring():
     good for readonly files system like on heroku 
     """
     print (RISKLAYER_URL01)
-    ts=pandas.read_csv(RISKLAYER_URL01, encoding='cp1252') # encoding='utf-8')
+    ts=pandas.read_csv(RISKLAYER_URL01, encoding='utf-8') # 'cp1252') # encoding='utf-8')
     return ts
 
 
