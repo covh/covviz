@@ -110,10 +110,10 @@ experimental:
 * first try working with the raw data: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/covh/covviz/master?filepath=notebooks%2Frisklayer-pandas.ipynb) (starts a Jupyter notebook, with the whole repo preloaded, all dependencies installed, etc.).
 
 ## interactive app
-This is unready. Deployed to heroku with these commands:
+This is experimental. Deployed to heroku with these commands:
 
 ```
-heroku login
+heroku login --interactive
 
 heroku create cov19de
 heroku apps
