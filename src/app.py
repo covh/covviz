@@ -7,7 +7,7 @@ import dataFiles, daily, dataMangling
 STATIC_ROOT = 'static'
 
 # trick as heroku's root is repo root, not src: go down into folder, so that "go up" = .. then works
-BNN_FILE=os.path("src", dataFiles.BNN_FILE)
+BNN_FILE=os.path.join("src", dataFiles.BNN_FILE)
  
 # current directory the src folder? Happens on local machine:
 if "src" == os.getcwd().split(os.sep)[-1]:  
