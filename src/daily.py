@@ -35,23 +35,26 @@ def add_incidence_prevalence(ts_sorted, datacolumns):
 def add_daily(ts_sorted, datacolumns):
     ts_sorted["new cases"] = ts_sorted[datacolumns[-1]] - ts_sorted[datacolumns[-2]]
     
+COLUMN_ORDER = ["prevalence_1mio", "new cases", "new_last7days", "incidence_1mio_last7days", "new_last14days", "incidence_1mio_last14days", "centerday", "Reff_4_7_last"]
     
-def newColOrder(df, datacolumns):
+def newColOrder(df, datacolumns, firstColumns=["ADMIN", "Population", "Bundesland"]):
     cols = list(df.columns.values)
+    # print(cols)
     # print (type(datacolumns.tolist()))
-    cNew=["ADMIN", "Population", "Bundesland"] + datacolumns.tolist() + ["prevalence_1mio", "new cases", "new_last7days", "incidence_1mio_last7days", "new_last14days", "incidence_1mio_last14days", "centerday", "Reff_4_7_last"]
+    cNew= firstColumns + datacolumns.tolist() + COLUMN_ORDER
     diffcols = list(set(cols) - set(cNew))
     if diffcols:
         print ("Forgotten these columns, adding them:", diffcols)
     cNew += diffcols
     return df[cNew]
-    
-def title(text):
-    sep="*"*len(text+" * *")
-    return "\n%s\n* %s *\n%s" %(sep, text, sep)
 
 
 # TODO: move this elsewhere:
+
+   
+def title(text):
+    sep="*"*len(text+" * *")
+    return "\n%s\n* %s *\n%s" %(sep, text, sep)
 
 def showSomeExtremeValues(ts_sorted, datacolumns, n=10):
     columns_into_integers(ts_sorted, datacolumns)
@@ -63,13 +66,28 @@ def showSomeExtremeValues(ts_sorted, datacolumns, n=10):
         print(title("sorted by    %s   descending:" % col))
         ts_sorted.sort_values(col, ascending=False, inplace=True) 
         print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=n).to_string( float_format='%.1f'))
+        
+    # raise Exception("Simulated Error")
+    
+    
+def showBundeslaenderRanked(Bundeslaender_sorted, datacolumns, rankedBy="incidence_1mio_last7days"):
+    print(title("Bundesländer ranked by '%s':" % rankedBy))
+    columns_into_integers(Bundeslaender_sorted, datacolumns)
+    add_incidence_prevalence(Bundeslaender_sorted, datacolumns)
+    add_daily(Bundeslaender_sorted, datacolumns)
+    #Bundeslaender_sorted["Bundesland"]=Bundeslaender_sorted.index
+    Bundeslaender_sorted = newColOrder(Bundeslaender_sorted , datacolumns, firstColumns=["Population"]) # ["Bundesland"])
+    Bundeslaender_sorted.sort_values(rankedBy, ascending=False, inplace=True)
+    print (Bundeslaender_sorted.drop(datacolumns[:-5], axis=1).to_string( float_format='%.2f'))
     
     
 def loadAndShowSomeExtremeValues():
     print ("\n show some insights\n")
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True) 
     # print (ts_sorted.columns)
+    
     showSomeExtremeValues(ts_sorted, datacolumns)
+    showBundeslaenderRanked(Bundeslaender_sorted, datacolumns)
 
 ## download and process:
 
@@ -201,13 +219,13 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
-    # loadAndShowSomeExtremeValues(); exit()
+    loadAndShowSomeExtremeValues(); exit()
     daily_update(publish=False, withSyntheticData=False); exit()
     # daily_update(regenerate_pages_regardless_if_new_data=True, withSyntheticData=False); exit()
     
     daily_update()
     
-    # loadAndShowSomeExtremeValues()
+    loadAndShowSomeExtremeValues()
     
     print ("\nREADY.")
     
