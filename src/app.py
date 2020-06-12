@@ -3,13 +3,17 @@ import bottle, pandas # pip install bottle pandas
 from bottle import route, template, redirect, static_file, error, run
 from io import StringIO
 import dataFiles, daily, dataMangling
-from matplotlib.sankey import DOWN
 
 STATIC_ROOT = 'static'
+
+# trick as heroku's root is repo root, not src: go down into folder, so that "go up" = .. then works
+BNN_FILE=os.path("src", dataFiles.BNN_FILE)
+ 
 # current directory the src folder? Happens on local machine:
 if "src" == os.getcwd().split(os.sep)[-1]:  
     bottle.TEMPLATE_PATH.insert(0, '../views') # corrects path for local machine
     STATIC_ROOT = os.path.join("..", STATIC_ROOT)
+    BNN_FILE=dataFiles.BNN_FILE
 
 
 @route('/home')
@@ -36,7 +40,7 @@ def CSV_download_and_inspect_verbose(url=dataFiles.RISKLAYER_URL01):
     print ("(too many daily negatives can be a sign of data corruption - was useful e.g. on 29/May/2020)")
     dataFiles.inspectNewestData(ts, alreadyRepaired=True)
     # raise Exception("Simulated Error")
-    bnn=pandas.read_csv(dataFiles.BNN_FILE)
+    bnn=pandas.read_csv(BNN_FILE)
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.additionalColumns(ts,bnn)
     daily.showSomeExtremeValues(ts_sorted, datacolumns, n=15)
     daily.showBundeslaenderRanked(Bundeslaender_sorted, datacolumns, rankedBy="incidence_1mio_last7days")
