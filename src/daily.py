@@ -49,12 +49,11 @@ def newColOrder(df, datacolumns):
 def title(text):
     sep="*"*len(text+" * *")
     return "\n%s\n* %s *\n%s" %(sep, text, sep)
-    
-    
-def showSomeExtremeValues():
-    print ("\n show some insights\n")
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True) # TODO: next - make this RAM only too.
-    # print (ts_sorted.columns)
+
+
+# TODO: move this elsewhere:
+
+def showSomeExtremeValues(ts_sorted, datacolumns):
     columns_into_integers(ts_sorted, datacolumns)
     add_incidence_prevalence(ts_sorted, datacolumns)
     add_daily(ts_sorted, datacolumns)
@@ -64,6 +63,13 @@ def showSomeExtremeValues():
         print(title("sorted by    %s   descending:" % col))
         ts_sorted.sort_values(col, ascending=False, inplace=True) 
         print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=10).to_string( float_format='%.1f'))
+    
+    
+def loadAndShowSomeExtremeValues():
+    print ("\n show some insights\n")
+    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True) 
+    # print (ts_sorted.columns)
+    showSomeExtremeValues(ts_sorted, datacolumns)
 
 ## download and process:
 
@@ -75,7 +81,7 @@ def download_all(showExtremes=True):
     print ("\ndownloaded mastersheet has new state: %s \n" % new_master_state)
     
     if showExtremes:
-        showSomeExtremeValues()
+        loadAndShowSomeExtremeValues()
     
     return new_CSV, new_master_state 
     
@@ -195,13 +201,13 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
-    # showSomeExtremeValues(); exit()
+    # loadAndShowSomeExtremeValues(); exit()
     daily_update(publish=False, withSyntheticData=False); exit()
     # daily_update(regenerate_pages_regardless_if_new_data=True, withSyntheticData=False); exit()
     
     daily_update()
     
-    # showSomeExtremeValues()
+    # loadAndShowSomeExtremeValues()
     
     print ("\nREADY.")
     
