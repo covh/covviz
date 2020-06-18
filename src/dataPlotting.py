@@ -77,7 +77,7 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
     text += "\nplot @DrAndreasKruger " + ("%s" % datetime.datetime.now())[:16]
     text += "\ndaily: (GREEN) 'expectation day' = "+center_date
 
-    plt.legend(lines, labs, loc='best', facecolor="#f7f7f7", framealpha=0.9, 
+    plt.legend(lines, labs, loc='upper left', facecolor="#fafafa", framealpha=0.8, 
                title=text, prop={'size': 8}, title_fontsize = 8)
 
     plt.title(title)
