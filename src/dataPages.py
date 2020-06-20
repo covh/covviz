@@ -498,11 +498,15 @@ def generate_hotspot_files():
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(ifPrint=False)
     distances = districtDistances.load_distances()
-    print ("50 km")
+    print ("50 km, relative threshold:")
     for AGS in (5558, 16072, 9163, 16076, 9473, 9263, 9278, 8231, 4011, 5382, 9362, 9478, 5370, 3459, 9463, 9376, 9475, 5554, 8231,
-                4012, 3352, 16052, 9473, 7315, 3159, 9771, 11000, 5754, 3361, 15003, 5570, 3103, 6632):
+                4012, 3352, 16052, 9473, 7315, 3159, 9771, 5754, 3361, 15003, 5570, 3103, 6632):
         neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
-    print ("\n100 km")
+    print ("\n50 km, absolute threshold, and not already among relative threshold:")
+    for AGS in (11000, 5111, 5112, 3241, 9162, 5913, 4011):
+        neighbour_districts_table_page(AGS=AGS, distances=distances, km=50, bnn=bnn)
+    
+    print ("\n100 km:")
     for AGS in (5754,):
         neighbour_districts_table_page(AGS=AGS, distances=distances, km=100, bnn=bnn)
     print ("\n150 km")
