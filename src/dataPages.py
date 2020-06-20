@@ -505,6 +505,10 @@ def generate_hotspot_files():
     print ("\n100 km")
     for AGS in (5754,):
         neighbour_districts_table_page(AGS=AGS, distances=distances, km=100, bnn=bnn)
+    print ("\n150 km")
+    for AGS in ():
+        neighbour_districts_table_page(AGS=AGS, distances=distances, km=150, bnn=bnn)
+
 
 
 if __name__ == '__main__':
