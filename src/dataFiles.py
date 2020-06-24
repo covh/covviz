@@ -41,6 +41,9 @@ GOOGLEDOCS_ToCSV_WithSheetname="https://docs.google.com/spreadsheets/d/%s/gviz/t
 RISKLAYER_MASTER_SHEET_20200521 = "1EZNqMVK6hCccMw4pq-4T30ADJoayulgx9f98Vui7Jmc" # last night snapshot
 RISKLAYER_MASTER_SHEET = "1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s" # Risklayer master
 RISKLAYER_MASTER_SHEET_TABLE = ("Haupt", "A5:AU406")
+# the columns containing the web-URL-sources changed over time:
+QUELLEN_SPALTEN={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
+                 "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'] }
 
 # distances between districts:
 OPENDATASOFT_URL01 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/table/"
@@ -49,12 +52,14 @@ OPENDATASOFT_PATH = os.path.join(DATA_PATH, "landkreise-in-germany.csv")
 DISTANCES_PATH = os.path.join(DATA_PATH, "distances.csv")
 
 
+########################### download, store, and repair timeseries data ########################################  
+
 def swap_specific_typo_cells(df, correct_type, wrong='o', correct='0'):
     """
-    Every few days, riskLayer makes another typo in the CSV file. 
+    Sometimes, riskLayer makes a new typo in the CSV file. 
     
-    This is hopefully useful as an abstraction to fix that faster in future cases.
-    It will always need manual interaction but this should speed it up.
+    This is hopefully useful, as an abstraction to fix that faster in future cases.
+    It will always need some manual interaction but this should speed it up.
     
     1 search for any occurence of 'o'
     2 go through all rows (indices) affected
@@ -86,6 +91,9 @@ def swap_specific_typo_cells(df, correct_type, wrong='o', correct='0'):
 
         
 def testing_swap_specific_typo_cells():
+    """
+    test the above.
+    """
     df=pandas.read_csv(TS_NEWEST, encoding='cp1252')
     
     print("\ndefault example with 'o' instead of '0':")
@@ -101,16 +109,19 @@ def testing_swap_specific_typo_cells():
 
 
 def show_problematic_columns(df, type_wanted=numpy.float64, how_many_different=2):
+    """
+    if there is a typo in any cell, pandas might change the numerical/string type for the whole column 
+    """
     cols = df.columns[df.dtypes!=type_wanted].tolist()
     if len(cols)>how_many_different:
         print("There are columns which are not '%s': %s" % (type_wanted, cols))
         
 
-
 def repairData(ts):
     """
-    The CSV contains data typos every few days.
-    This will only get better when they automate the procedure to create the CSV, see their "Fragen und Antworten" sheet.
+    The CSV contains some data typos.
+    
+    This will get better when they automate the procedure to create the CSV, see their "Fragen und Antworten" sheet.
     These problems are patched here:
     
     12.03.20203
@@ -182,12 +193,29 @@ def repairData(ts):
 
 
 def pandas_settings_full_table():
+    """
+    simple hack to let pandas print a larger column
+    """
     pandas.set_option('display.max_columns', None)
     pandas.set_option('display.width', 200)
     pandas.set_option('display.max_rows', None)
 
 
 def inspectNewestData(ts, alreadyRepaired=False):
+    """
+    Sometimes values are corrected down, that's fine.
+    However, if that happens too often, it's a sign that there's possibly data corruption somewhere.
+    Use this for visual inspection.
+    
+    # TODO: 
+    # when this became 91 rows, with sometimes > 1500 cases dropped
+    # it helped to find out that the source data was errorenous.
+    # perhaps in the future, let the overall script fail?
+    # Send an email to admin?
+    # For now it simply prints an ALERT, but only by number of rows,
+    # and not yet by total negative diff.
+    """
+    
     if not alreadyRepaired:
         ts = repairData(ts)
     
@@ -198,12 +226,6 @@ def inspectNewestData(ts, alreadyRepaired=False):
     
     pandas_settings_full_table()
     
-    # TODO: 
-    # when this became 91 rows, with sometimes > 1500 cases dropped
-    # it helped to find out that the source data was errorenous.
-    # perhaps in the future, let the script fail? Send an email to admin?
-    # for now it simply prints an ALERT, but only by number of rows
-    # and not yet by total negative diff.
     down_prev=df[df[lastColumns[-2]]<df[lastColumns[-3]]]
     if len(down_prev)>20:
         print (("*"*100 + "\n")*3)
@@ -233,14 +255,22 @@ def inspectNewestData(ts, alreadyRepaired=False):
     print (df.diff().dropna().astype(int, errors='ignore').to_string())
     # print (df)
     
+    
 def hash_file(filename):
+    """
+    hash the file content, to be able to tell whether two files are identical.
+    """
     with open(filename,"rb") as f:
         allbytes = f.read() # read entire file as bytes
         readable_hash = hashlib.sha256(allbytes).hexdigest();
     # print(readable_hash)
     return readable_hash
     
+    
 def true_if_exist_and_equal(filenames):
+    """
+    checks that files exist, AND that they are equal in content.
+    """
     if len(filenames)<2:
         raise Exception("must compare more than one file.") 
     hashes=[]
@@ -254,14 +284,28 @@ def true_if_exist_and_equal(filenames):
     unique=list(set(hashes)) 
     return len(unique)==1
 
+
 def test_comparison():
+    """
+    test the above
+    """
     for filenames in [["test1.txt", "test2.txt"], ["test1.txt", "test3.txt"]]: 
         print (filenames, true_if_exist_and_equal(filenames))
 
-def downloadData(andStore=True):
 
-    print (RISKLAYER_URL01)
-    filename = wget.download(RISKLAYER_URL01, out=DATA_PATH)
+def downloadData(andStore=True,
+                 url=RISKLAYER_URL01, target=DATA_PATH,
+                 ts_file=TS_FILE, ts_newest=TS_NEWEST):
+    """
+    download, and store in 2 files:
+     one timestamped, for possible later use 
+     one "always the newest", for generating plots & pages
+    
+    visual inspection of the data
+    returns (bool "that was newly stored data", timeseries)
+    """
+    print (url)
+    filename = wget.download(url, out=target)
     print ("downloaded:", filename)
 
     ts=pandas.read_csv(filename, encoding='cp1252') # encoding='utf-8')
@@ -271,15 +315,15 @@ def downloadData(andStore=True):
     d=last_col.split(".")
     d.reverse()
     last_date = "".join(d)
-    newfilename = TS_FILE.replace("20200425", last_date)
+    newfilename = ts_file.replace("20200425", last_date)
     equal = true_if_exist_and_equal([filename, newfilename])
 
     if andStore:
-        print ("Saving into files:")
+        print ("Saving into 2 files:")
         shutil.move(filename, newfilename)
         print (newfilename)
-        shutil.copy(newfilename, TS_NEWEST)
-        print (TS_NEWEST)
+        shutil.copy(newfilename, ts_newest)
+        print (ts_newest)
     else:
         warn = ("*" * 57 + "\n")*3
         print("\n" + warn + "ALERT: dev mode ... NOT storing this data\n"+ warn)
@@ -289,7 +333,7 @@ def downloadData(andStore=True):
     # print (RISKLAYER_URL02)
     # print ("sheet", RISKLAYER_URL02_SHEET)
 
-    # Say if a new file was created. Also return the dataFrame itself, for use on readonly filesystem (heroku):
+    # Say if a new file was created. Also return the dataFrame itself.
     return not equal, ts
 
 
@@ -302,10 +346,14 @@ def downloadDataNotStoring(url=RISKLAYER_URL01):
     return ts
 
 
+########################### web crawling ####################################################################
+
 def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
                                    filename=WP_FILE):
     
     """
+    scrape wikipedia page for districts information
+    
     todo: the same for https://de.wikipedia.org/wiki/Liste_der_kreisfreien_St%C3%A4dte_in_Deutschland
     """
 
@@ -344,8 +392,23 @@ def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_
     return df
 
 def load_wikipedia_landkreise_table(filepath=WP_FILE):
+    """
+    load the wikipedia information
+    """
     df = pd.read_csv(filepath, index_col="AGS")
     return df
+
+
+def scrape_and_test_wikipedia_pages():
+    get_wikipedia_landkreise_table();
+    df=load_wikipedia_landkreise_table();
+    print("\ndescribe:\n%s" % df.describe())
+    print("\nsum:\n%s" % df[["Einwohner", "Fläche"]].sum().to_string())
+    print("\nexample:\n %s" % df.loc[5370].to_string())
+    return df
+
+
+########################### load & prepare timeseries #######################################################
 
 def attribution_and_repair(ts):
     """
@@ -371,9 +434,10 @@ def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True):
 
 
 def add_synthetic_data(ts, bnn, flatUntil = 14, steps=[10, 20, 50, 100, 130, 140, 150]):
-
-    # infections: plus 20 plus 60 plus 20 then nothing new.
-
+    """
+    synthetic district helps to understand better the plots, averaging functions, etc.
+    # infection steps: plus 10 plus 10 plus 30 plus 50, plus 30 plus 10 plus 10 
+    """
     synthetic_data = [0]*flatUntil  + steps + ([steps[-1]] * (len(ts.columns)-2-flatUntil-len(steps)))
     row = pandas.Series(["00000", "Dummykreis"]+synthetic_data, index=ts.columns)
     ts=ts.append(row, ignore_index=True)
@@ -387,13 +451,24 @@ def add_synthetic_data(ts, bnn, flatUntil = 14, steps=[10, 20, 50, 100, 130, 140
     return ts, bnn
 
 def data(withSynthetic=True, ifPrint=True):
+    """
+    load data, show attribution, repair data, possibly add synthetic district
+    returns (time series, population-in-district table)
+    N.B.: The bnn table contains more info but not uptodate, so just ignore it. TODO: drop all those columns.
+    """
     ts, bnn = load_data(ifPrint=ifPrint)
     if withSynthetic:
         ts, bnn = add_synthetic_data(ts, bnn)
     return ts, bnn
 
 
+################################### master googlesheet ... 'Haupt' #############################################
+
 def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_SHEET_TABLE, reindex="AGS"):
+    """
+    download from risklayer mastersheet ... just one sheet 'Haupt', and only selected rows&columns, see 'table' info
+    make AGS columns into row index for the DataFrame, for easier access 
+    """
     risklayer_sheet_url = GOOGLEDOCS_ToCSV_WithSheetname % (sheetID, table[1], table[0])
     print ("Downloading this data:")
     print (risklayer_sheet_url)
@@ -403,12 +478,16 @@ def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_
     #print(df.columns.tolist())
     return df
     
-def save_csv_twice(df, filestump=HAUPT_FILES):
     
-    pandas_settings_full_table()
+def generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES):
+    """
+    column 'Zeit' turned into datetime, drop nan, turn into string for sorting, take max()
+    return timestamped filename.
+    """
+    # pandas_settings_full_table()
     # print ("df.Zeit\n", df.Zeit)
     
-    # became more complicated on June 1st because pandas read 01/06/2020 as 6th of January. The dropna is probably not needed? But anyways, we focus on the newest date only so typos don't matter....
+    # became more complicated on June 1st because pandas read 01/06/2020 wrongly as 6th of January. The dropna is probably not needed? But anyways, we focus on the newest date only so typos don't matter....
     to_datetimes = pandas.to_datetime(df.Zeit, format="%d/%m/%Y %H:%M", errors='coerce')
     # print("to_datetimes\n", to_datetimes)
     #print("to_datetimes dropna\n", to_datetimes.dropna())
@@ -419,6 +498,18 @@ def save_csv_twice(df, filestump=HAUPT_FILES):
     
     timestamp=lastEntry
     filename1=filestump % ("-" + timestamp)
+    return filename1
+    
+    
+def save_csv_twice(df, filestump=HAUPT_FILES):
+    """
+    name file 1 like the newest entry, for later processing
+    name file 2 like always, to have the newest data always in the same file
+    return whether file 1 existed, to tell whether to regenerate plots etc
+    """
+    
+    filename1 = generate_filename_from_newest_entry_timestamp(df, filestump=filestump)
+    
     existed = os.path.isfile(filename1)
     df.to_csv(filename1, index=False)
     print(filename1)
@@ -427,8 +518,11 @@ def save_csv_twice(df, filestump=HAUPT_FILES):
     print(filename2)
     return existed, (filename1, filename2)
 
+
 def get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET_20200521):
     """
+    download risklayer master sheet, process, and save twice.
+    returns whether that timestamped file existed already.
     TODO: catch exceptions, then return False
     """
     df = download_sheet_table(sheetID=sheetID)
@@ -441,16 +535,22 @@ def add_urls_column(df, hauptversion="v02"):
     combines all web sources into one column, as list
     """
     # print (df.columns); exit()
-    quellenspalten={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
-                    "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'] }
-    websources = quellenspalten[hauptversion] 
+    websources = QUELLEN_SPALTEN[hauptversion] 
     df["urls"]= [sorted(list(set( [url 
                             for url in urllist 
                             if url!="" and url!="nn"] )))    # remove the nans
                  for urllist in df[websources].fillna("").values.tolist()] 
     return df
 
+
 def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500", hauptversion="v02"):
+    """
+    load the file.
+    process master sheet, to supply page generating function 
+    with a column "urls" that is a list of data sources for each district
+    while doing that, print some infos; for consistency checks.
+    Also, make AGS into index.
+    """
     filename =filestump % timestamp
     print ("Reading from", filename)
     df = pandas.read_csv(filename)
@@ -465,39 +565,24 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500",
     print("index = AGS, for easier access")
     return df
 
-def scrape_and_test_wikipedia_pages():
-    get_wikipedia_landkreise_table();
-    df=load_wikipedia_landkreise_table();
-    print("\ndescribe:\n%s" % df.describe())
-    print("\nsum:\n%s" % df[["Einwohner", "Fläche"]].sum().to_string())
-    print("\nexample:\n %s" % df.loc[5370].to_string())
-    return df
-    
 
 if __name__ == '__main__':
     # testing_swap_specific_typo_cells(); exit()
     # test_comparison(); exit()
     
-    # get_master_sheet_haupt(); exit() 
-    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit() 
+    # get_master_sheet_haupt(); exit()  # my copy of 20/May
+    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit() # their current state of the master sheet, might not work during daytime, too busy
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
-    # equal, ts = downloadData(andStore=False);
-
-
+    
+    # notEqual, ts = downloadData(andStore=False); exit()
     # newData, ts = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
+    # downloadData(); exit()
 
-    downloadData(); exit()
-    load_data(); exit()
-
-    # ts, bnn = data(withSynthetic=True)
-
-    print()
-
+    # load_data(); exit()
+    # ts, bnn = data(withSynthetic=True); # exit()
     # TODO: Use 'datacolumns' instead of dropping
-    # print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist())
+    # print(); print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist()); exit()
+
+    # df=scrape_and_test_wikipedia_pages(); print (df.to_string())
     pass
-
-    df=scrape_and_test_wikipedia_pages()
-    # print (df.to_string())
-
