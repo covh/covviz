@@ -1,8 +1,17 @@
-'''
-Created on 25 Apr 2020
+#!/usr/bin/env python3
+"""
+@summary: plot timeseries of (cumulative, daily) number of confirmed cases
 
-@author: andreas
-'''
+@version: v03.4 (24/June/2020)
+@since:   25/April/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
+
+@status:  Needs: (cleanup, function comments, etc.)
+          See: todo.md for ideas what else to do. 
+          NOT yet: pretty. But it works.
+"""
 
 import os, datetime
 

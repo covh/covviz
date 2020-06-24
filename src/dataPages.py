@@ -1,8 +1,18 @@
-'''
-Created on 27 Apr 2020
+#!/usr/bin/env python3
+"""
+@summary: assemble pages from plots and tables, include external links, etc.
 
-@author: andreas
-'''
+@version: v03.4 (24/June/2020)
+@since:   27/April/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
+
+@status:  Needs: (cleanup, function comments, take large functions apart, refactor into SETTINGS.py,  etc.)
+          See: todo.md for ideas what else to do. 
+          NOT yet: pretty, easy to read. But it works.
+"""
+
 
 import os, datetime, math
 

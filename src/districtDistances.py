@@ -1,8 +1,16 @@
-'''
-Created on 27 Apr 2020
+#!/usr/bin/env python3
+"""
+@summary: Opendatasoft database into pairwise distances of all districts of Germany 
 
-@author: andreas
-'''
+@version: v03.4 (24/June/2020)
+@since:   27/April/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
+
+@status:  needs: (cleanup, function comments, solve/record TODOs, declutter main() function, etc.)
+          not yet: ready, clearly structured, pretty. But it works.
+"""
 
 import io, sys, shutil
 

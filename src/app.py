@@ -1,4 +1,19 @@
-﻿import os, sys, timeit
+﻿#!/usr/bin/env python3
+"""
+@summary: bottle http app for heroku - download risklayer CSV, then inspect data. Purposes: spot typos, see whether newly published data, give summary.
+
+@version: v03.4 (24/June/2020)
+@since:   11/June/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
+
+@status:  Needs: (cleanup, function comments, etc.)
+          Perhaps refactor CSV_download_and_inspect_verbose() into dataFiles.py (even though not a file, all kept in RAM) 
+          NOT yet: Perfect. Already pretty easy to read, right? And: It works. 
+"""
+
+import os, sys, timeit
 import bottle, pandas # pip install bottle pandas
 from bottle import route, template, redirect, static_file, error, run
 from io import StringIO

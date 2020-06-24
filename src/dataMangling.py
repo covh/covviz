@@ -1,11 +1,19 @@
-'''
-Created on 26 Apr 2020
+#!/usr/bin/env python3
+"""
+@summary: input data --> output data, misc helper functions
 
-@author: andreas
+@version: v03.4 (24/June/2020)
+@since:   26/April/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
 
 @param  AGS = https://de.wikipedia.org/wiki/Amtlicher_Gemeindeschl%C3%BCssel like riskLayer used it (4-5 digits)
- 
-'''
+
+@status:  Messy. Needs: (cleanup, function comments, solve TODOs, etc.)
+          PERHAPS take apart, into several separate files?
+          NOT yet: pretty, not at all easy to read, sorry. But it works.
+"""
 
 import os, copy
 import datetime as dt

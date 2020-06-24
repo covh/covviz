@@ -1,8 +1,16 @@
-'''
-Created on 28 Apr 2020
+#!/usr/bin/env python3
+"""
+@summary: download newest data, visual inspection, (if new) generate plots & pages, copy into webfacing repo, git push
 
-@author: andreas
-'''
+@version: v03.4 (24/June/2020)
+@since:   28/April/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
+
+@status:  needs: (cleanup, function comments, refactoring into other .py files, solve/record TODOs, etc.)
+          not yet: ready, clearly structured, pretty, easy to read. But it works.
+"""
 
 import os, datetime, shutil, subprocess
 
@@ -14,7 +22,7 @@ from dataFiles import PICS_PATH, PAGES_PATH, WWW_REPO_PICS, WWW_REPO_PAGES, WWW_
 
 def columns_into_integers(ts_sorted, datacolumns):
     """
-    todo: migrate this to dtaMangling, and adapt to / test with Bundeslaender
+    todo: migrate this to dataMangling, and adapt to / test with Bundeslaender
     also do some many tests, to see that all is still good then. 
     """
     ts_sorted["new_last14days"]=ts_sorted["new_last14days"].astype(int)
@@ -219,7 +227,7 @@ if __name__ == '__main__':
     
     # git_commit_and_push(); exit()
     
-    loadAndShowSomeExtremeValues(); exit()
+    # loadAndShowSomeExtremeValues(); exit()
     daily_update(publish=False, withSyntheticData=False); exit()
     # daily_update(regenerate_pages_regardless_if_new_data=True, withSyntheticData=False); exit()
     
