@@ -1,8 +1,18 @@
-'''
-Created on 25 Apr 2020
+#!/usr/bin/env python3
+"""
+@summary: download, store, load, inspect, ... several different sources
 
-@author: andreas
-'''
+@version: v03.4 (24/June/2020)
+@since:   25/April/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
+
+@status:  Cleaned up. Has function comments! For now, needs not much attention.
+          PERHAPS: refactor CONSTANTS into SETTINGS.py ? Reorder calls in main()?
+@todo:    Feedback please: This is how I would comment and clean the other .py files. 
+                           Good? Suggestions?
+"""
 
 import os, shutil, hashlib, time
 import pandas, wget, requests, numpy

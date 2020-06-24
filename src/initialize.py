@@ -1,8 +1,15 @@
-'''
-Created on 22 May 2020
+#!/usr/bin/env python3
+"""
+@summary: initializes the repo, e.g. when started for the first time on a new machine 
 
-@author: andreas
-'''
+@version: v03.4 (24/June/2020)
+@since:   22/May/2020
+
+@author:  Dr Andreas Krueger
+@see:     https://github.com/covh/covviz for updates
+
+@status:  more or less ready, doesn't need attention
+"""
 
 import daily, districtDistances, dataFiles, dataPages
 
