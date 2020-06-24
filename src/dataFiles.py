@@ -346,68 +346,6 @@ def downloadDataNotStoring(url=RISKLAYER_URL01):
     return ts
 
 
-########################### web crawling ####################################################################
-
-def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
-                                   filename=WP_FILE):
-    
-    """
-    scrape wikipedia page for districts information
-    
-    todo: the same for https://de.wikipedia.org/wiki/Liste_der_kreisfreien_St%C3%A4dte_in_Deutschland
-    """
-
-    print ("\nscrape wikipedia page:")
-
-    columns=['AGS', 'Kreis', 'Kreis_WP', 'KreisSitz', 'KreisSitz_WP', 'Einwohner', 'Fläche', 'Karte']
-    df = pd.DataFrame(columns=columns)
-
-    f = requests.get(url).text
-    soup = bs.BeautifulSoup(f, 'lxml')
-    parsed_table = soup.find_all('table')[0]
-
-
-    for row in parsed_table.find_all('tr'):
-        cells = list(row.find_all('td'))
-        if cells:
-            AGS=list(cells[0].stripped_strings)[0]
-
-            lk=(list(cells[1].stripped_strings))[0]
-            lk_wp = cells[1].a['href']
-
-            lk_hs= (list(cells[4].stripped_strings))[0]
-            lk_hs_wp = cells[4].a['href']
-
-            lk_ew = int((list(cells[5].stripped_strings))[0].replace(".", ""))
-
-            lk_fl_de = (list(cells[6].stripped_strings))[0]
-            lk_fl = float(lk_fl_de.replace(".", "").replace(".", "").replace(",", "."))
-
-            lk_pic = cells[8].img['src']
-
-            datarow = [AGS, lk, lk_wp, lk_hs, lk_hs_wp, lk_ew, lk_fl, lk_pic]
-            df=df.append(pd.DataFrame([datarow], columns=columns)) 
-            
-    df.to_csv(filename, index=False)
-    return df
-
-def load_wikipedia_landkreise_table(filepath=WP_FILE):
-    """
-    load the wikipedia information
-    """
-    df = pd.read_csv(filepath, index_col="AGS")
-    return df
-
-
-def scrape_and_test_wikipedia_pages():
-    get_wikipedia_landkreise_table();
-    df=load_wikipedia_landkreise_table();
-    print("\ndescribe:\n%s" % df.describe())
-    print("\nsum:\n%s" % df[["Einwohner", "Fläche"]].sum().to_string())
-    print("\nexample:\n %s" % df.loc[5370].to_string())
-    return df
-
-
 ########################### load & prepare timeseries #######################################################
 
 def attribution_and_repair(ts):
@@ -564,6 +502,71 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500",
     df.index=df.AGS.tolist() 
     print("index = AGS, for easier access")
     return df
+
+
+########################### web crawling ####################################################################
+
+def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
+                                   filename=WP_FILE):
+    
+    """
+    scrape wikipedia page for districts information
+    
+    todo: the same for https://de.wikipedia.org/wiki/Liste_der_kreisfreien_St%C3%A4dte_in_Deutschland
+    """
+
+    print ("\nscrape wikipedia page:")
+
+    columns=['AGS', 'Kreis', 'Kreis_WP', 'KreisSitz', 'KreisSitz_WP', 'Einwohner', 'Fläche', 'Karte']
+    df = pd.DataFrame(columns=columns)
+
+    f = requests.get(url).text
+    soup = bs.BeautifulSoup(f, 'lxml')
+    parsed_table = soup.find_all('table')[0]
+
+
+    for row in parsed_table.find_all('tr'):
+        cells = list(row.find_all('td'))
+        if cells:
+            AGS=list(cells[0].stripped_strings)[0]
+
+            lk=(list(cells[1].stripped_strings))[0]
+            lk_wp = cells[1].a['href']
+
+            lk_hs= (list(cells[4].stripped_strings))[0]
+            lk_hs_wp = cells[4].a['href']
+
+            lk_ew = int((list(cells[5].stripped_strings))[0].replace(".", ""))
+
+            lk_fl_de = (list(cells[6].stripped_strings))[0]
+            lk_fl = float(lk_fl_de.replace(".", "").replace(".", "").replace(",", "."))
+
+            lk_pic = cells[8].img['src']
+
+            datarow = [AGS, lk, lk_wp, lk_hs, lk_hs_wp, lk_ew, lk_fl, lk_pic]
+            df=df.append(pd.DataFrame([datarow], columns=columns)) 
+            
+    df.to_csv(filename, index=False)
+    return df
+
+def load_wikipedia_landkreise_table(filepath=WP_FILE):
+    """
+    load the wikipedia information
+    """
+    df = pd.read_csv(filepath, index_col="AGS")
+    return df
+
+
+def scrape_and_test_wikipedia_pages():
+    get_wikipedia_landkreise_table();
+    df=load_wikipedia_landkreise_table();
+    print("\ndescribe:\n%s" % df.describe())
+    print("\nsum:\n%s" % df[["Einwohner", "Fläche"]].sum().to_string())
+    print("\nexample:\n %s" % df.loc[5370].to_string())
+    return df
+
+
+###############################################################################################
 
 
 if __name__ == '__main__':
