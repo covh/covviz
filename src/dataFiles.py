@@ -55,6 +55,10 @@ RISKLAYER_MASTER_SHEET_TABLE = ("Haupt", "A5:AU406")
 QUELLEN_SPALTEN={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
                  "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'] }
 
+VERSION_HISTORY_TABLE = {"sheetID"   : "1rn_nPJodxAwahIzqfRtEr9HHoqjvmh_7bj6-LUXDRSY",
+                         "sheetName" : "ThePast",
+                         "range" :     "A3:B10"}
+
 # distances between districts:
 OPENDATASOFT_URL01 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/table/"
 OPENDATASOFT_URL02 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/download/?format=csv&lang=en&use_labels_for_header=true&csv_separator=%3B"
@@ -420,7 +424,7 @@ def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_
     risklayer_sheet_url = GOOGLEDOCS_ToCSV_WithSheetname % (sheetID, table[1], table[0])
     print ("Downloading this data:")
     print (risklayer_sheet_url)
-    df=pandas.read_csv(risklayer_sheet_url) # error_bad_lines=False)
+    df=pandas.read_csv(risklayer_sheet_url) # N.B.: If this fails with 'Error tokenizing data ... expected ... saw, then switch access to "Anyone on the Internet with this link can view"
     if reindex:
         df.index=df[reindex].tolist() # index == AGS, easier accessprint("to_datetimes\n", to_datetimes)
     #print(df.columns.tolist())
@@ -514,6 +518,38 @@ def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500",
     return df
 
 
+################################### version history 'Haupt' sheets ##########################################
+
+def idFromUrl(url):
+    pos1=url.find("/d/")+3
+    pos2=url.find("/", pos1)
+    sheetId = url[pos1:pos2]
+    return sheetId
+
+def get_haupt_sheet_ids(sheet=VERSION_HISTORY_TABLE ):
+    date2url = download_sheet_table(sheetID=sheet["sheetID"], 
+                                    table=(sheet["sheetName"], sheet["range"]), reindex=False)
+    ids=[]
+    for row in date2url.iterrows():
+        url= row[1]["url"]
+        sheetId = idFromUrl(url)
+        ids.append(sheetId)
+        
+    date2url["id"] = ids
+    date2url["dt"]=pandas.to_datetime(date2url.datetime, format="%d/%m/%Y %H:%M", errors='coerce')
+    date2url.sort_values(by="dt", inplace=True, ascending=False)
+    # pandas_settings_full_table(); print(date2url[["dt", "id", "url"]])
+    return date2url[["dt", "id"]]
+
+def get_haupt_sheet_ids_then_download_all(sheet=VERSION_HISTORY_TABLE):
+    dt_and_id = get_haupt_sheet_ids(sheet=sheet)
+    for _, row in dt_and_id.iterrows():
+        sheetID,dt = row["id"], row["dt"]
+        print(sheetID,dt, end=" ")
+        df = download_sheet_table(sheetID=sheetID)
+        fn=generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES)
+        print(fn)
+
 ########################### web crawling ####################################################################
 
 def get_wikipedia_landkreise_table(url='https://de.wikipedia.org/wiki/Liste_der_Landkreise_in_Deutschland', 
@@ -598,4 +634,7 @@ if __name__ == '__main__':
     # print(); print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist()); exit()
 
     # df=scrape_and_test_wikipedia_pages(); print (df.to_string())
+
+    # get_haupt_sheet_ids()
+    get_haupt_sheet_ids_then_download_all()
     pass
