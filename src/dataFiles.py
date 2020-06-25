@@ -47,7 +47,7 @@ RISKLAYER_URL01 = "http://risklayer-explorer.com/media/data/events/GermanyValues
 #     and https://developers.google.com/chart/interactive/docs/spreadsheets#query-source-ranges
 # 
 # https://docs.google.com/spreadsheets/d/1EZNqMVK6hCccMw4pq-4T30ADJoayulgx9f98Vui7Jmc/gviz/tq?tqx=out:csv&range=A5:AU406&sheet=Haupt
-GOOGLEDOCS_ToCSV_WithSheetname="https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:csv&range=%s&sheet=%s"
+GOOGLEDOCS_ToCSV_WithSheetname="https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:csv&sheet=%s&range=%s"
 RISKLAYER_MASTER_SHEET_20200521 = "1EZNqMVK6hCccMw4pq-4T30ADJoayulgx9f98Vui7Jmc" # last night snapshot
 RISKLAYER_MASTER_SHEET = "1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s" # Risklayer master
 RISKLAYER_MASTER_SHEET_TABLE = ("Haupt", "A5:AU406")
@@ -57,7 +57,7 @@ QUELLEN_SPALTEN={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Lan
 
 VERSION_HISTORY_TABLE = {"sheetID"   : "1rn_nPJodxAwahIzqfRtEr9HHoqjvmh_7bj6-LUXDRSY",
                          "sheetName" : "ThePast",
-                         "range" :     "A3:B10"}
+                         "range" :     "A3:D10"}
 
 # distances between districts:
 OPENDATASOFT_URL01 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/table/"
@@ -421,26 +421,38 @@ def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_
     download from risklayer mastersheet ... just one sheet 'Haupt', and only selected rows&columns, see 'table' info
     make AGS columns into row index for the DataFrame, for easier access 
     """
-    risklayer_sheet_url = GOOGLEDOCS_ToCSV_WithSheetname % (sheetID, table[1], table[0])
+    risklayer_sheet_url = GOOGLEDOCS_ToCSV_WithSheetname % (sheetID, table[0], table[1])
     print ("Downloading this data:")
     print (risklayer_sheet_url)
-    df=pandas.read_csv(risklayer_sheet_url) # N.B.: If this fails with 'Error tokenizing data ... expected ... saw, then switch access to "Anyone on the Internet with this link can view"
+    df=pandas.read_csv(risklayer_sheet_url) # N.B.: If this fails with 'Error tokenizing data ... expected ... saw', then "Share" and switch access to "Anyone on the Internet with this link can view"
     if reindex:
         df.index=df[reindex].tolist() # index == AGS, easier accessprint("to_datetimes\n", to_datetimes)
     #print(df.columns.tolist())
     return df
     
     
-def generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES):
+def generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES, zeitcolum="Zeit"):
     """
     column 'Zeit' turned into datetime, drop nan, turn into string for sorting, take max()
     return timestamped filename.
     """
     # pandas_settings_full_table()
     # print ("df.Zeit\n", df.Zeit)
+
+    # find a first non-nan entry in 'zeit' column:
+    i,hit = 0, 0.0
+    while type(hit) != str:
+        hit = df.loc[i][zeitcolum]
+        print(i, hit)
+        i+=1
+    # sometimes Zeit has seconds, sometimes not, sigh:
+    if len(hit) == len("24/03/2020 09:30:00"):
+        zeitformat="%d/%m/%Y %H:%M:%S"
+    else:
+        zeitformat="%d/%m/%Y %H:%M"
     
     # became more complicated on June 1st because pandas read 01/06/2020 wrongly as 6th of January. The dropna is probably not needed? But anyways, we focus on the newest date only so typos don't matter....
-    to_datetimes = pandas.to_datetime(df.Zeit, format="%d/%m/%Y %H:%M", errors='coerce')
+    to_datetimes = pandas.to_datetime(df.Zeit, format=zeitformat, errors='coerce')
     # print("to_datetimes\n", to_datetimes)
     #print("to_datetimes dropna\n", to_datetimes.dropna())
     to_datetimes_strings = to_datetimes.dropna().dt.strftime("%Y%m%d_%H%M%S")
@@ -538,15 +550,17 @@ def get_haupt_sheet_ids(sheet=VERSION_HISTORY_TABLE ):
     date2url["id"] = ids
     date2url["dt"]=pandas.to_datetime(date2url.datetime, format="%d/%m/%Y %H:%M", errors='coerce')
     date2url.sort_values(by="dt", inplace=True, ascending=False)
-    # pandas_settings_full_table(); print(date2url[["dt", "id", "url"]])
-    return date2url[["dt", "id"]]
+    # pandas_settings_full_table(); print(date2url[["dt", "id", "range", "zeit"]])
+    return date2url[["dt", "id", "range", "zeit"]]
 
 def get_haupt_sheet_ids_then_download_all(sheet=VERSION_HISTORY_TABLE):
-    dt_and_id = get_haupt_sheet_ids(sheet=sheet)
-    for _, row in dt_and_id.iterrows():
-        sheetID,dt = row["id"], row["dt"]
-        print(sheetID,dt, end=" ")
-        df = download_sheet_table(sheetID=sheetID)
+    
+    sheets = get_haupt_sheet_ids(sheet=sheet)
+    
+    for _, row in sheets.iterrows():
+        sheetID,dt,range,zeit = row["id"], row["dt"], row["range"], row["zeit"]
+        print ("\n", dt,range,sheetID,zeit, end=" ... ")
+        df = download_sheet_table(sheetID=sheetID, table=('Haupt', range))
         fn=generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES)
         print(fn)
 
@@ -635,6 +649,6 @@ if __name__ == '__main__':
 
     # df=scrape_and_test_wikipedia_pages(); print (df.to_string())
 
-    # get_haupt_sheet_ids()
+    # get_haupt_sheet_ids(); exit()
     get_haupt_sheet_ids_then_download_all()
     pass
