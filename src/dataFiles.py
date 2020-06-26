@@ -14,7 +14,7 @@
                            Good? Suggestions?
 """
 
-import os, shutil, hashlib, time
+import os, shutil, hashlib, time, datetime
 import pandas, wget, requests, numpy
 import bs4 as bs
 import pandas as pd
@@ -431,40 +431,77 @@ def download_sheet_table(sheetID=RISKLAYER_MASTER_SHEET, table=RISKLAYER_MASTER_
     return df
     
     
-def generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES, zeitcolum="Zeit"):
+def find_correct_zeitformat(df, zeitcolumn='Zeit'):
+    """
+    Sometimes column 'Zeit' has seconds, sometimes not. *Sigh*.
+    
+    So, find a first string (i.e. non-nan) entry in 'zeit' column, while iterating rows.
+    That decides which format is used for the whole column.
+    """
+    rows, hit = df.iterrows(), 0.0
+    while type(hit) != str:
+        row = next(rows)
+        hit = row[1][zeitcolumn]
+        print(row[0], type(hit), hit, end=" ")
+    
+    # sometimes Zeit has seconds, sometimes not, sigh:
+    if len(hit)   == len("24/03/2020 09:30:00"):
+        zeitformat=        "%d/%m/%Y %H:%M:%S"
+    elif len(hit) == len("18/03/2020 20:00"):
+        zeitformat=        "%d/%m/%Y %H:%M"
+    else:
+        msg="Row '%s' was the first of type 'string' in column '%s' but the entry was '%s'. Please add a timeformat implementation for that." %(row[0], zeitcolumn, hit)
+        raise Exception(msg)
+    
+    print ("--> zeitformat = '%s'" % zeitformat)
+    return zeitformat
+    
+    
+def generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES, zeitcolumn="Zeit", maxdate=None):
     """
     column 'Zeit' turned into datetime, drop nan, turn into string for sorting, take max()
     return timestamped filename.
+    
+    if downloading historical sheets, better use a maxdate, because 
+    the newest date in 'Zeit' column enters the filename - and there can be typos or =NOW() entries.
     """
     # pandas_settings_full_table()
     # print ("df.Zeit\n", df.Zeit)
 
-    zeitformat="%d/%m/%Y %H:%M"
-
-    # find a first non-nan entry in 'zeit' column:
-    #i,hit = 0, 0.0
-    #while type(hit) != str:
-    #    hit = df.loc[i][zeitcolum]
-    #    print(i, hit)
-    #    i+=1
-    
-    # sometimes Zeit has seconds, sometimes not, sigh:
-    #if len(hit) == len("24/03/2020 09:30:00"):
-    #    zeitformat="%d/%m/%Y %H:%M:%S"
-    
+    zeitformat = find_correct_zeitformat(df, zeitcolumn=zeitcolumn)
     
     # became more complicated on June 1st because pandas read 01/06/2020 wrongly as 6th of January. The dropna is probably not needed? But anyways, we focus on the newest date only so typos don't matter....
-    to_datetimes = pandas.to_datetime(df.Zeit, format=zeitformat, errors='coerce')
+    to_datetimes = pandas.to_datetime(df[zeitcolumn], format=zeitformat, errors='coerce')
     # print("to_datetimes\n", to_datetimes)
     #print("to_datetimes dropna\n", to_datetimes.dropna())
     to_datetimes_strings = to_datetimes.dropna().dt.strftime("%Y%m%d_%H%M%S")
-    #print("to_datetimes_strings", to_datetimes_strings)  
+    # pandas_settings_full_table(); print("to_datetimes_strings", to_datetimes_strings)  
     lastEntry = to_datetimes_strings.max()
-    print ("Newest entry was:", lastEntry)
+    print ("Newest entry was:", lastEntry, end=" ")
+    
+    if maxdate:
+        corrected = min(lastEntry, maxdate)
+        if corrected!=lastEntry:
+            print("BUT that cannot be (probably typo, or caused by '=NOW()'), as the file version was from '%s', so using that instead:" % maxdate, end="")
+            lastEntry=corrected
+    print()
     
     timestamp=lastEntry
     filename1=filestump % ("-" + timestamp)
     return filename1
+    
+    
+def test_generate_filename_from_newest_entry_timestamp():
+    for sheetID, range, zeitcolumn, maxdate in (("1RWUIqzwxRJ3OJ_MJ3zEkY2HITg3Y1QeAP1WQvSENcrM","A5:AU406", "Zeit",  "20200321_211500"),
+                                                ("1Um3c1uPWrgdbrvmjUref367UnDi_Bt1_iZLehvsZd60", "A5:AU406", "Zeit", "20200624_214200"),
+                                                ("1jOjcJO4ffIMvksZkQFupikbT-M7ppQgtjFHiW037wHc", "A4:T405", 
+                                                 "Zeit (Datum, Uhrzeit) (Man kann =JETZT() oder =NOW() benutzen", "20200318_215000"
+                                       )):
+        print("\n")
+        df=download_sheet_table(sheetID=sheetID, table=("Haupt", range), reindex=None)
+        print("downloaded: %s" % sheetID)
+        fn=generate_filename_from_newest_entry_timestamp(df, zeitcolumn=zeitcolumn, maxdate=maxdate)
+        print(fn)
     
     
 def save_csv_twice(df, filestump=HAUPT_FILES):
@@ -551,20 +588,31 @@ def get_haupt_sheet_ids(sheet=VERSION_HISTORY_TABLE ):
         
     date2url["id"] = ids
     date2url["dt"]=pandas.to_datetime(date2url.datetime, format="%d/%m/%Y %H:%M", errors='coerce')
-    date2url.sort_values(by="dt", inplace=True, ascending=False)
+    date2url.sort_values(by="dt", inplace=True) # , ascending=False)
     # pandas_settings_full_table(); print(date2url[["dt", "id", "range", "zeit"]])
     return date2url[["dt", "id", "range", "zeit"]]
 
 def get_haupt_sheet_ids_then_download_all(sheet=VERSION_HISTORY_TABLE):
     
     sheets = get_haupt_sheet_ids(sheet=sheet)
+    print ("Got the table of version history copy sheets, processing them now:")
     
     for _, row in sheets.iterrows():
+        # download
         sheetID,dt,range,zeit = row["id"], row["dt"], row["range"], row["zeit"]
         print ("\n", dt,range,sheetID,zeit, end=" ... ")
-        df = download_sheet_table(sheetID=sheetID, table=('Haupt', range))
-        fn=generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES)
+        df = download_sheet_table(sheetID=sheetID, table=('Haupt', range), reindex=False)
+        
+        # get newest 'Zeit' entry (OR use date from sheets-table) --> generate filename
+        maxdate = dt.strftime("%Y%m%d_%H%M%S") # print(maxdate); exit()
+        fn=generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES, zeitcolumn=zeit, maxdate=maxdate)
         print(fn)
+        
+        # save as csv to the data folder:
+        if os.path.isfile(fn):
+            print ("ALERT: file existed, overwriting it now.")
+        df.to_csv(fn, index=False)
+        
 
 ########################### web crawling ####################################################################
 
@@ -652,5 +700,6 @@ if __name__ == '__main__':
     # df=scrape_and_test_wikipedia_pages(); print (df.to_string())
 
     # get_haupt_sheet_ids(); exit()
+    # test_generate_filename_from_newest_entry_timestamp(); exit()
     get_haupt_sheet_ids_then_download_all()
     pass
