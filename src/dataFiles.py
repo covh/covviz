@@ -439,17 +439,19 @@ def generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES, zei
     # pandas_settings_full_table()
     # print ("df.Zeit\n", df.Zeit)
 
+    zeitformat="%d/%m/%Y %H:%M"
+
     # find a first non-nan entry in 'zeit' column:
-    i,hit = 0, 0.0
-    while type(hit) != str:
-        hit = df.loc[i][zeitcolum]
-        print(i, hit)
-        i+=1
+    #i,hit = 0, 0.0
+    #while type(hit) != str:
+    #    hit = df.loc[i][zeitcolum]
+    #    print(i, hit)
+    #    i+=1
+    
     # sometimes Zeit has seconds, sometimes not, sigh:
-    if len(hit) == len("24/03/2020 09:30:00"):
-        zeitformat="%d/%m/%Y %H:%M:%S"
-    else:
-        zeitformat="%d/%m/%Y %H:%M"
+    #if len(hit) == len("24/03/2020 09:30:00"):
+    #    zeitformat="%d/%m/%Y %H:%M:%S"
+    
     
     # became more complicated on June 1st because pandas read 01/06/2020 wrongly as 6th of January. The dropna is probably not needed? But anyways, we focus on the newest date only so typos don't matter....
     to_datetimes = pandas.to_datetime(df.Zeit, format=zeitformat, errors='coerce')
