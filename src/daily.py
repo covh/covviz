@@ -64,13 +64,13 @@ def title(text):
     sep="*"*len(text+" * *")
     return "\n%s\n* %s *\n%s" %(sep, text, sep)
 
-def showSomeExtremeValues(ts_sorted, datacolumns, n=10):
+def showSomeExtremeValues(ts_sorted, datacolumns, n=15):
     columns_into_integers(ts_sorted, datacolumns)
     add_incidence_prevalence(ts_sorted, datacolumns)
     add_daily(ts_sorted, datacolumns)
     ts_sorted = newColOrder(ts_sorted, datacolumns)
 
-    for col in ("new cases", "incidence_1mio_last7days", "Reff_4_7_last"):
+    for col in ("new cases", "incidence_1mio_last7days", "incidence_1mio_last14days", "Reff_4_7_last"):
         print(title("sorted by    %s   descending:" % col))
         ts_sorted.sort_values(col, ascending=False, inplace=True) 
         print (ts_sorted.drop(datacolumns[:-2], axis=1).head(n=n).to_string( float_format='%.1f'))
