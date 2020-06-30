@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
+   
 @summary: download, store, load, inspect, ... several different sources
 
-@version: v03.4 (24/June/2020)
+@version: v03.5 (26/June/2020)
 @since:   25/April/2020
 
 @author:  Dr Andreas Krueger
@@ -12,9 +13,10 @@
           PERHAPS: refactor CONSTANTS into SETTINGS.py ? Reorder calls in main()?
 @todo:    Feedback please: This is how I would comment and clean the other .py files. 
                            Good? Suggestions?
+
 """
 
-import os, shutil, hashlib, time, datetime
+import os, shutil, hashlib, time, datetime, sys
 import pandas, wget, requests, numpy
 import bs4 as bs
 import pandas as pd
@@ -57,7 +59,7 @@ QUELLEN_SPALTEN={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Lan
 
 VERSION_HISTORY_TABLE = {"sheetID"   : "1rn_nPJodxAwahIzqfRtEr9HHoqjvmh_7bj6-LUXDRSY",
                          "sheetName" : "ThePast",
-                         "range" :     "A3:D10"}
+                         "range" :     "A3:E12"}
 
 # distances between districts:
 OPENDATASOFT_URL01 = "https://public.opendatasoft.com/explore/dataset/landkreise-in-germany/table/"
@@ -596,22 +598,31 @@ def get_haupt_sheet_ids_then_download_all(sheet=VERSION_HISTORY_TABLE):
     
     sheets = get_haupt_sheet_ids(sheet=sheet)
     print ("Got the table of version history copy sheets, processing them now:")
+    sys.stdout.flush()
     
     for _, row in sheets.iterrows():
         # download
         sheetID,dt,range,zeit = row["id"], row["dt"], row["range"], row["zeit"]
         print ("\n", dt,range,sheetID,zeit, end=" ... ")
-        df = download_sheet_table(sheetID=sheetID, table=('Haupt', range), reindex=False)
+        
+        try:
+            df = download_sheet_table(sheetID=sheetID, table=('Haupt', range), reindex=False)
+        except pandas.errors.ParserError as e:
+            print ("ERROR: %s %s" % (type(e), e))
+            print ('Probably incorrect access rights. Press "Share", and switch to "Anyone on the Internet with this link can view",')
+            print ("in this sheet: https://docs.google.com/spreadsheets/d/%s" %sheetID )
+            continue
         
         # get newest 'Zeit' entry (OR use date from sheets-table) --> generate filename
         maxdate = dt.strftime("%Y%m%d_%H%M%S") # print(maxdate); exit()
         fn=generate_filename_from_newest_entry_timestamp(df, filestump=HAUPT_FILES, zeitcolumn=zeit, maxdate=maxdate)
-        print(fn)
+        print("For CSV using filename:", fn)
         
         # save as csv to the data folder:
         if os.path.isfile(fn):
             print ("ALERT: file existed, overwriting it now.")
         df.to_csv(fn, index=False)
+        sys.stdout.flush()
         
 
 ########################### web crawling ####################################################################
@@ -701,5 +712,5 @@ if __name__ == '__main__':
 
     # get_haupt_sheet_ids(); exit()
     # test_generate_filename_from_newest_entry_timestamp(); exit()
-    get_haupt_sheet_ids_then_download_all()
+    # get_haupt_sheet_ids_then_download_all()
     pass
