@@ -115,14 +115,14 @@ def googleAccess(GOOGLE_STORAGE=GOOGLE_STORAGE):
     return creds
 
 
-def showRevisions(creds, sheet=MY_SHEET):
+def showRevisions(creds, fileId=MY_SHEET):
     from googleapiclient import discovery
     from httplib2 import Http
     DRIVE = discovery.build('drive', 'v3', http=creds.authorize(Http()))
     
-    revList=DRIVE.revisions().list(fileId = sheet, fields = "*").execute()
+    revList=DRIVE.revisions().list(fileId = fileId, fields = "*").execute()
     for rev in revList['revisions']:
-        url="https://docs.google.com/spreadsheets/export?id=%s&revision=%s&exportFormat=csv&sheet=ThePast" % (sheet, rev['id'])
+        url="https://docs.google.com/spreadsheets/export?id=%s&revision=%s&exportFormat=csv&sheet=%s&range=%s" % (fileId, rev['id'], 'ThePast', 'A3:E12')
         print("{id} {kind} {modifiedTime}".format(**rev), url)
 
 
