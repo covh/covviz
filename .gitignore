@@ -3,6 +3,9 @@
 .pydevproject
 .settings
 py3science
+google-credentials.json
+google-token.pickle
+google-storage.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
