@@ -120,7 +120,7 @@ heroku apps
 heroku git:remote -a cov19de
 git remote -v
 
-git push heroku master
+git push heroku master # this is later enough to update the heroku app with newer code
 heroku open
 heroku logs --tail
 ```
