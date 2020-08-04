@@ -1,8 +1,10 @@
 ﻿#!/usr/bin/env python3
+
+VERSION = "v03.5.0 (4/Aug/2020)"
+
 """
 @summary: bottle http app for heroku - download risklayer CSV, then inspect data. Purposes: spot typos, see whether newly published data, give summary.
 
-@version: v03.4 (24/June/2020)
 @since:   11/June/2020
 
 @author:  Dr Andreas Krueger
@@ -33,7 +35,7 @@ if "src" == os.getcwd().split(os.sep)[-1]:
 
 @route('/home')
 def show_home():
-    return template('home')
+    return template('home', version=VERSION)
 
 
 @route('/')
@@ -47,6 +49,7 @@ title=daily.title
 
 def CSV_download_and_inspect_verbose(url=dataFiles.RISKLAYER_URL01):
     before=timeit.default_timer()
+    print("\nCSV-tester app 'risklayer-->cov19de' version: %s\n" % VERSION) 
     ts = dataFiles.downloadDataNotStoring(url)
     downloadTime=timeit.default_timer() - before 
     print ("\ndownloaded timeseries CSV DataFrame size: %s x %s" % (len(ts.columns), len(ts)))
