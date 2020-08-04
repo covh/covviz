@@ -309,9 +309,33 @@ def test_comparison():
         print (filenames, true_if_exist_and_equal(filenames))
 
 
+def read_as_CSV_or_as_SSV(filename, encoding='utf-8'):
+    """
+    try CSV first - if that fails try reading in as SSV
+    Happened first on August 3rd or 4th - suddenly not comma separated anymore but semicolon separated.
+    """
+    ts = pandas.read_csv(filename, encoding=encoding)
+    rows, cols = len(ts), len(ts.columns)
+    print ("(rows, cols) = (%s, %s)" % (rows, cols), end=" ")
+    
+    if cols == 1:
+        print ("\n\nALERT: ERROR in source file: 1 column. Not comma-separated" \
+               " but semicolon-separated?? (Happened first on Aug 4th). Trying that now:")
+        ts=pandas.read_csv(filename, sep=";", encoding='utf-8')
+        rows, cols = len(ts), len(ts.columns)
+        print ("(rows, cols) = (%s, %s)" % (rows, cols), end=" ")
+    else:
+        print ("==> CSV format correct probably (issue on Aug 4th)", end =" ")
+        
+        
+    print ("==> looking good. Let's see if it reads in correctly ...\n")
+    return ts
+
+
 def downloadData(andStore=True,
                  url=RISKLAYER_URL01, target=DATA_PATH,
-                 ts_file=TS_FILE, ts_newest=TS_NEWEST):
+                 ts_file=TS_FILE, ts_newest=TS_NEWEST,
+                 encoding='utf-8'): # encoding='cp1252'):
     """
     download, and store in 2 files:
      one timestamped, for possible later use 
@@ -323,8 +347,8 @@ def downloadData(andStore=True,
     print (url)
     filename = wget.download(url, out=target)
     print ("downloaded:", filename)
-
-    ts=pandas.read_csv(filename, encoding='cp1252') # encoding='utf-8')
+    ts = read_as_CSV_or_as_SSV(filename, encoding=encoding)
+    
     last_col = ts.columns[2:].tolist()[-1]
     print ("newest column:", last_col)
     
@@ -353,12 +377,15 @@ def downloadData(andStore=True,
     return not equal, ts
 
 
-def downloadDataNotStoring(url=RISKLAYER_URL01):
+def downloadDataNotStoring(url=RISKLAYER_URL01, encoding='utf-8'):
     """
     good for readonly files system like on heroku 
     """
     print (url)
-    ts=pandas.read_csv(url, encoding='utf-8') # 'cp1252') # encoding='utf-8')
+    
+    # ts=pandas.read_csv(url, encoding='utf-8') # 'cp1252') # encoding='utf-8')
+    ts = read_as_CSV_or_as_SSV(filename=url, encoding=encoding)
+    
     return ts
 
 
@@ -377,12 +404,15 @@ def attribution_and_repair(ts):
     return ts
 
 
-def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True):
+def load_data(ts_f=TS_NEWEST, bnn_f=BNN_FILE, ifPrint=True, encoding='utf-8'):
     """
     load timeseries and population sizes; incl attribution_and_repair(ts); 
     """
     bnn=pandas.read_csv(bnn_f)
-    ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
+    
+    # ts=pandas.read_csv(ts_f, encoding='cp1252') # encoding='utf-8')
+    ts = read_as_CSV_or_as_SSV(filename=ts_f, encoding=encoding)
+    
     ts = attribution_and_repair(ts)
     return ts, bnn
 
