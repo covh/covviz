@@ -179,18 +179,15 @@ def downloadFromOpendatasoft_and_generatePairwiseDistancesFile():
 
 if __name__ == '__main__':
     
-    AGS1,km = 5370, 50
     generateNew = False
     
     if generateNew:
         downloadFromOpendatasoft_and_generatePairwiseDistancesFile()
-       
 
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
-    print ("\ns**t that had been inconsistent data:")
-    compare_risklayer_with_opendatasoft(bnn)
-
-    print ("\nall good.")
+    # ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
+    # print ("\ns**t that had been inconsistent data:")
+    # compare_risklayer_with_opendatasoft(bnn)
+    # print ("\nall good.")
     
     distances = load_distances()
     AGS1,km = distances["AGS1"][0], 50
