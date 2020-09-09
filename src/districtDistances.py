@@ -2,7 +2,7 @@
 """
 @summary: Opendatasoft database into pairwise distances of all districts of Germany 
 
-@version: v03.5.1 (9/Sept/2020)
+@version: v03.5.2 (9/Sept/2020)
 @since:   27/April/2020
 
 @author:  Dr Andreas Krueger
@@ -228,11 +228,15 @@ if __name__ == '__main__':
     # compare_risklayer_with_opendatasoft(bnn)
     # print ("\nall good.")
     
-    distances = load_distances()
-    AGS1,km = distances["AGS1"][0], 50
-    print ("\nwhole table contains %d pairs with distance max %.1f km" % (number_of_pairs_max_dist(distances, km), km))
-    print ("example for AGS1=" , AGS1)
-    print (nearby (distances, AGS1, km))
+    try:
+        distances = load_distances()
+    except Exception as e:
+        print ("%s, first enable table file generation: GENERATE_NEW = True" % e)
+    else:
+        AGS1,km = distances["AGS1"][0], 50
+        print ("\nwhole table contains %d pairs with distance max %.1f km" % (number_of_pairs_max_dist(distances, km), km))
+        print ("example for AGS1=" , AGS1)
+        print (nearby (distances, AGS1, km))
 
     #print()
     #print (kreis_link(bnn, 0))
