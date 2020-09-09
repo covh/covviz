@@ -2,15 +2,55 @@
 """
 @summary: Opendatasoft database into pairwise distances of all districts of Germany 
 
-@version: v03.4 (24/June/2020)
+@version: v03.5.1 (9/Sept/2020)
 @since:   27/April/2020
 
 @author:  Dr Andreas Krueger
 @see:     https://github.com/covh/covviz for updates
 
 @status:  needs: (cleanup, function comments, solve/record TODOs, declutter main() function, etc.)
-          not yet: ready, clearly structured, pretty. But it works.
+          not yet: ready, clearly structured, pretty. But ... it works.
+
+
+@output: example
+
+whole table contains 1870 pairs with distance max 50.0 km
+example for AGS1= 9362
+      AGS1  AGS2         km
+0     9362  9375   1.067573
+954   9362  9273  28.111665
+1940  9362  9278  36.566027
+1961  9362  9263  36.750851
+2514  9362  9376  40.761417
+3162  9362  9373  45.877283
+3636  9362  9372  49.228091
+
+
+
+@note:    how to run this, quickstart:
+
+git clone https://github.com/covh/covviz.git
+cd covviz
+
+sudo apt install git python3-venv expect
+python3 -m venv ./py3science
+
+source ./py3science/bin/activate
+pip3 install -U pip wheel
+pip install -r requirements.txt
+
+cd src
+python3 districtDistances.py 
+
+# in first run, change to GENERATE_NEW = True
 """
+
+####################
+
+GENERATE_NEW = False # If you set this to True, the pairwise calculations will need time. Switch back to False afterwards. 
+
+####################
+
 
 import io, sys, shutil
 
@@ -179,9 +219,8 @@ def downloadFromOpendatasoft_and_generatePairwiseDistancesFile():
 
 if __name__ == '__main__':
     
-    generateNew = False
     
-    if generateNew:
+    if GENERATE_NEW:
         downloadFromOpendatasoft_and_generatePairwiseDistancesFile()
 
     # ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
