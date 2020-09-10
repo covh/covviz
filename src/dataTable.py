@@ -43,8 +43,10 @@ def toHTMLRow(ts_sorted, row_index, datacolumns, cmap, labels, rolling_window_si
         rgb = matplotlib.colors.to_hex(cmap( 0.30+(d/diffmax)*0.50 ))
         
         line+='<td bgcolor="%s"><span>%d</span></td>' % (rgb, c)
+        
     for label in labels:
         line+="<td>%s</td>" % label
+        
     return line + "</tr>"
     
 
@@ -183,7 +185,8 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
     
     colcount=len(datacolumns)
     # print (datacolumns, colcount); exit()
-    cols = [("7days new cases", True),
+    cols = [("total cases", True),
+            ("7days new cases", True),
             ("Kreis", True),
             ("Prev. p.1mio", True),
             ("7days Incid.p.1mio", True),
@@ -210,6 +213,11 @@ def Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, fi
         # print (AGS)
         # nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         labels=[]
+        
+        # Add the last data column once more, so that table is sortable by that column:
+        totalCases = int((ts_sorted[datacolumns[-1]][AGS]))
+        labels += ['%d' % totalCases]
+        
         labels += ['%d' % (ts_sorted["new_last7days"][AGS])]
         labels += [districtDistances.kreis_link(bnn, AGS)[2]]
         labels += ["%d" % prevalence(datatable=ts_sorted, row_index=AGS, datacolumns=datacolumns, population=pop)]
@@ -332,4 +340,4 @@ if __name__ == '__main__':
     
     # Bundeslaender.loc['Deutschland'] = Bundeslaender.sum().values.tolist()
     
-    print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender_sorted.index.tolist(), cmap, divEnveloped=False)[0])
+    # print (BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, Bundeslaender_sorted.index.tolist(), cmap, divEnveloped=False)[0])
