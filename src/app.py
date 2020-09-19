@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env python3
 
-VERSION = "v03.5.0 (4/Aug/2020)"
+VERSION = "v03.6.0 (19/Sept/2020)"
 
 """
 @summary: bottle http app for heroku - download risklayer CSV, then inspect data. Purposes: spot typos, see whether newly published data, give summary.
