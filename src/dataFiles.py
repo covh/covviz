@@ -133,6 +133,19 @@ def show_problematic_columns(df, type_wanted=numpy.float64, how_many_different=2
         print("There are columns which are not '%s': %s" % (type_wanted, cols))
         
 
+def remove_unnecessary_columns(ts, wrong=["Population"]):
+    
+    unwanted = list( set(wrong) - ( set(wrong) - set(list(ts.columns))) )
+    
+    if unwanted:
+        print("\nUnwanted column-names detected (new problem since Sept 11th): ", unwanted, end=" ... ")
+        ts.drop(unwanted, axis=1, inplace=True)
+        print ("DROPPING that column" + ("s" if len(unwanted) > 1 else "" ) + ".\n")
+    else:
+        print ("No unwanted columns (%s) detected (problem appeared Sept 11th), continuing with unchanged table ...\n" % wrong)
+
+    return ts
+
 def repairData(ts):
     """
     The CSV contains some data typos.
@@ -151,6 +164,7 @@ def repairData(ts):
     
     show_problematic_columns(ts)
     
+    ts=remove_unnecessary_columns(ts)
     
     newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
     if newcols!=ts.columns.tolist():
@@ -731,9 +745,9 @@ if __name__ == '__main__':
     # notEqual, ts = downloadData(andStore=False); exit()
     # newData, ts = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
 
-    # downloadData(); exit()
+    downloadData(); # exit()
 
-    # load_data(); exit()
+    load_data(); exit()
     # ts, bnn = data(withSynthetic=True); # exit()
     # TODO: Use 'datacolumns' instead of dropping
     # print(); print (ts[ts["AGS"]=="00000"].drop(["AGS", "ADMIN"], axis=1).values.tolist()); exit()
