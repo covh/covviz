@@ -37,13 +37,16 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
     ax.xaxis_date()
     fig.autofmt_xdate(rotation=60)
     ax.xaxis.set_minor_locator(matplotlib.dates.DayLocator(bymonthday=range(1, 30, 5)))
-    ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(2))
 
     # plot data
     lns1 = ax.plot(dates, daily, label="daily cases (weekend-flawed), 2 weeks: red", color='#AAAAAA')
     lns1_2 = ax.plot(dates[-14:], daily[-14:], label="daily cases, last 14 days dark gray", color='red')
     # print (len(dates[-14:]))
-    
+
+    # allow no 'half daily cases' (floating point numbers)
+    yloc = matplotlib.ticker.MaxNLocator(integer=True)
+    ax.yaxis.set_major_locator(yloc)
+
     plt.ylabel("daily cases", color="purple")
     plt.ylim(0, max(daily[1:])*1.5)
 
@@ -98,6 +101,13 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
 
     ax.xaxis.set_major_locator(matplotlib.dates.DayLocator(bymonthday=range(1, 32, 31))) # if placing this setting above all other, major ticks won't appear
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%Y-%m")) # its date formatter must be set, if setting major locator
+
+    # determine some meaningfull y minor tick value -- again, should be placed below here, to get final good results
+    yticks = yloc()
+    ydiff = yticks[1]
+    yminor = int(ydiff / 5 + 0.5) if ydiff >= 8 else 1 # '+0.5' to round up for '8'
+    # print(f"{ydiff} results in {yminor} for {title} and {yticks=}")
+    ax.yaxis.set_minor_locator(matplotlib.ticker.MultipleLocator(yminor))
 
     if filename:
         fig.savefig(os.path.join(dataFiles.PICS_PATH, filename),  bbox_inches='tight')
