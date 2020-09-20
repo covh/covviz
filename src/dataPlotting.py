@@ -38,7 +38,11 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
     lns1 = ax.plot(dates, daily, label="daily cases (weekend-flawed), 2 weeks: red", color='lightgray')
     lns1_2 = ax.plot(dates[-14:], daily[-14:], label="daily cases, last 14 days dark gray", color='red')
     # print (len(dates[-14:]))
-    
+
+    # allow no 'half daily cases' (floating point numbers)
+    yloc = matplotlib.ticker.MaxNLocator(integer=True)
+    ax.yaxis.set_major_locator(yloc)
+
     plt.ylabel("daily cases", color="purple")
     plt.ylim(0, max(daily[1:])*1.5)
 
