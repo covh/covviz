@@ -140,7 +140,7 @@ def plot_Kreise_parallel(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
     leave_alone_cpus = 1
     wanted_cpus = available_cpus - leave_alone_cpus
 
-    if available_cpus < wanted_cpus:
+    if available_cpus < wanted_cpus or wanted_cpus < 2:
         return plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint)
 
     done = []
