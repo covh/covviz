@@ -207,13 +207,13 @@ def repairData(ts):
         print ("Done.")
 
 
-    wrong, correct='o',0 # typo 'o' instead of 0
-    df, cols = swap_specific_typo_cells(ts, correct_type=type(ts.loc[1, "01.06.2020"]), wrong=wrong, correct=correct)
-    if cols:
-        print("found and fixed typo '%s' which had cast whole column/s %s to string. Corrected that now. (appeared on June 2nd 2020)" % (wrong, cols))
-        ts=df
-    else:
-        print("They fixed that problem (which had appeared on June 2nd).")
+    # wrong, correct='o',0 # typo 'o' instead of 0
+    # df, cols = swap_specific_typo_cells(ts, correct_type=type(ts.loc[1, "01.06.2020"]), wrong=wrong, correct=correct)
+    # if cols:
+    #     print("found and fixed typo '%s' which had cast whole column/s %s to string. Corrected that now. (appeared on June 2nd 2020)" % (wrong, cols))
+    #     ts=df
+    # else:
+    #     print("They fixed that problem (which had appeared on June 2nd).")
 
     # perhaps there are still columns that need fixing:
     show_problematic_columns(ts)
