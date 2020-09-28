@@ -264,34 +264,26 @@ that googlesheet --&gt; <a href="http://tiny.cc/kreise">tiny.cc/kreise</a><p/>
 """
 # width="583" height="320"
 
-def fourbyfour(Bundeslaender_sorted, ifPrint=False):
-    
-    print ("\ngenerating 4x4 html table, for overview of 16 Bundeslaender in Germany:")
-    BLs=sorted(Bundeslaender_sorted.index.tolist())
+def bloverview(Bundeslaender_sorted, ifPrint=False):
+    print("\ngenerating overview of 16 Bundeslaender in Germany:")
+    BLs = sorted(Bundeslaender_sorted.index.tolist())
     BLs = [BL for BL in BLs if BL not in ("Dummyland", "Deutschland")]
-    
-    #global page
-    #page=""
-    c=0
-    
+
     class page(object):
-        page=""
+        page = ""
+
         def a(self, t):
-            self.page+=t+"\n"
-           
-    p=page()
-    p.a("<table>")
-    for i in range(4):
-        p.a("<tr>")
-        for j in range(4):
-            print(c, BLs[c])
-            imgprop='src="https://covh.github.io/cov19de/pics/bundesland_%s.png" alt="bundesland_%s.png"'%(BLs[c],BLs[c])
-            p.a('<td><a href="%s.html">%s<br/><img %s width="366" height="214"></a></td>' % (BLs[c], BLs[c], imgprop))
-            c+=1
-        p.a("</tr>")
-    p.a("</table>")
+            self.page += t + "\n"
+
+    p = page()
+    for BL in BLs:
+        print(BL)
+        imgprop = 'src="../pics/bundesland_%s.png" alt="bundesland_%s.png"' % (BL, BL)
+        p.a("<figure>")
+        p.a('<a href="%s.html"><figcaption>%s</figcaption><img %s></a>' % (BL, BL, imgprop))
+        p.a("</figure>")
     if ifPrint:
-        print (p.page)
+        print(p.page)
     return p.page
 
 
@@ -328,11 +320,11 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     page +='<hr><h3 id="Bundeslaender_4by4">alphabetically</h3>\n'
     
-    page += '<div class="fourbyfour">' # give it scrollbars so that it's not crazy wide on mobile
-    page += fourbyfour(Bundeslaender_sorted)
+    page += '<div class="bloverview">'
+    page += bloverview(Bundeslaender_sorted)
     page += '</div>'
     
-    page +="<p>Click on the image of a Bundesland to enter its page, with all its districts.</p>"
+    page +="<p style='clear:both'>Click on the image of a Bundesland to enter its page, with all its districts.</p>"
     page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     
     
@@ -493,7 +485,7 @@ def neighbour_districts_table_page(AGS, distances, km, bnn):
     page = SIMPLEPAGE % ("%s (%s) neighbours" % (gen, bez)) 
     page = page. replace('onload="scroll_rightmost()"', '')
     page += table
-    page += '<p>All plots are regenerated with new data every night. Beware this temporary <a href="https://covh.github.io/cov19de/pages/hotspots.html">hotspot</a> is an experimental page - it might get removed, so please do not link to it. Instead link to project <a href="http://tiny.cc/cov19de">http://tiny.cc/cov19de</a>.</p>'
+    page += '<p>All plots are regenerated with new data every night. Beware this temporary <a href="hotspots.html">hotspot</a> is an experimental page - it might get removed, so please do not link to it. Instead link to project <a href="http://tiny.cc/cov19de">http://tiny.cc/cov19de</a>.</p>'
     page += SIMPLEPAGE_END
     # print (page)
     AGS_5digits = ("00000"+str(AGS))[-5:]
@@ -531,7 +523,7 @@ if __name__ == '__main__':
     # test_search_URLs(); exit()
     
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled()
-    # fourbyfour(Bundeslaender_sorted); exit()
+    # bloverview(Bundeslaender_sorted); exit()
     distances = districtDistances.load_distances()
     
     print()
