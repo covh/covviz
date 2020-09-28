@@ -61,16 +61,16 @@ document.addEventListener("DOMContentLoaded", (event) => {
         const cell = curRow.insertCell(),
               a = document.createElement("a"),
               i = new Image();
-        a.href = `https://covh.github.io/cov19de/pages/${l}.html`;
+        a.href = `${l}.html`;
         if (l === "Deutschland") {
-          i.src = "https://covh.github.io/cov19de/pics/Deutschland.png";
+          i.src = "../pics/Deutschland.png";
         } else if (l === l.replace(/[^0-9]/g, "")) {
           let AGS = l.padStart(5, "0");
-          i.src = `https://covh.github.io/cov19de/pics/Kreis_${AGS}.png`;
+          i.src = `../pics/Kreis_${AGS}.png`;
           let bula = getBundesland(l);
-          a.href = `https://covh.github.io/cov19de/pages/${bula}.html#AGS${AGS}`;
+          a.href = `${bula}.html#AGS${AGS}`;
         } else {
-          i.src =`https://covh.github.io/cov19de/pics/bundesland_${l}.png`;
+          i.src =`../pics/bundesland_${l}.png`;
         }
         a.appendChild(i);
         cell.appendChild(a);

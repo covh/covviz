@@ -285,7 +285,7 @@ def fourbyfour(Bundeslaender_sorted, ifPrint=False):
         p.a("<tr>")
         for j in range(4):
             print(c, BLs[c])
-            imgprop='src="https://covh.github.io/cov19de/pics/bundesland_%s.png" alt="bundesland_%s.png"'%(BLs[c],BLs[c])
+            imgprop='src="../pics/bundesland_%s.png" alt="bundesland_%s.png"'%(BLs[c],BLs[c])
             p.a('<td><a href="%s.html">%s<br/><img %s width="366" height="214"></a></td>' % (BLs[c], BLs[c], imgprop))
             c+=1
         p.a("</tr>")
@@ -493,7 +493,7 @@ def neighbour_districts_table_page(AGS, distances, km, bnn):
     page = SIMPLEPAGE % ("%s (%s) neighbours" % (gen, bez)) 
     page = page. replace('onload="scroll_rightmost()"', '')
     page += table
-    page += '<p>All plots are regenerated with new data every night. Beware this temporary <a href="https://covh.github.io/cov19de/pages/hotspots.html">hotspot</a> is an experimental page - it might get removed, so please do not link to it. Instead link to project <a href="http://tiny.cc/cov19de">http://tiny.cc/cov19de</a>.</p>'
+    page += '<p>All plots are regenerated with new data every night. Beware this temporary <a href="hotspots.html">hotspot</a> is an experimental page - it might get removed, so please do not link to it. Instead link to project <a href="http://tiny.cc/cov19de">http://tiny.cc/cov19de</a>.</p>'
     page += SIMPLEPAGE_END
     # print (page)
     AGS_5digits = ("00000"+str(AGS))[-5:]
