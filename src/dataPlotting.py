@@ -17,8 +17,9 @@ import os, datetime
 
 import pandas
 # import numpy
+import matplotlib
+matplotlib.use('Agg')   # to be able to plot without GUI, this must be set before importing pyplot
 from matplotlib import pyplot as plt
-import matplotlib 
 
 
 import dataFiles, dataMangling
