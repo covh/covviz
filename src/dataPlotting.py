@@ -13,8 +13,8 @@
           NOT yet: pretty. But it works.
 """
 
-import os, datetime
-
+import os, datetime, time
+import  multiprocessing as mp
 import pandas
 # import numpy
 from matplotlib import pyplot as plt
@@ -131,30 +131,47 @@ def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
     return done
 
 
-def plot_Kreise_parallel(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
-    import  multiprocessing as mp
-
-    # one CPU should be left free for the system, and multiprocessing makes only sense for at least 2 free CPUs,
-    # so just call the non-parallel version if not enough CPUs are in the system
-    available_cpus = mp.cpu_count()
+def plot_Kreise_parallel(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True, force_sequentially=True):
+    """
+    one CPU should be left free for the system, and multiprocessing makes only sense for at least 2 free CPUs,
+    so just call the non-parallel version if not enough CPUs are in the system
+    
+    Many thanks to jalsti for the basis of this https://github.com/covh/covviz/pull/1
+    Timings (100 districts, 4 CPUs): sequential 107.6 seconds versus parallel 53.7 seconds. 
+    
+    Standalone fine. 
+    However, when integrated into the daily() routine, the X server of my dev machine crashed (!) twice.
+    So switching parallel OFF by default:   force_sequentially=True
+    """
+    available_cpus = mp.cpu_count() 
     leave_alone_cpus = 1
     wanted_cpus = available_cpus - leave_alone_cpus
 
-    if available_cpus < wanted_cpus or wanted_cpus < 2:
-        return plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint)
+    before=time.perf_counter()
+    print ("\nAvailable_CPUs: %d" % available_cpus, end=" ")
+    
+    if force_sequentially or available_cpus < wanted_cpus or wanted_cpus < 2:
+        print("so falling back to sequential mode.")
+        done = plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint)
+        
+    else:
+        print("so we save some time with parallel processing, in %d processes." % wanted_cpus)
 
-    done = []
+        done = []
+        # setup process pool
+        pool = mp.Pool(wanted_cpus)
+        try:
+            done = pool.starmap(plot_Kreise, 
+                                [(ts, bnn, dates, datacolumns, [AGS], ifPrint) 
+                                 for AGS in Kreise_AGS])
+        except KeyboardInterrupt:
+            # without catching this here we will never be able to manually stop running in a sane way
+            pool.terminate()
+        finally:
+            pool.close()
+            pool.join()
 
-    # setup process pool
-    pool = mp.Pool(wanted_cpus)
-    try:
-        done = pool.starmap(plot_Kreise, [(ts, bnn, dates, datacolumns, [AGS], ifPrint) for AGS in Kreise_AGS])
-    except KeyboardInterrupt:
-        # without catching this here we will never be able to manually stop running in a sane way
-        pool.terminate()
-    finally:
-        pool.close()
-        pool.join()
+    print ("To generate these %d took %.1f seconds.\n" % (len(done), time.perf_counter()-before))
 
     return done
 
@@ -194,7 +211,7 @@ if __name__ == '__main__':
     # dates = dataMangling.dates_list(ts)
     ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=True)
     
-    examples=True
+    examples=False
     if examples:
         test_plot_Kreis(ts, bnn, dates, datacolumns)
         test_plot_Bundesland(ts, bnn, dates, datacolumns)
@@ -202,7 +219,7 @@ if __name__ == '__main__':
 
     longrunner=True
     if longrunner:    
-        plot_Kreise(ts, bnn, dates, datacolumns, ts["AGS"].tolist())
+        plot_Kreise_parallel(ts, bnn, dates, datacolumns, ts["AGS"].tolist()) # [:100]) #, force_sequentially=True)
         plot_all_Bundeslaender(ts, bnn, dates, datacolumns)
         
 
