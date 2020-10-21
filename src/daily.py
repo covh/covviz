@@ -142,7 +142,7 @@ def generate_all_plots(withSyntheticData=True):
     
     listOfAGSs = ts["AGS"].tolist()
     print ("Plotting %d images, for each Kreis. Patience please: " % len(listOfAGSs))
-    done = dataPlotting.plot_Kreise(ts, bnn, dates, datacolumns, listOfAGSs, ifPrint=False)
+    done = dataPlotting.plot_Kreise_parallel(ts, bnn, dates, datacolumns, listOfAGSs, ifPrint=True)
     print ("plot_Kreise done: %d items" % len(done))
     print()
 
