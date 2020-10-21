@@ -142,6 +142,9 @@ def plot_Kreise_parallel(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True, 
     Standalone fine. 
     However, when integrated into the daily() routine, the X server of my dev machine crashed (!) twice.
     So switching parallel OFF by default:   force_sequentially=True
+    
+    INFO: https://github.com/covh/covviz/pull/1#issuecomment-713830402
+    TODO: modify this to use threading instead of multiprocessing
     """
     available_cpus = mp.cpu_count() 
     leave_alone_cpus = 1
