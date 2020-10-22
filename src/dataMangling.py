@@ -14,11 +14,65 @@
           PERHAPS take apart, into several separate files?
           NOT yet: pretty, not at all easy to read, sorry. But it works.
 """
+from collections import namedtuple
+from dataclasses import dataclass
+
+from typing import List
 
 import os, copy
 import datetime as dt
 import pandas, numpy, matplotlib
 import dataFiles
+
+@dataclass
+class DataMangled():
+    """structure to hold the mangled data gathered by `dataMangled()`"""
+    ts: pandas.DataFrame = None
+    """contains all districts with rows number 0,1,2,… and columns as follows:
+        first column, 'AGS': 
+            'Amtlicher Gemeindeschlüssel'='Community Identification Number', https://en.wikipedia.org/wiki/Community_Identification_Number#Germany)
+            formatted with leading zero, if shorter than 5 characters
+        second column, 'ADMIN': 
+            name of the district, including its type in braces, e.g. 'district name (district type name)'
+        remaining columns are ascending dates since 05.03.2020, up to newest, in format 'DD.MM.YYY': 
+            number of cumulative Covid cases for the district up to that dates  
+    """
+
+    bnn: pandas.DataFrame = None
+    """contains data from BNN with rows number 0,1,2,… and columns
+        AGS: formatted *without* leading zero, if shorter than 5 characters
+        GEN: district name
+        BEZ: district type name
+        Population: of district
+        Infections: overall cumulative sum of Covid infections for district
+        "Infections per 1000 population": …
+        AGS_number: AGS again 	
+        Infections_Bundesland: infections over all districts in the Bundesland (federal state) for the district
+        Bundesland: Bundesland (federal state) for the district
+        Population_Bundesland: population of district's federal state
+        "Infections_Bundesland per 10000 population": overall cumulative sum of Covid infections for district's federal state
+        Population: population of the district
+    """
+    ts_sorted: pandas.DataFrame = None
+    """contains rows with AGS number as names and the columns:
+        ADMIN: [see above]
+        columns with ascending dates, like in `ts`
+        Bundesland: [see above]
+        Population: of district
+        centerday: the 'expectation day' of all Covid cases for the district
+        new_last14days: sum of district's new cases of the last 14 days
+        new_last7days: sum of district's new cases of the last 7 days
+        Reff_4_7_last: the news R_eff_4_7 value for the district (see `Reff_4_7()`)
+    """
+    Bundeslaender_sorted: pandas.DataFrame = None
+    """like `ts_sorted`, but with federal state names as row names and values for the total federal state instead of district"""
+    dates: List[dt.datetime] = None
+    """list of datetime objects for ascending dates since 05.03.2020 up to newest"""
+    datacolumns: pandas.Index = None
+    """axis labels of dates out of `ts`"""
+
+mangledData = DataMangled
+"""global object to store the mangled data once"""
 
 
 def find_AGS(ts, name):
@@ -129,21 +183,21 @@ def temporal_center(data):
     return center, signal
     
     
-def get_Kreis(ts, bnn, AGS):
+def get_Kreis(dm: DataMangled, AGS):
     # get data and names
-    gen, bez, inf, pop = AGS_to_population(bnn, AGS)
-    name_BL, inf_BL, pop_BL = AGS_to_Bundesland(bnn, AGS)
+    gen, bez, inf, pop = AGS_to_population(dm.bnn, AGS)
+    name_BL, inf_BL, pop_BL = AGS_to_Bundesland(dm.bnn, AGS)
     title = "%s (%s #%s, %s) Population=%d" % (gen, bez, AGS, name_BL, pop)
     filename = "Kreis_" + ("00000"+AGS)[-5:] + ".png"
-    daily = AGS_to_ts_daily(ts, AGS)
-    cumulative = AGS_to_ts_total(ts, AGS)
+    daily = AGS_to_ts_daily(dm.ts, AGS)
+    cumulative = AGS_to_ts_total(dm.ts, AGS)
     return daily, cumulative, title, filename, pop
 
 
 def join_tables_for_and_aggregate_Bundeslaender(ts, bnn):
 
     # careful, there might be more fields with nan (currently just the 3 copyright rows)
-    ts_int = copy.deepcopy(ts.dropna()) 
+    ts_int = copy.deepcopy(ts.dropna())
     
     ts_int["AGS"]=pandas.to_numeric(ts_int["AGS"]) # must transform string to int, for merge:
     ts_BuLa = pandas.merge(ts_int, bnn[["AGS", "Bundesland", "Population"]], how="left", on=["AGS"])
@@ -189,10 +243,10 @@ def add_centerday_column_Bundeslaender(Bundeslaender, datacolumns):
     return Bundeslaender
 
 
-def maxdata(ts_sorted):
-    maxvalue = max(ts_sorted[ts.columns[2:]].max())
-    digits=int(1 + numpy.log10(maxvalue))
-    return maxvalue, digits
+# def maxdata(ts_sorted):
+#     maxvalue = max(ts_sorted[ts.columns[2:]].max())
+#     digits=int(1 + numpy.log10(maxvalue))
+#     return maxvalue, digits
 
 
 
@@ -431,18 +485,23 @@ def test_some_mangling():
     center, signal = temporal_center(dailyIncrease)
     print ("expectation value at day %.2f" % center)
     # exit()
-    
+
+    dm = DataMangled
+    dm.ts = ts
+    dm.bnn = bnn
+
     print ("\nKreis")
-    daily, cumulative, title, filename, pop = get_Kreis(ts, bnn, AGS)
+    daily, cumulative, title, filename, pop = get_Kreis(dm, AGS)
     print (daily, cumulative)
     print (title, filename, pop)
     
     print ("\nBundesländer")
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
     
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangled(withSynthetic=True)
+    # ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangling.dataMangled(withSynthetic=withSyntheticData)
+    dm = dataMangled()
     
-    daily, cumulative, title, filename, population = get_BuLa(Bundeslaender, "Hessen", datacolumns)
+    daily, cumulative, title, filename, population = get_BuLa(Bundeslaender, "Hessen", dm.datacolumns)
     print (daily, cumulative)
     print (title, filename, population)
     
@@ -452,26 +511,26 @@ def test_some_mangling():
     AGS = 0
     AGS=1001
     AGS=5370
-    print (AGS_to_cumulative(ts_rich=ts_sorted, datacolumns=datacolumns, AGS=AGS))
-    print (AGS_to_daily(ts_rich=ts_sorted, datacolumns=datacolumns, AGS=AGS))
+    print (AGS_to_cumulative(ts_rich=dm.ts_sorted, datacolumns=dm.datacolumns, AGS=AGS))
+    print (AGS_to_daily(ts_rich=dm.ts_sorted, datacolumns=dm.datacolumns, AGS=AGS))
 
-    cumulative=AGS_to_cumulative(ts_rich=ts_sorted, datacolumns=datacolumns, AGS=AGS)
+    cumulative=AGS_to_cumulative(ts_rich=dm.ts_sorted, datacolumns=dm.datacolumns, AGS=AGS)
     print (cumulative_smoothed_last_week_incidence(cumulative))
     print (cumulative_today_minus_last_week_smoothed(cumulative))
     print (multiDayNewCases(cumulative))
     print (multiDayNewCases(cumulative, 14))
-    print (multiDayNewCases( AGS_to_cumulative(ts_sorted, datacolumns, AGS) , 14) )
-    print (ts_sorted.loc[AGS][["new_last14days", "new_last7days"]]); # exit()
-    print (ts_sorted["new_last14days"][AGS]);
+    print (multiDayNewCases( AGS_to_cumulative(dm.ts_sorted, dm.datacolumns, AGS) , 14) )
+    print (dm.ts_sorted.loc[AGS][["new_last14days", "new_last7days"]]); # exit()
+    print (dm.ts_sorted["new_last14days"][AGS]);
     
     # print (add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns))
-    print (add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)[["new_last14days", "new_last7days"]])
+    print (add_weekly_columns_Bundeslaender(dm.Bundeslaender_sorted, dm.datacolumns)[["new_last14days", "new_last7days"]])
     
     # test_Reff_Kreis(ts_sorted, datacolumns)
     # test_Reff_BL(Bundeslaender_sorted, datacolumns, BL="Hamburg")
     
-    for BL in Bundeslaender_sorted.index:
-        test_Reff_BL(Bundeslaender_sorted, datacolumns, BL=BL, filename=BL+".png")
+    for BL in dm.Bundeslaender_sorted.index:
+        test_Reff_BL(dm.Bundeslaender_sorted, dm.datacolumns, BL=BL, filename=BL+".png")
     
     
 def additionalColumns(ts,bnn):
@@ -482,23 +541,39 @@ def additionalColumns(ts,bnn):
     datacolumns = ts.columns[2:]
     print ("\nNewest column = '%s'" % datacolumns[-1])
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)
+
     ts_sorted = add_centerday_column(ts, ts_BuLa)
     ts_sorted = add_weekly_columns(ts_sorted, datacolumns)
     ts_sorted = add_column_Kreise(ts_sorted, datacolumns, inputseries=AGS_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
+
     Bundeslaender_sorted = add_centerday_column_Bundeslaender(Bundeslaender, datacolumns)
     Bundeslaender_sorted = add_weekly_columns_Bundeslaender(Bundeslaender_sorted, datacolumns)
     Bundeslaender_sorted = add_column_Bundeslaender(Bundeslaender_sorted , datacolumns, inputseries=BL_to_daily, operatorname="Reff_4_7_last", operator=Reff_4_7)
+
+    ts_sorted["new_last14days"] = ts_sorted["new_last14days"].astype(int)
+    ts_sorted["new_last7days"] = ts_sorted["new_last7days"].astype(int)
+    Bundeslaender_sorted["new_last14days"] = Bundeslaender_sorted["new_last14days"].astype(int)
+    Bundeslaender_sorted["new_last7days"] = Bundeslaender_sorted["new_last7days"].astype(int)
+
+    for datecol in datacolumns:
+        ts_sorted[datecol]=ts_sorted[datecol].astype(int)
+        Bundeslaender_sorted[datecol]=Bundeslaender_sorted[datecol].astype(int)
+
     return  ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
 
 def dataMangled(withSynthetic=True, ifPrint=True):
     """
     this loads from disk first
     """
+    global mangledData
+    if mangledData.ts is not None:
+        return mangledData
+
     ts, bnn = dataFiles.data(withSynthetic=withSynthetic, ifPrint=ifPrint)
 
-    ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = additionalColumns(ts,bnn)
-    
-    return ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
+    mangledData = DataMangled(*additionalColumns(ts,bnn))
+
+    return mangledData
 
 
 
@@ -506,5 +581,4 @@ if __name__ == '__main__':
     test_some_mangling(); exit()
     
     # ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns = dataMangled(withSynthetic=True)
-    
     
