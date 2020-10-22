@@ -331,7 +331,7 @@ if __name__ == '__main__':
 
     cmap = colormap()  
     
-    print ( toHTMLRow(dm, AGS, cmap, labels=["%s" % AGS]) )
+    print ( toHTMLRow(dm.ts_sorted, AGS, dm.datacolumns, cmap, labels=["%s" % AGS]) )
 
     district_AGSs = [1001, 1002, 5370, 9377]
     district_AGSs = dm.ts_sorted.index.tolist()
