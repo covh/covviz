@@ -67,6 +67,7 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+
 th, td {
   text-align:center;
   font-family: 'Roboto Condensed', sans-serif;
@@ -108,13 +109,25 @@ th span
     display: inline-block;
 }
 
-.fourbyfour {
-    overflow-y: scroll;
-    overflow-x: scroll;
-    width: 100%%;
-    height: 1000px;
+.bloverview {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
 }
 
+.bloverview figcaption{
+    text-align: center;
+}
+
+.bloverview figure{
+    display: inline-block;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
+
+.bloverview img{
+    width: 300px; /* should allow 4 images in a row on 1280 screen resolution */
+}
 
 // fix header row:
 .tableFixHead          { overflow-y: auto; height: 100px; }
