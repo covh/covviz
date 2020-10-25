@@ -14,19 +14,21 @@
           PERHAPS take apart, into several separate files?
           NOT yet: pretty, not at all easy to read, sorry. But it works.
 """
-from collections import namedtuple
+import copy
 from dataclasses import dataclass
 
+import datetime as dt
+import numpy
+import os
+import pandas
 from typing import List
 
-import os, copy
-import datetime as dt
-import pandas, numpy, matplotlib
 import dataFiles
 
+
 @dataclass
-class DataMangled():
-    """structure to hold the mangled data gathered by `dataMangled()`"""
+class DataMangled:
+    """structure to hold the mangled overall covid data, gathered by `dataMangled()`"""
     ts: pandas.DataFrame = None
     """contains all districts with rows number 0,1,2,… and columns as follows:
         first column, 'AGS': 
@@ -71,8 +73,65 @@ class DataMangled():
     datacolumns: pandas.Index = None
     """axis labels of dates out of `ts`"""
 
+
+@dataclass
+class District:
+    """structure to hold the pandemic data of a german district ('Kreis'), which may be a single city or a region of several small once"""
+    AGS: str
+    """'Amtlicher Gemeindeschlüssel'='Community Identification Number' of the district, 
+        https://en.wikipedia.org/wiki/Community_Identification_Number#Germany)"""
+
+    bez: str
+    """'Bezeichnung', type of district"""
+
+    cumulative: List[int]
+    """list of cumulative cases over all time, since 05.03.2020"""
+
+    daily: List[int]
+    """list of daily cases over all time, since 05.03.2020"""
+
+    filename: str
+    """filename for saving the generated plot/graph"""
+
+    gen: str
+    """name of the district"""
+
+    inf: int
+    """infections total of district"""
+
+    inf_BL: int
+    """infections total of the federal state ('Bundesland') the district lays in"""
+
+    incidence_sum7: None
+    """incidence sum of the last 7 days of the district's cases"""
+
+    name_BL: str
+    """name of the federal state ('Bundesland') the district lays in"""
+
+    new_sum7: int
+    """sum of new cases of last 7 days"""
+
+    pop: int
+    """population of district"""
+
+    pop_BL: int
+    """population of the federal state ('Bundesland') the district lays in"""
+
+    reff_4_7: float
+    """reff_4_7 value of district, calculated by `Reff_4_7`"""
+
+    rolling_mean7: None
+    """rolling mean of the last 7 days of the district's cases"""
+
+    title: str
+    """title string built from `gen`, `bez`, `ags`, `name_BL`, `pop`"""
+
+
+districts = dict()
+"""global dictionary to cache every `District`, which once has been gotten via `get_Kreis`"""
+
 mangledData = DataMangled
-"""global object to store the mangled data once"""
+"""global object to store the mangled main data once"""
 
 
 def find_AGS(ts, name):
@@ -184,14 +243,29 @@ def temporal_center(data):
     
     
 def get_Kreis(dm: DataMangled, AGS):
-    # get data and names
-    gen, bez, inf, pop = AGS_to_population(dm.bnn, AGS)
-    name_BL, inf_BL, pop_BL = AGS_to_Bundesland(dm.bnn, AGS)
-    title = "%s (%s #%s, %s) Population=%d" % (gen, bez, AGS, name_BL, pop)
-    filename = "Kreis_" + ("00000"+AGS)[-5:] + ".png"
-    daily = AGS_to_ts_daily(dm.ts, AGS)
-    cumulative = AGS_to_ts_total(dm.ts, AGS)
-    return daily, cumulative, title, filename, pop
+    ags_int = int(AGS)
+    if ags_int in districts:
+        print('*'*12 + " returning known district from cache:", ags_int)
+        dtr = districts[ags_int]
+    else:
+        dtr = District
+        dtr.AGS = AGS
+         # get data and names
+        dtr.gen, dtr.bez, dtr.inf, dtr.pop = AGS_to_population(dm.bnn, AGS)
+        dtr.name_BL, dtr.inf_BL, dtr.pop_BL = AGS_to_Bundesland(dm.bnn, AGS)
+        dtr.title = "%s (%s #%s, %s) Population=%d" % (dtr.gen, dtr.bez, dtr.AGS, dtr.name_BL, dtr.pop)
+        dtr.filename = "Kreis_" + ("00000" + dtr.AGS)[-5:] + ".png"
+        dtr.daily = AGS_to_ts_daily(dm.ts, dtr.AGS)
+        dtr.cumulative = AGS_to_ts_total(dm.ts, dtr.AGS)
+        # TODO: calc incidence_sum7 here
+        # TODO: calc rolling_mean7 here
+        # TODO: calc new_sum7 here
+        # TODO: calc reff_4_7 here
+        # TODO: calc prevalence/1mio here   TODO: change prevalence to more commen per 100k
+        # TODO: calc expectation day here
+        # TODO: store 'info' flag symbol here
+        districts[ags_int] = dtr
+    return dtr.daily, dtr.cumulative, dtr.title, dtr.filename, dtr.pop
 
 
 def join_tables_for_and_aggregate_Bundeslaender(ts, bnn):
