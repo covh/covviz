@@ -112,15 +112,15 @@ def download_all(showExtremes=True):
 
 def generate_all_pages(withSyntheticData=True):
     
-    dm = dataMangling.dataMangled(withSynthetic=withSyntheticData)
+    # haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
+    dm = dataMangling.dataMangled(withSynthetic=withSyntheticData, haupt=None)
     print()
 
     distances = districtDistances.load_distances()
     cmap = dataTable.colormap()
-    
-    haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
+
     print()
-    Bundeslaender_filenames = dataPages.Bundeslaender_alle(dm, distances, cmap, km=50, haupt=haupt);
+    Bundeslaender_filenames = dataPages.Bundeslaender_alle(dm, distances, cmap, km=50)
     print (Bundeslaender_filenames)
     
     fn = dataPages.Deutschland(dm, cmap)

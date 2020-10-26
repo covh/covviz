@@ -109,7 +109,7 @@ def sources_links(haupt, AGS):
     return ", ".join(links)
 
 
-def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, dm: dataMangling.DataMangled, distances, cmap, km, haupt):
+def bundesland(BL_name, filename_PNG, pop_BL, cumulative, filename_HTML, dm: dataMangling.DataMangled, distances, cmap, km):
     page = dataTable.PAGE % BL_name
 
     district_AGSs = dm.ts_sorted[dm.ts_sorted.Bundesland==BL_name].index.tolist()
@@ -152,9 +152,8 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
         filename_kreis_PNG = "Kreis_" + ("00000"+str(AGS))[-5:] + ".png"
         page +='<img src="%s"/><p/>' % ("../pics/" + filename_kreis_PNG)
         
-        prevalence = cumulative[-1] / pop * 1000000
-        page += ("%s %s" % (bez, gen)) + " population: {:,}".format(pop)
-        page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % (prevalence )
+        page += ("%s %s" % (dtr.bez, dtr.gen)) + " population: {:,}".format(dtr.pop)
+        page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % dtr.prevalence1mio
 
         sources = sources_links(haupt, AGS)
         page += "sources: %s; " % sources if sources else "" 
@@ -178,7 +177,7 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     
     return fn
 
-def Bundeslaender_alle(dm: dataMangling.DataMangled, distances, cmap, km, haupt):
+def Bundeslaender_alle(dm: dataMangling.DataMangled, distances, cmap, km):
     print ("Creating HTML files for all 'Bundeslaender'")
     filenames, population = [], 0
     rootpath = os.path.abspath(dataFiles.REPO_PATH)
@@ -192,7 +191,7 @@ def Bundeslaender_alle(dm: dataMangling.DataMangled, distances, cmap, km, haupt)
         filename_HTML = filename_PNG.replace(".png", ".html")
         filename_HTML = filename_HTML.replace("bundesland_", "")
 
-        fn = bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, dm, distances, cmap, km, haupt)
+        fn = bundesland(BL_name, filename_PNG, pop_BL, cumulative, filename_HTML, dm, distances, cmap, km)
         fn_abs = os.path.abspath(fn).replace(rootpath, "")
         
         filenames.append((BL_name, fn_abs ))
@@ -523,18 +522,19 @@ if __name__ == '__main__':
     
     # test_search_URLs(); exit()
     
-    dm = dataMangling.dataMangled()
+    # haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
+    dm = dataMangling.dataMangled(haupt=None)
     # fourbyfour(Bundeslaender_sorted); exit()
     distances = districtDistances.load_distances()
-    
+
     print()
     print()
     cmap = dataTable.colormap()
     # print ( bundesland("Hessen", "bundesland_Hessen.png", "Hessen", 7777, [8,9,10], "Hessen.html", ts, ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
     # print ( bundesland("Saarland", "bundesland_Saarland.png", "Saarland", 7777, [8,9,10], "Saarland.html", ts, ts_sorted, datacolumns, bnn, distances, cmap, 50) ); exit()
-    
-    haupt = dataFiles.load_master_sheet_haupt(timestamp="") # timestamp="" means newest
-    Bundeslaender_filenames = Bundeslaender_alle(dm, distances, cmap, km=50, haupt=haupt); print (Bundeslaender_filenames)
+
+    Bundeslaender_filenames = Bundeslaender_alle(dm, distances, cmap, km=50)
+    print (Bundeslaender_filenames)
     # Bundeslaender_filenames = [('Brandenburg', '../data/../pages/Brandenburg.html'), ('Bremen', '../data/../pages/Bremen.html'), ('Thüringen', '../data/../pages/Thüringen.html'), ('Bayern', '../data/../pages/Bayern.html'), ('Saarland', '../data/../pages/Saarland.html'), ('Hessen', '../data/../pages/Hessen.html'), ('Schleswig-Holstein', '../data/../pages/Schleswig-Holstein.html'), ('Baden-Württemberg', '../data/../pages/Baden-Württemberg.html'), ('Niedersachsen', '../data/../pages/Niedersachsen.html'), ('Sachsen-Anhalt', '../data/../pages/Sachsen-Anhalt.html'), ('Sachsen', '../data/../pages/Sachsen.html'), ('Hamburg', '../data/../pages/Hamburg.html'), ('Berlin', '../data/../pages/Berlin.html'), ('Rheinland-Pfalz', '../data/../pages/Rheinland-Pfalz.html'), ('Nordrhein-Westfalen', '../data/../pages/Nordrhein-Westfalen.html'), ('Mecklenburg-Vorpommern', '../data/../pages/Mecklenburg-Vorpommern.html'), ('Dummyland', '../data/../pages/Dummyland.html')]
     # Deutschland_simple(Bundeslaender_filenames)
     

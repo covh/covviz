@@ -26,7 +26,7 @@ from typing import List
 import dataFiles
 
 
-@dataclass
+@dataclass  # use dataclass for easy initialization in `dataMangled()` (although with that the attribute order must not be changed)
 class DataMangled:
     """structure to hold the mangled overall covid data, gathered by `dataMangled()`"""
     ts: pandas.DataFrame = None
@@ -55,6 +55,7 @@ class DataMangled:
         "Infections_Bundesland per 10000 population": overall cumulative sum of Covid infections for district's federal state
         Population: population of the district
     """
+
     ts_sorted: pandas.DataFrame = None
     """contains rows with AGS number as names and the columns:
         ADMIN: [see above]
@@ -66,13 +67,18 @@ class DataMangled:
         new_last7days: sum of district's new cases of the last 7 days
         Reff_4_7_last: the news R_eff_4_7 value for the district (see `Reff_4_7()`)
     """
+
     Bundeslaender_sorted: pandas.DataFrame = None
     """like `ts_sorted`, but with federal state names as row names and values for the total federal state instead of district"""
+
     dates: List[dt.datetime] = None
     """list of datetime objects for ascending dates since 05.03.2020 up to newest"""
+
     datacolumns: pandas.Index = None
     """axis labels of dates out of `ts`"""
 
+    haupt: pandas.DataFrame = None
+    """data of the 'haupt' CSV data source, including source URLs"""
 
 @dataclass
 class District:
@@ -465,7 +471,7 @@ def Reff_7_4(cumulative, i=None):
 
 def Reff_comparison(daily, cumulative, title, filename=None):
     daily_SMA=pandas.DataFrame(daily).rolling(window=7, center=True).mean()[0].values.tolist()
-    daily_SMA
+    # daily_SMA
     # list(zip(cumulative,daily, daily_SMA))
     
     R1=[Reff_4_4(daily, i) for i, _ in enumerate(daily)]
@@ -635,17 +641,23 @@ def additionalColumns(ts,bnn):
 
     return  ts, bnn, ts_sorted, Bundeslaender_sorted, dates, datacolumns
 
-def dataMangled(withSynthetic=True, ifPrint=True):
+def dataMangled(withSynthetic=True, ifPrint=True, haupt=None, haupt_timestamp=""):
     """
     this loads from disk first
+
+    Notes:
+        * if `haupt` is None, `dataFiles.load_master_sheet_haupt(timestamp=haupt_timestamp)` is used for it
+        * haupt_timestamp=="" means newest
+
     """
     global mangledData
     if mangledData.ts is not None:
         return mangledData
 
     ts, bnn = dataFiles.data(withSynthetic=withSynthetic, ifPrint=ifPrint)
-
-    mangledData = DataMangled(*additionalColumns(ts,bnn))
+    if haupt is None:
+        haupt = dataFiles.load_master_sheet_haupt(timestamp=haupt_timestamp)
+    mangledData = DataMangled(*additionalColumns(ts,bnn), haupt)
 
     return mangledData
 
