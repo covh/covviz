@@ -150,7 +150,7 @@ def bundesland(BL_name, filename_PNG, pop_BL, cumulative, filename_HTML, dm: dat
         else:
             kreis = kreissitz = dstr.gen # we have that wikipedia info about kreissitz only for 294 out of 401, for remainder fall back to kreis name
         page += ", " + search_URLs(kreis, kreissitz)
-        page +='<br/>total cases: <span style="color:#1E90FF; font-size:xx-small;">%s</span>\n' % (list(map(int, cumulative)))
+        page +='<br/>total cases: <span style="color:#1E90FF; font-size:xx-small;">%s</span>\n' % dstr.cumulative
         page += "<p/>"
         page +='<a href="#">Back to top</a> or: Up to <a href="about.html">about.html</a>\n'
     

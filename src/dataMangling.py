@@ -24,6 +24,8 @@ import pandas
 from typing import List
 
 import dataFiles
+import districtDistances
+
 
 @dataclass  # use dataclass for easy initialization in `dataMangled()` (although with that the attribute order must not be changed)
 class DataMangled:
@@ -64,7 +66,7 @@ class DataMangled:
         centerday: the 'expectation day' of all Covid cases for the district
         new_last14days: sum of district's new cases of the last 14 days
         new_last7days: sum of district's new cases of the last 7 days
-        Reff_4_7_last: the news R_eff_4_7 value for the district (see `Reff_4_7()`)
+        Reff_4_7_last: the new R_eff_4_7 value for the district (see `Reff_4_7()`)
     """
 
     Bundeslaender_sorted: pandas.DataFrame = None
@@ -90,8 +92,8 @@ class District:
     bez: str = None
     """'Bezeichnung', type of district"""
 
-    centerday: np.array = None
-    """center day / 'expactation day' of the raw `daily` cases"""
+    center: np.array = None
+    """center day / 'expectation day' of the raw `daily` cases"""
 
     cumulative: List[int] = None
     """list of cumulative cases over all time, since 05.03.2020"""
@@ -111,13 +113,17 @@ class District:
     inf_BL: int = None # TODO: just link federal state, as soon as it has been converted into a container class
     """infections total of the federal state ('Bundesland') the district lays in"""
 
-    incidence_sum7: None = None
+    incidence_sum7_1mio: None = None
     """incidence sum of the last 7 days of the district's cases"""
+
+    link: str =None
+    """HTML link for directly jumping to district"""
 
     name_BL: str = None # TODO: just link federal state, as soon as it has been converted into a container class
     """name of the federal state ('Bundesland') the district lays in"""
 
-    new_cases_sum7: int = None
+
+    new_last7days: int = None
     """sum of new cases of last 7 days"""
 
     pop: int = None
@@ -134,6 +140,9 @@ class District:
 
     title: str = None
     """title of district, built from dstr.gen, dstr.bez, dstr.AGS, dstr.name_BL, dstr.pop"""
+
+    total: int = None
+    """total cases over time (last entry of `cumulative`)"""
 
     reff_4_7: float = None
     """reff_4_7 value of district, calculated by `Reff_4_7()`"""
@@ -217,7 +226,7 @@ abbrev = {'Kreis': 'KR',
           'Stadtkreis': 'SK'}
 
 def AGS_to_name_and_type(bnn, AGS):
-    gen, bez, inf, pop = AGS_to_population(bnn, AGS)
+    gen, bez, inf, pop = AGS_to_population(bnn, AGS)    # fixme: replace with get_Kreis() and values out of there
     return "%s_%s" % (gen, abbrev[bez]) 
 
 
@@ -282,26 +291,44 @@ def get_Kreis(dm: DataMangled, AGS):
     else:
         dstr = District()
         dstr.AGS = "%05i" % ags_int
-         # get data and names
+
+         # get data and names and base data
         dstr.gen, dstr.bez, dstr.inf, dstr.pop = AGS_to_population(dm.bnn, AGS)
         dstr.name_BL, dstr.inf_BL, dstr.pop_BL = AGS_to_Bundesland(dm.bnn, AGS)
         dstr.daily = AGS_to_ts_daily(dm.ts, dstr.AGS)
         dstr.cumulative = AGS_to_ts_total(dm.ts, dstr.AGS)
+        dstr.total = dstr.cumulative[-1]
 
-        dstr.prevalence1mio = dstr.cumulative[-1] / dstr.pop * 1000000 # TODO: change prevalence to more commen per 100k
+        # calculate prevalence
+        dstr.prevalence1mio = dstr.total / dstr.pop * 1000000 # TODO: change prevalence to more commen per 100k
 
+        # calculate rolling means
+        dstr.rolling_mean7 = pandas.DataFrame(dstr.daily).rolling(window=7, center=True).mean()
+        dstr.rolling_mean14 = pandas.DataFrame(dstr.daily).rolling(window=14, center=True).mean()
+
+        # calculate expectation day
+        dstr.center, _ = temporal_center(dstr.daily)
+
+        # get newest Reff_4_7 out of `dm`
+        dstr.reff_4_7 = dm.ts_sorted["Reff_4_7_last"][ags_int]
+
+        # get sum of new cases of last 7 days out of `dm`
+        dstr.new_last7days = dm.ts_sorted["new_last7days"][ags_int]
+
+        # calculate last 7 days' incidence per 1 milllion population
+        dstr.incidence_sum7_1mio = dstr.new_last7days / dstr.pop * 1000000
+
+        # get HTML links of district and data sources
+        dstr.link = districtDistances.kreis_link(dm.bnn, AGS)[2]
         dstr.sources = sources_links(dm.haupt, AGS)
         if dstr.sources is None: dstr.sources =""
-        dstr.filename = "Kreis_%s.png" % dstr.AGS
-        dstr.title = "%s (%s #%s, %s) Population=%d" % (dstr.gen, dstr.bez, dstr.AGS, dstr.name_BL, dstr.pop)
 
-        # TODO: calc rolling_mean7 here
-        # TODO: calc rolling_mean14 here
-        # TODO: calc incidence_sum7 here
-        # TODO: calc new_sum7 here
-        # TODO: calc reff_4_7 here
-        # TODO: calc expectation day here
-        # TODO: add data source name, description, license
+        # set plotting title and file name
+        dstr.title = "%s (%s #%s, %s) Population=%d" % (dstr.gen, dstr.bez, dstr.AGS, dstr.name_BL, dstr.pop)
+        dstr.filename = "Kreis_%s.png" % dstr.AGS
+
+        # TODO: add data source's name, description, license
+
         districts[ags_int] = dstr
     return dstr
 

@@ -208,26 +208,24 @@ def Districts_to_HTML_table(dm, district_AGSs, cmap, filename="kreise_Germany.ht
     page +="</tr>"
     
     for AGS in district_AGSs:
-        gen, bez, inf, pop = dataMangling.AGS_to_population(dm.bnn, AGS)
-        name_BL, inf_BL, pop_BL = dataMangling.AGS_to_Bundesland(dm.bnn, AGS)
+        dstr = dataMangling.get_Kreis(dm, AGS)
         # print (AGS)
         # nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         labels=[]
         
         # Add the last data column once more, so that table is sortable by that column:
-        totalCases = int((dm.ts_sorted[dm.datacolumns[-1]][AGS]))
+        totalCases = dstr.total
         labels += ['%d' % totalCases]
         
-        labels += ['%d' % (dm.ts_sorted["new_last7days"][AGS])]
-        labels += [districtDistances.kreis_link(dm.bnn, AGS)[2]]
-        labels += ["%d" % prevalence(datatable=dm.ts_sorted, row_index=AGS, datacolumns=dm.datacolumns, population=pop)]
-        labels += ['%d' % (1000000*dm.ts_sorted["new_last7days"][AGS] / pop)]
-        # labels += ['%d' % (1000000*ts_sorted["new_last7days"][AGS] / pop)]
-        labels += ['{:,}'.format(pop)]
-        labels += ["%.1f"% (dm.ts_sorted["centerday"][AGS])]
-        labels += ["%.2f"% (dm.ts_sorted["Reff_4_7_last"][AGS])]
-        labels += [bulaLink(name_BL)]
-        labels += [flag_image(name_BL, pop_BL)]
+        labels += ['%d' % dstr.new_last7days]
+        labels += [dstr.link]
+        labels += ["%d" % dstr.prevalence1mio]
+        labels += ['%d' % dstr.incidence_sum7_1mio]
+        labels += ['{:,}'.format(dstr.pop)]
+        labels += ["%.1f" % dstr.center]
+        labels += ["%.2f" % dstr.reff_4_7]
+        labels += [bulaLink(dstr.name_BL)]
+        labels += [flag_image(dstr.name_BL, dstr.pop_BL)]
         # labels += [nearby_links]
         page += toHTMLRow(dm.ts_sorted, AGS, dm.datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
