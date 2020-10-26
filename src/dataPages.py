@@ -173,15 +173,15 @@ def Bundeslaender_alle(dm: dataMangling.DataMangled, distances, cmap, km):
         if BL_name == "Deutschland":
             continue
         print (BL_name, end=" ")
-        daily, cumulative, title, filename_PNG, pop_BL = dataMangling.get_BuLa(Bundeslaender, BL_name, dm.datacolumns)
-        filename_HTML = filename_PNG.replace(".png", ".html")
+        fed = dataMangling.get_BuLa(Bundeslaender, BL_name, dm.datacolumns)
+        filename_HTML = fed.filename.replace(".png", ".html")
         filename_HTML = filename_HTML.replace("bundesland_", "")
 
-        fn = bundesland(BL_name, filename_PNG, pop_BL, cumulative, filename_HTML, dm, distances, cmap, km)
+        fn = bundesland(BL_name, fed.filename, fed.population, fed.cumulative, filename_HTML, dm, distances, cmap, km)
         fn_abs = os.path.abspath(fn).replace(rootpath, "")
         
         filenames.append((BL_name, fn_abs ))
-        population += pop_BL
+        population += fed.population
     print ("\nTotal population covered:", population)
     print ("%d filenames written: %s" % (len(filenames), filenames))
     

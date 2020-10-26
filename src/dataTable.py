@@ -14,16 +14,15 @@
           NOT yet: ready, clearly structured, pretty, easy to read! But it works.
 """
 
-import os, datetime
+import os
 
 import pandas
 import numpy
-from matplotlib import pyplot as plt
-import matplotlib 
+import matplotlib
 
 
-import dataFiles, dataMangling, dataPlotting, districtDistances
-
+import dataFiles, dataMangling, districtDistances
+from dataMangling import bulaLink
 
 
 def toHTMLRow(frame, row_index, datacolumns, cmap, labels, rolling_window_size=7):
@@ -160,9 +159,6 @@ def prevalence(datatable, row_index, datacolumns, population):
     prev1mio = cumulative[-1] / population * 1000000
     return prev1mio
 
-def bulaLink(name):
-    return '<a href="%s.html">%s</a>' % (name, name)
-
 
 ATTRIBUTION = """<span style="color:#aaaaaa; font-size:x-small;">Source data from "Risklayer GmbH (www.risklayer.com) and Center for Disaster Management and Risk Reduction Technology (CEDIM) at Karlsruhe Institute of Technology (KIT) and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors". Data sources can be found under https://docs.google.com/spreadsheets/d/1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s/edit?usp=sharing Authors: James Daniell| Johannes Brand| Andreas Schaefer and the Risklayer-CEDIM SARS-CoV-2 Crowdsourcing Contributors through Risklayer GmbH and Center for Disaster Management and Risk Reduction Technology (CEDIM) at the Karlsruhe Institute of Technology (KIT).</span><p/>""" 
 
@@ -271,15 +267,15 @@ def BuLas_to_HTML_table(dm: dataMangling.DataMangled, cmap, table_filename="bund
 
     for name_BL in BL_names:
         labels=[]
-        daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, name_BL, dm.datacolumns)
-        labels += ['%d' % (Bundeslaender["new_last7days"][name_BL])]
-        labels += [bulaLink(name_BL)]
+        fed = dataMangling.get_BuLa(Bundeslaender, name_BL, dm.datacolumns)
+        labels += ['%d' % fed.new_last7days]
+        labels += [fed.link]
         labels += [flag_image(name_BL)]
-        labels += ["%d" % prevalence(datatable=Bundeslaender, row_index=name_BL, datacolumns=dm.datacolumns, population=pop_BL)]
-        labels += ['%d' % (1000000*Bundeslaender["new_last7days"][name_BL] / pop_BL)]
-        labels += ['{:,}'.format(pop_BL)]
-        labels += ["%.2f"% (Bundeslaender["centerday"][name_BL])]
-        labels += ["%.2f"% (Bundeslaender["Reff_4_7_last"][name_BL])]
+        labels += ["%d" % fed.prevalence1mio]
+        labels += ['%d' % fed.incidence_sum7_1mio]
+        labels += ['{:,}'.format(fed.population)]
+        labels += ["%.2f" % fed.center]
+        labels += ["%.2f" % fed.reff_4_7]
         page += toHTMLRow(Bundeslaender, name_BL, dm.datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         
     page += "</table>"

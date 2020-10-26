@@ -137,25 +137,23 @@ def test_plot_Bundesland(dm: dataMangling.DataMangled, Bundesland = "Hessen"):
     # Bundesland = "Dummyland"
     
     ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(dm.ts, dm.bnn)
-    daily, cumulative, title, filename, population = dataMangling.get_BuLa(Bundeslaender, Bundesland, dm.datacolumns)
-    plot_timeseries(dm, daily, cumulative, title, filename=filename)
+    fed = dataMangling.get_BuLa(Bundeslaender, Bundesland, dm.datacolumns)
+    plot_timeseries(dm, fed.daily, fed.cumulative, fed.title, filename=fed.filename)
 
 
 def plot_all_Bundeslaender(dm: dataMangling.DataMangled, ifPrint=True):
-    ts_BuLa, Bundeslaender = dataMangling.join_tables_for_and_aggregate_Bundeslaender(dm.ts, dm.bnn)
+    ts_BuLa, _, _, Bundeslaender, _, _ = dataMangling.additionalColumns(dm.ts, dm.bnn)
     filenames, population = [], 0
     done=[]
     for BL in Bundeslaender.index.tolist():
         print (BL, end=" ")
-        daily, cumulative, title, filename, pop_BL = dataMangling.get_BuLa(Bundeslaender, BL, dm.datacolumns)
-        if BL=="Deutschland":
-            filename = filename.replace("bundesland_", "")
-        plot_timeseries(dm, daily, cumulative, title, filename=filename, ifShow=False)
-        filenames.append(filename)
-        population += pop_BL
+        fed = dataMangling.get_BuLa(Bundeslaender, BL, dm.datacolumns)
+        plot_timeseries(dm, fed.daily, fed.cumulative, fed.title, filename=fed.filename, ifShow=False)
+        filenames.append(fed.filename)
+        population += fed.population
         if ifPrint:
-            print (title, filename)
-        done.append((title, filename))
+            print (fed.title, fed.filename)
+        done.append((fed.title, fed.filename))
     print ("\nTotal population covered:", population)
     if ifPrint:    
         print ("%d filenames written: %s" % (len(filenames), filenames))
