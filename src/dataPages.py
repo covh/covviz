@@ -99,23 +99,21 @@ def wikipedia_link(wp, AGS, base_url=dataFiles.WP_URL):
     return text, kreis, kreissitz 
 
 
-def bundesland(BL_name, filename_PNG, pop_BL, cumulative, filename_HTML, dm: dataMangling.DataMangled, distances, cmap, km):
-    page = dataTable.PAGE % BL_name
-
-    district_AGSs = dm.ts_sorted[dm.ts_sorted.Bundesland==BL_name].index.tolist()
+def bundesland(fed, filename_HTML, dm: dataMangling.DataMangled, distances, cmap, km):
+    page = dataTable.PAGE % fed.name
+    district_AGSs = dm.ts_sorted[dm.ts_sorted.Bundesland==fed.name].index.tolist()
     
     page +='<a name="top">'
     page +='Up to <a href="about.html">about.html</a> or to overview of <a href="Deutschland.html">Germany</a>\n'
     page +='Or down to <a href="#Kreise">Kreise (districts)</a> ' + SPONSORS_IMG_ABOUT_PAGE
-    flagimg = dataTable.flag_image(BL_name, pop_BL, height=20)
-    page +="<hr><h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, BL_name, len(district_AGSs), dm.datacolumns[-1])
-    page +='<img src="%s"/><p/>' % ("../pics/" + filename_PNG)
-    page += "population: {:,}".format(pop_BL)
-    prevalence = 1000000.0 * cumulative[-1] / pop_BL 
-    page += " --> current prevalence: %d known infected per 1 million population<br/>\n" % (prevalence )
-    page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % (list(map(int, cumulative)))
+    flagimg = dataTable.flag_image(fed.name, fed.pop, height=20)
+    page +="<hr><h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, fed.name, len(district_AGSs), dm.datacolumns[-1])
+    page +='<img src="%s"/><p/>' % ("../pics/" + fed.filename)
+    page += "population: {:,}".format(fed.pop)
+    page += " --> current prevalence: %d known infected per 1 million population<br/>\n" % fed.prevalence
+    page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % fed.cumulative
     
-    page +="<hr><h2 id='Kreise'>%s's %d Kreise</h2>\n" % (BL_name, len(district_AGSs))
+    page +="<hr><h2 id='Kreise'>%s's %d Kreise</h2>\n" % (fed.name, len(district_AGSs))
     page +="<h3>Sorted by 'expectation day'</h3>\n"
     
     page +='Click on name of Kreis to see detailed data. If not all visible, '
@@ -177,7 +175,7 @@ def Bundeslaender_alle(dm: dataMangling.DataMangled, distances, cmap, km):
         filename_HTML = fed.filename.replace(".png", ".html")
         filename_HTML = filename_HTML.replace("bundesland_", "")
 
-        fn = bundesland(BL_name, fed.filename, fed.population, fed.cumulative, filename_HTML, dm, distances, cmap, km)
+        fn = bundesland(fed, filename_HTML, dm, distances, cmap, km)
         fn_abs = os.path.abspath(fn).replace(rootpath, "")
         
         filenames.append((BL_name, fn_abs ))
