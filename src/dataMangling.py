@@ -93,7 +93,10 @@ class District:
     """'Bezeichnung', type of district"""
 
     center: np.array = None
-    """center day / 'expectation day' of the raw `daily` cases"""
+    """position of center day / 'expectation day' in the raw `daily` cases list"""
+
+    center_date: np.array = None
+    """center as date"""
 
     cumulative: List[int] = None
     """list of cumulative cases over all time, since 05.03.2020"""
@@ -160,7 +163,10 @@ class FedState:
     """name of the federal state"""
 
     center: np.array = None
-    """center day / 'expectation day' of the raw `daily` cases"""
+    """position of center day / 'expectation day' in the raw `daily` cases list"""
+
+    center_date: np.array = None
+    """center as date"""
 
     cumulative: List[int] = None
     """list of cumulative cases over all time, since 05.03.2020"""
@@ -361,8 +367,9 @@ def get_Kreis(dm: DataMangled, AGS):
         dstr.rolling_mean7 = pandas.DataFrame(dstr.daily).rolling(window=7, center=True).mean()
         dstr.rolling_mean14 = pandas.DataFrame(dstr.daily).rolling(window=14, center=True).mean()
 
-        # calculate expectation day
+        # calculate expectation day as center position and as date
         dstr.center, _ = temporal_center(dstr.daily)
+        dstr.center_date = dm.datacolumns.values[int(round(dstr.center))]
 
         # get newest Reff_4_7 out of `dm`
         dstr.reff_4_7 = dm.ts_sorted["Reff_4_7_last"][ags_int]
@@ -434,8 +441,9 @@ def get_BuLa(Bundeslaender: pandas.DataFrame, name, datacolumns):
         fed.rolling_mean7 = pandas.DataFrame(fed.daily).rolling(window=7, center=True).mean()
         fed.rolling_mean14 = pandas.DataFrame(fed.daily).rolling(window=14, center=True).mean()
     
-        # calculate expectation day
+        # calculate expectation day as center position and as date
         fed.center, _ = temporal_center(fed.daily)
+        fed.center_date = datacolumns.values[int(round(fed.center))]
     
         # get newest Reff_4_7 out of `dm`
         fed.reff_4_7 = Bundeslaender["Reff_4_7_last"][name]
