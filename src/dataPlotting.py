@@ -111,18 +111,18 @@ def test_plot_Kreis(dm):
     #AGS = "1001"
     AGS = "5370"
     # AGS = "9377"
-    daily, cumulative, title, filename, pop = dataMangling.get_Kreis(dm, AGS)
-    plot_timeseries(dm, daily, cumulative, title, filename=filename, population=pop)
+    dstr = dataMangling.get_Kreis(dm, AGS)
+    plot_timeseries(dm, dstr.daily, dstr.cumulative, dstr.title, filename=dstr.filename, population=dstr.pop)
 
 
 def plot_Kreise(dm, Kreise_AGS, ifPrint=True):
     done = []
     for AGS in Kreise_AGS:
-        daily, cumulative, title, filename, pop = dataMangling.get_Kreis(dm, AGS)
-        plot_timeseries(dm, daily, cumulative, title, filename=filename, ifShow=False, population=pop)
-        done.append((title, filename))
+        dstr = dataMangling.get_Kreis(dm, AGS)
+        plot_timeseries(dm, dstr.daily, dstr.cumulative, dstr.title, filename=dstr.filename, ifShow=False, population=dstr.pop)
+        done.append((dstr.title, dstr.filename))
         if ifPrint:
-            print (title, filename)
+            print (dstr.title, dstr.filename)
         else:
             print (".", end="")
             if len(done)%60 == 0:

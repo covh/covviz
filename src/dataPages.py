@@ -99,16 +99,6 @@ def wikipedia_link(wp, AGS, base_url=dataFiles.WP_URL):
     return text, kreis, kreissitz 
 
 
-def sources_links(haupt, AGS):
-    if AGS not in haupt.index:
-        return None 
-     
-    links = []
-    for i, url in enumerate(haupt.loc[AGS].urls):
-        links.append('<a href="%s" target="_blank" title="%s">%d</a>' % (url, url, i+1))
-    return ", ".join(links)
-
-
 def bundesland(BL_name, filename_PNG, pop_BL, cumulative, filename_HTML, dm: dataMangling.DataMangled, distances, cmap, km):
     page = dataTable.PAGE % BL_name
 
@@ -140,29 +130,25 @@ def bundesland(BL_name, filename_PNG, pop_BL, cumulative, filename_HTML, dm: dat
     wp=dataFiles.load_wikipedia_landkreise_table()
 
     for AGS in district_AGSs:
-        gen, bez, inf, pop = dataMangling.AGS_to_population(dm.bnn, AGS)
-        daily, cumulative, title, filename, pop = dataMangling.get_Kreis(dm, str(AGS))
-        
-        nearby_links = districtDistances.kreis_nearby_links(dm.bnn, distances, AGS, km) if AGS else ""
-        AGS_5digits = ("00000%s" % AGS) [-5:] 
-        anchor = "AGS%s" % (AGS_5digits)
-        page +="<hr><h3 id=%s>%s AGS=%s</h3>\n" % (anchor, title, AGS)
-        # print (cumulative)
-        page +="Neighbours within %d km: %s<p/>\n" % (km, nearby_links)
-        filename_kreis_PNG = "Kreis_" + ("00000"+str(AGS))[-5:] + ".png"
-        page +='<img src="%s"/><p/>' % ("../pics/" + filename_kreis_PNG)
-        
-        page += ("%s %s" % (dtr.bez, dtr.gen)) + " population: {:,}".format(dtr.pop)
-        page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % dtr.prevalence1mio
+        dstr = dataMangling.get_Kreis(dm, AGS)
 
-        sources = sources_links(haupt, AGS)
-        page += "sources: %s; " % sources if sources else "" 
-        page +='other sites: %s' % (TU_DORTMUND % (AGS_5digits,AGS_5digits) )
+        nearby_links = districtDistances.kreis_nearby_links(dm.bnn, distances, AGS, km) if AGS else ""
+
+        anchor = "AGS" + dstr.AGS
+        page +="<hr><h3 id=%s>%s AGS=%s</h3>\n" % (anchor, dstr.title, AGS)
+        page +="Neighbours within %d km: %s<p/>\n" % (km, nearby_links)
+        page +='<img src="%s"/><p/>' % ("../pics/" + dstr.filename)
+        
+        page += ("%s %s" % (dstr.bez, dstr.gen)) + " population: {:,}".format(dstr.pop)
+        page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % dstr.prevalence1mio
+
+        page += "sources: %s; " % dstr.sources
+        page +='other sites: %s' % (TU_DORTMUND % (dstr.AGS, dstr.AGS) )
         wpl, kreis, kreissitz = wikipedia_link(wp, int(AGS))
         if wpl: 
             page +=', %s' % (wpl)
         else:
-            kreis = kreissitz = gen # we have that wikipedia info about kreissitz only for 294 out of 401, for remainder fall back to kreis name
+            kreis = kreissitz = dstr.gen # we have that wikipedia info about kreissitz only for 294 out of 401, for remainder fall back to kreis name
         page += ", " + search_URLs(kreis, kreissitz)
         page +='<br/>total cases: <span style="color:#1E90FF; font-size:xx-small;">%s</span>\n' % (list(map(int, cumulative)))
         page += "<p/>"
