@@ -106,11 +106,11 @@ def bundesland(fed, filename_HTML, dm: dataMangling.DataMangled, distances, cmap
     page +='<a name="top">'
     page +='Up to <a href="about.html">about.html</a> or to overview of <a href="Deutschland.html">Germany</a>\n'
     page +='Or down to <a href="#Kreise">Kreise (districts)</a> ' + SPONSORS_IMG_ABOUT_PAGE
-    flagimg = dataTable.flag_image(fed.name, fed.pop, height=20)
+    flagimg = dataTable.flag_image(fed.name, fed.population, height=20)
     page +="<hr><h1>%s %s, and its %d districts (%s)</h1>\n" % (flagimg, fed.name, len(district_AGSs), dm.datacolumns[-1])
     page +='<img src="%s"/><p/>' % ("../pics/" + fed.filename)
-    page += "population: {:,}".format(fed.pop)
-    page += " --> current prevalence: %d known infected per 1 million population<br/>\n" % fed.prevalence
+    page += "population: {:,}".format(fed.population)
+    page += " --> current prevalence: %d known infected per 1 million population<br/>\n" % fed.prevalence1mio
     page +='total cases: <span style="color:#1E90FF; font-size:x-small;">%s</span><p/>\n' % fed.cumulative
     
     page +="<hr><h2 id='Kreise'>%s's %d Kreise</h2>\n" % (fed.name, len(district_AGSs))
@@ -128,7 +128,7 @@ def bundesland(fed, filename_HTML, dm: dataMangling.DataMangled, distances, cmap
     wp=dataFiles.load_wikipedia_landkreise_table()
 
     for AGS in district_AGSs:
-        dstr = dataMangling.get_Kreis(dm, AGS)
+        dstr = dataMangling.get_Kreis(AGS)
 
         nearby_links = districtDistances.kreis_nearby_links(dm.bnn, distances, AGS, km) if AGS else ""
 

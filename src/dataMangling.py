@@ -15,19 +15,17 @@
           NOT yet: pretty, not at all easy to read, sorry. But it works.
 """
 import copy
-from dataclasses import dataclass
 
 import datetime as dt
 import numpy as np
 import os
 import pandas
-from typing import List
+from typing import Dict, List
 
 import dataFiles
 import districtDistances
 
 
-@dataclass  # use dataclass for easy initialization in `dataMangled()` (although with that the attribute order must not be changed)
 class DataMangled:
     """structure to hold the mangled overall covid data, gathered by `dataMangled()`"""
     ts: pandas.DataFrame = None
@@ -80,6 +78,28 @@ class DataMangled:
 
     haupt: pandas.DataFrame = None
     """data of the 'haupt' CSV data source, including source URLs"""
+
+    feds: Dict = dict()
+    """global dictionary to cache every `FedState`, which once has been gotten via `get_BuLa()`"""
+
+    districts: Dict =  dict()
+    """global dictionary to cache every `District`, which once has been gotten via `get_Kreis()`"""
+
+    def __init__(self, ts: pandas.DataFrame = None, bnn: pandas.DataFrame = None,
+                 ts_sorted: pandas.DataFrame = None, Bundeslaender_sorted: pandas.DataFrame = None,
+                 dates: List[dt.datetime] = None, datacolumns: pandas.Index = None,
+                 haupt: pandas.DataFrame = None, feds: Dict = None, districts: Dict = None) -> None:
+        """the parameters up to, including, `datacolumns` should not be changed in their order,
+        as long as `dataMangled` initializes this directly through '*additional_column, …'"""
+        self.ts = ts
+        self.bnn = bnn
+        self.ts_sorted = ts_sorted
+        self.Bundeslaender_sorted = Bundeslaender_sorted
+        self.dates = dates if dates is not None else []
+        self.datacolumns = datacolumns
+        self.haupt = haupt
+        self.feds = feds if feds is not None else dict()
+        self.districts = districts if districts is not None else dict()
 
 class District:
     """structure to hold the pandemic data of a german district ('Kreis'), which may be a single city or a region of several small once"""
@@ -156,7 +176,6 @@ class District:
     rolling_mean14: pandas.DataFrame = None
     """rolling mean of the last 14 days of the district's cases"""
 
-
 class FedState:
     """structure to hold the pandemic data of a german federal state ('Bundesland')"""
     name: str = None
@@ -207,13 +226,6 @@ class FedState:
     rolling_mean14: pandas.DataFrame = None
     """rolling mean of the last 14 days of the federal state's cases"""
 
-
-feds = dict()
-"""global dictionary to cache every `FedState`, which once has been gotten via `get_BuLa()`"""
-
-
-districts = dict()
-"""global dictionary to cache every `District`, which once has been gotten via `get_Kreis()`"""
 
 mangledData = DataMangled
 """global object to store the mangled main data once"""
@@ -341,23 +353,23 @@ def temporal_center(data):
     return center, signal
     
     
-def get_Kreis(dm: DataMangled, AGS):
-
+def get_Kreis(AGS):
+    global mangledData
     ags_int = int(AGS)
     AGS = str(AGS)
     # use cached version it it exists already
-    if ags_int in districts:
-        dstr = districts[ags_int]
+    if ags_int in mangledData.districts:
+        dstr = mangledData.districts[ags_int]
         # print('*'*12 + " returning known district from cache:", dstr.title)
     else:
         dstr = District()
         dstr.AGS = "%05i" % ags_int
 
          # get data and names and base data
-        dstr.gen, dstr.bez, dstr.inf, dstr.pop = AGS_to_population(dm.bnn, AGS)
-        dstr.name_BL, dstr.inf_BL, dstr.pop_BL = AGS_to_Bundesland(dm.bnn, AGS)
-        dstr.daily = AGS_to_ts_daily(dm.ts, dstr.AGS)
-        dstr.cumulative = AGS_to_ts_total(dm.ts, dstr.AGS)
+        dstr.gen, dstr.bez, dstr.inf, dstr.pop = AGS_to_population(mangledData.bnn, AGS)
+        dstr.name_BL, dstr.inf_BL, dstr.pop_BL = AGS_to_Bundesland(mangledData.bnn, AGS)
+        dstr.daily = AGS_to_ts_daily(mangledData.ts, dstr.AGS)
+        dstr.cumulative = AGS_to_ts_total(mangledData.ts, dstr.AGS)
         dstr.total = dstr.cumulative[-1]
 
         # calculate prevalence
@@ -369,20 +381,20 @@ def get_Kreis(dm: DataMangled, AGS):
 
         # calculate expectation day as center position and as date
         dstr.center, _ = temporal_center(dstr.daily)
-        dstr.center_date = dm.datacolumns.values[int(round(dstr.center))]
+        dstr.center_date = mangledData.datacolumns.values[int(round(dstr.center))]
 
-        # get newest Reff_4_7 out of `dm`
-        dstr.reff_4_7 = dm.ts_sorted["Reff_4_7_last"][ags_int]
+        # get newest Reff_4_7 out of `mangledData`
+        dstr.reff_4_7 = mangledData.ts_sorted["Reff_4_7_last"][ags_int]
 
-        # get sum of new cases of last 7 days out of `dm`
-        dstr.new_last7days = dm.ts_sorted["new_last7days"][ags_int]
+        # get sum of new cases of last 7 days out of `mangledData`
+        dstr.new_last7days = mangledData.ts_sorted["new_last7days"][ags_int]
 
         # calculate last 7 days' incidence per 1 milllion population
         dstr.incidence_sum7_1mio = dstr.new_last7days / dstr.pop * 1000000
 
         # get HTML links of district and data sources
-        dstr.link = districtDistances.kreis_link(dm.bnn, AGS)[2]
-        dstr.sources = sources_links(dm.haupt, AGS)
+        dstr.link = districtDistances.kreis_link(mangledData.bnn, AGS)[2]
+        dstr.sources = sources_links(mangledData.haupt, AGS)
         if dstr.sources is None: dstr.sources =""
 
         # set plotting title and file name
@@ -391,7 +403,7 @@ def get_Kreis(dm: DataMangled, AGS):
 
         # TODO: add data source's name, description, license
 
-        districts[ags_int] = dstr
+        mangledData.districts[ags_int] = dstr
     return dstr
 
 
@@ -412,9 +424,9 @@ def join_tables_for_and_aggregate_Bundeslaender(ts, bnn):
 
 
 def get_BuLa(Bundeslaender: pandas.DataFrame, name, datacolumns):
-
-    if name in feds:
-        fed = feds[name]
+    global mangledData
+    if name in mangledData.feds:
+        fed = mangledData.feds[name]
     else:
         fed = FedState()
         fed.name = name
@@ -445,10 +457,10 @@ def get_BuLa(Bundeslaender: pandas.DataFrame, name, datacolumns):
         fed.center, _ = temporal_center(fed.daily)
         fed.center_date = datacolumns.values[int(round(fed.center))]
     
-        # get newest Reff_4_7 out of `dm`
+        # get newest Reff_4_7 out of `mangledData`
         fed.reff_4_7 = Bundeslaender["Reff_4_7_last"][name]
 
-        # get sum of new cases of last 7 days out of `dm`
+        # get sum of new cases of last 7 days out of `mangledData`
         fed.new_last7days = Bundeslaender["new_last7days"][name]
 
         # calculate last 7 days' incidence per 1 milllion population
@@ -459,6 +471,7 @@ def get_BuLa(Bundeslaender: pandas.DataFrame, name, datacolumns):
 
         # TODO: add data source's name, description, license, link
 
+        mangledData.feds[name] = fed
     return fed
 
 
@@ -725,7 +738,7 @@ def test_some_mangling():
     dm = dataMangled()
 
     print ("\nKreis")
-    dstr = get_Kreis(dm, AGS)
+    dstr = get_Kreis(AGS)
     print (dstr.daily, dstr.cumulative)
     print (dstr.title, dstr.filename, dstr.pop)
 

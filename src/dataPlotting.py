@@ -103,14 +103,14 @@ def test_plot_Kreis(dm):
     #AGS = "1001"
     AGS = "5370"
     # AGS = "9377"
-    dstr = dataMangling.get_Kreis(dm, AGS)
+    dstr = dataMangling.get_Kreis(AGS)
     plot_timeseries(dm, dstr)
 
 
 def plot_Kreise(dm, Kreise_AGS, ifPrint=True):
     done = []
     for AGS in Kreise_AGS:
-        dstr = dataMangling.get_Kreis(dm, AGS)
+        dstr = dataMangling.get_Kreis(AGS)
         plot_timeseries(dm, dstr, ifShow=False)
         done.append((dstr.title, dstr.filename))
         if ifPrint:

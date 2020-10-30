@@ -204,7 +204,7 @@ def Districts_to_HTML_table(dm, district_AGSs, cmap, filename="kreise_Germany.ht
     page +="</tr>"
     
     for AGS in district_AGSs:
-        dstr = dataMangling.get_Kreis(dm, AGS)
+        dstr = dataMangling.get_Kreis(AGS)
         # print (AGS)
         # nearby_links = districtDistances.kreis_nearby_links(bnn, distances, AGS, km) if AGS else ""
         labels=[]
