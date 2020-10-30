@@ -217,11 +217,11 @@ def Districts_to_HTML_table(dm, district_AGSs, cmap, filename="kreise_Germany.ht
         labels += [dstr.link]
         labels += ["%d" % dstr.prevalence1mio]
         labels += ['%d' % dstr.incidence_sum7_1mio]
-        labels += ['{:,}'.format(dstr.pop)]
+        labels += ['{:,}'.format(dstr.population)]
         labels += ["%.1f" % dstr.center]
         labels += ["%.2f" % dstr.reff_4_7]
-        labels += [bulaLink(dstr.name_BL)]
-        labels += [flag_image(dstr.name_BL, dstr.pop_BL)]
+        labels += [bulaLink(dstr.fed_states_name)]
+        labels += [flag_image(dstr.fed_states_name, dstr.fed_states__population)]
         # labels += [nearby_links]
         page += toHTMLRow(dm.ts_sorted, AGS, dm.datacolumns, cmap, labels, rolling_window_size=rolling_window_size) + "\n"
         

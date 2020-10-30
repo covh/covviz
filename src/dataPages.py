@@ -137,7 +137,7 @@ def bundesland(fed, filename_HTML, dm: dataMangling.DataMangled, distances, cmap
         page +="Neighbours within %d km: %s<p/>\n" % (km, nearby_links)
         page +='<img src="%s"/><p/>' % ("../pics/" + dstr.filename)
         
-        page += ("%s %s" % (dstr.bez, dstr.gen)) + " population: {:,}".format(dstr.pop)
+        page += ("%s %s" % (dstr.type_name, dstr.name)) + " population: {:,}".format(dstr.population)
         page += " --> current prevalence: %d known infected per 1 million people.<br/>\n" % dstr.prevalence1mio
 
         page += "sources: %s; " % dstr.sources
@@ -146,7 +146,7 @@ def bundesland(fed, filename_HTML, dm: dataMangling.DataMangled, distances, cmap
         if wpl: 
             page +=', %s' % (wpl)
         else:
-            kreis = kreissitz = dstr.gen # we have that wikipedia info about kreissitz only for 294 out of 401, for remainder fall back to kreis name
+            kreis = kreissitz = dstr.name # we have that wikipedia info about kreissitz only for 294 out of 401, for remainder fall back to kreis name
         page += ", " + search_URLs(kreis, kreissitz)
         page +='<br/>total cases: <span style="color:#1E90FF; font-size:xx-small;">%s</span>\n' % dstr.cumulative
         page += "<p/>"

@@ -101,22 +101,14 @@ class DataMangled:
         self.feds = feds if feds is not None else dict()
         self.districts = districts if districts is not None else dict()
 
-class District:
-    """structure to hold the pandemic data of a german district ('Kreis'), which may be a single city or a region of several small once"""
-    AGS: str = None
-    """AGS of length 5 with prefixed zeroes to fill the length of 5, if necessary. 
-        'AGS'=='Amtlicher Gemeindeschlüssel'=='Community Identification Number' of the district, 
-        https://en.wikipedia.org/wiki/Community_Identification_Number#Germany)
-    """
-
-    bez: str = None
-    """'Bezeichnung', type of district"""
+class CovidDataArea:
+    """structure to hold the base data fields which occur in btoh: District and FedState"""
 
     center: np.array = None
     """position of center day / 'expectation day' in the raw `daily` cases list"""
 
     center_date: np.array = None
-    """center as date"""
+    """`center` as date"""
 
     cumulative: List[int] = None
     """list of cumulative cases over all time, since 05.03.2020"""
@@ -127,80 +119,17 @@ class District:
     filename: str = None
     """file name where the plot/graphs get stored"""
 
-    gen: str = None
-    """name of the district"""
-
-    inf: int = None
-    """infections total of district from BNN"""
-
-    inf_BL: int = None # TODO: just link federal state, as soon as it has been converted into a container class
-    """infections total of the federal state ('Bundesland') the district lays in"""
-
     incidence_sum7_1mio: int = None
-    """incidence sum of the last 7 days of the district's cases"""
+    """incidence sum of the last 7 days of the instance's cases per million `population`"""
+
+    incidence_sum7_1ook: int = None
+    """incidence sum of the last 7 days of the instance's casesper 100,000 `population"""
 
     link: str =None
-    """HTML link for directly jumping to district"""
+    """HTML link for directly jumping to the instance's position in website"""
 
-    name_BL: str = None # TODO: just link federal state, as soon as it has been converted into a container class
-    """name of the federal state ('Bundesland') the district lays in"""
-
-
-    new_last7days: int = None
-    """sum of new cases of last 7 days"""
-
-    pop: int = None
-    """population of district"""
-
-    pop_BL: int = None # TODO: just link federal state, as soon as it has been converted into a container class
-    """population of the federal state ('Bundesland') the district lays in"""
-
-    prevalence1mio: float = None
-    """prevalence for `cumulative` cases per million `pop`ulation"""
-
-    sources: str = None
-    """HTML links to the sources of the data"""
-
-    title: str = None
-    """title of district, built from dstr.gen, dstr.bez, dstr.AGS, dstr.name_BL, dstr.pop"""
-
-    total: int = None
-    """total cases over time (last entry of `cumulative`)"""
-
-    reff_4_7: float = None
-    """reff_4_7 value of district, calculated by `Reff_4_7()`"""
-
-    rolling_mean7: pandas.DataFrame = None
-    """rolling mean of the last 7 days of the district's cases"""
-
-    rolling_mean14: pandas.DataFrame = None
-    """rolling mean of the last 14 days of the district's cases"""
-
-class FedState:
-    """structure to hold the pandemic data of a german federal state ('Bundesland')"""
     name: str = None
-    """name of the federal state"""
-
-    center: np.array = None
-    """position of center day / 'expectation day' in the raw `daily` cases list"""
-
-    center_date: np.array = None
-    """center as date"""
-
-    cumulative: List[int] = None
-    """list of cumulative cases over all time, since 05.03.2020"""
-
-    daily: List[int] = None
-    """list of raw daily cases over all time, since 05.03.2020"""
-
-    filename: str = None
-    """file name where the plot/graphs get stored"""
-
-    incidence_sum7_1mio: int = None
-    """incidence sum of the last 7 days of the federal state's cases"""
-
-    link: str =None
-    """HTML link for directly jumping to federal state"""
+    """name of the district"""
 
     new_last7days: int = None
     """sum of new cases of last 7 days"""
@@ -209,10 +138,13 @@ class FedState:
     """population of federal state"""
 
     prevalence1mio: float = None
-    """prevalence for `cumulative` cases per million `pop`ulation"""
+    """prevalence for `cumulative` cases per million `population`"""
+
+    prevalence100k: float = None
+    """prevalence for `cumulative` cases per 100,000 `population`"""
 
     title: str = None
-    """title of federal state, built from dstr.gen, dstr.bez, dstr.AGS, dstr.name_BL, dstr.pop"""
+    """title of federal state, built from dstr.name, dstr.type_name, dstr.AGS, dstr.fed_states_name, dstr.population"""
 
     total: int = None
     """total cases over time (last entry of `cumulative`)"""
@@ -225,6 +157,33 @@ class FedState:
 
     rolling_mean14: pandas.DataFrame = None
     """rolling mean of the last 14 days of the federal state's cases"""
+
+class District(CovidDataArea):
+    """structure to hold the pandemic data of a german district ('Kreis'), which may be a single city or a region of several small once"""
+    AGS: str = None
+    """AGS of length 5 with prefixed zeroes to fill the length of 5, if necessary. 
+        'AGS'=='Amtlicher Gemeindeschlüssel'=='Community Identification Number' of the district, 
+        https://en.wikipedia.org/wiki/Community_Identification_Number#Germany)
+    """
+
+    type_name: str = None
+    """'Bezeichnung', type of district"""
+
+
+    inf: int = None
+    """infections total of district from BNN"""
+
+    fed_states_infections: int = None # TODO: just link federal state, as soon as it has been converted into a container class
+    """infections total of the federal state ('Bundesland') the district lays in"""
+
+    fed_states_name: str = None # TODO: just link federal state, as soon as it has been converted into a container class
+    """name of the federal state ('Bundesland') the district lays in"""
+
+    fed_states__population: int = None # TODO: just link federal state, as soon as it has been converted into a container class
+    """population of the federal state ('Bundesland') the district lays in"""
+
+    sources: str = None
+    """HTML links to the sources of the data"""
 
 
 mangledData = DataMangled
@@ -366,14 +325,14 @@ def get_Kreis(AGS):
         dstr.AGS = "%05i" % ags_int
 
          # get data and names and base data
-        dstr.gen, dstr.bez, dstr.inf, dstr.pop = AGS_to_population(mangledData.bnn, AGS)
-        dstr.name_BL, dstr.inf_BL, dstr.pop_BL = AGS_to_Bundesland(mangledData.bnn, AGS)
+        dstr.name, dstr.type_name, dstr.inf, dstr.population = AGS_to_population(mangledData.bnn, AGS)
+        dstr.fed_states_name, dstr.fed_states_infections, dstr.fed_states__population = AGS_to_Bundesland(mangledData.bnn, AGS)
         dstr.daily = AGS_to_ts_daily(mangledData.ts, dstr.AGS)
         dstr.cumulative = AGS_to_ts_total(mangledData.ts, dstr.AGS)
         dstr.total = dstr.cumulative[-1]
 
         # calculate prevalence
-        dstr.prevalence1mio = dstr.total / dstr.pop * 1000000 # TODO: change prevalence to more commen per 100k
+        dstr.prevalence1mio = dstr.total / dstr.population * 1000000 # TODO: change prevalence to more commen per 100k
 
         # calculate rolling means
         dstr.rolling_mean7 = pandas.DataFrame(dstr.daily).rolling(window=7, center=True).mean()
@@ -390,7 +349,7 @@ def get_Kreis(AGS):
         dstr.new_last7days = mangledData.ts_sorted["new_last7days"][ags_int]
 
         # calculate last 7 days' incidence per 1 milllion population
-        dstr.incidence_sum7_1mio = dstr.new_last7days / dstr.pop * 1000000
+        dstr.incidence_sum7_1mio = dstr.new_last7days / dstr.population * 1000000
 
         # get HTML links of district and data sources
         dstr.link = districtDistances.kreis_link(mangledData.bnn, AGS)[2]
@@ -398,7 +357,7 @@ def get_Kreis(AGS):
         if dstr.sources is None: dstr.sources =""
 
         # set plotting title and file name
-        dstr.title = "%s (%s #%s, %s) Population=%d" % (dstr.gen, dstr.bez, dstr.AGS, dstr.name_BL, dstr.pop)
+        dstr.title = "%s (%s #%s, %s) Population=%d" % (dstr.name, dstr.type_name, dstr.AGS, dstr.fed_states_name, dstr.population)
         dstr.filename = "Kreis_%s.png" % dstr.AGS
 
         # TODO: add data source's name, description, license
@@ -428,7 +387,7 @@ def get_BuLa(Bundeslaender: pandas.DataFrame, name, datacolumns):
     if name in mangledData.feds:
         fed = mangledData.feds[name]
     else:
-        fed = FedState()
+        fed = CovidDataArea()
         fed.name = name
         # get data and names
         fed.filename = "bundesland_" + name + ".png"
@@ -740,7 +699,7 @@ def test_some_mangling():
     print ("\nKreis")
     dstr = get_Kreis(AGS)
     print (dstr.daily, dstr.cumulative)
-    print (dstr.title, dstr.filename, dstr.pop)
+    print (dstr.title, dstr.filename, dstr.population)
 
     print ("\nBundesländer")
     ts_BuLa, Bundeslaender = join_tables_for_and_aggregate_Bundeslaender(ts, bnn)

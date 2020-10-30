@@ -25,10 +25,10 @@ import matplotlib
 import dataFiles, dataMangling
 
 
-def plot_timeseries(dm: dataMangling.DataMangled, plot_item:Union[dataMangling.District, dataMangling.FedState], ifShow=True, ifCleanup=True, limitIncidencePerWeekPerMillion=500):
+def plot_timeseries(dm: dataMangling.DataMangled, cov_area:Union[dataMangling.CovidDataArea], ifShow=True, ifCleanup=True, limitIncidencePerWeekPerMillion=500):
 
     dates = dm.dates
-    daily = plot_item.daily
+    daily = cov_area.daily
 
     fig, ax = plt.subplots(figsize=(10, 6)) #, constrained_layout=True)
     # plt.tight_layout()
@@ -47,8 +47,8 @@ def plot_timeseries(dm: dataMangling.DataMangled, plot_item:Union[dataMangling.D
     plt.ylim(0, max(daily[1:])*1.5)
 
     # plot averages
-    lns2 = ax.plot(dates, plot_item.rolling_mean7, label='daily: centered moving average %s days' % 7, color='purple')
-    lns3 = ax.plot(dates, plot_item.rolling_mean14, label='daily: centered moving average %s days' % 14, color='orange', linewidth=4)
+    lns2 = ax.plot(dates, cov_area.rolling_mean7, label='daily: centered moving average %s days' % 7, color='purple')
+    lns3 = ax.plot(dates, cov_area.rolling_mean14, label='daily: centered moving average %s days' % 14, color='orange', linewidth=4)
     # window=21
     # rolling_mean = pandas.DataFrame(daily).rolling(window=window, center=True).mean()
     # ax.plot(dates, rolling_mean, label='SMA %s days' % window, color='pink', linewidth=1)
@@ -56,36 +56,36 @@ def plot_timeseries(dm: dataMangling.DataMangled, plot_item:Union[dataMangling.D
     # lns4_2 = plt.plot(dates[int(round(center))], max(signal), marker="v", color='green', markersize=15)
     # lns4_2 = plt.plot(dates[int(round(center))], 0, marker="v", color='green', markersize=15)
     # lns4_2 = plt.plot(dates[int(round(center))], [max(daily[1:])/20], marker="^", color='green', markersize=30)
-    lns4_2 = plt.plot(dates[int(round(plot_item.center))], [max(daily[1:])/19], marker="v", color='green', markersize=17)
+    lns4_2 = plt.plot(dates[int(round(cov_area.center))], [max(daily[1:]) / 19], marker="v", color='green', markersize=17)
 
     # plot 2nd axis and cumulative data
     ax2 = plt.twinx()
-    plt.ylim(0, max(plot_item.cumulative)*1.1)
+    plt.ylim(0, max(cov_area.cumulative) * 1.1)
     
     plt.ylabel("cumulative total cases", color="#1E90FF")
 
-    lns5 = ax2.plot(dates, plot_item.cumulative, label="total cases reported at RiskLayer", color = '#1E90FF')
+    lns5 = ax2.plot(dates, cov_area.cumulative, label="total cases reported at RiskLayer", color ='#1E90FF')
     
     lns6 = []
-    if type(plot_item) == dataMangling.District:
-        limit = limitIncidencePerWeekPerMillion / 7 * plot_item.pop / 1000000
+    if type(cov_area) == dataMangling.District:
+        limit = limitIncidencePerWeekPerMillion / 7 * cov_area.population / 1000000
         # print ("limit:", limit)
-        lns6 = ax.plot([dates[1]]+[dates[-1]],[limit,limit], label="daily %.2f =limit 500/week/1mio pop." % limit, color = '#ef7c7c', linestyle=  (0, (5, 10)))
+        lns6 = ax.plot([dates[1]]+[dates[-1]],[limit,limit], label="daily %.2f =limit 500/week/1mio population." % limit, color = '#ef7c7c', linestyle=  (0, (5, 10)))
 
     lines = lns5 + lns1 + lns2 + lns3 + lns6
     labs = [l.get_label() for l in lines]
 
     text = "source data @RiskLayer up to " + ("%s"%max(dates))[:10]
     text += "\nplot @DrAndreasKruger " + ("%s" % datetime.datetime.now())[:16]
-    text += "\ndaily: (GREEN) 'expectation day' = " + plot_item.center_date
+    text += "\ndaily: (GREEN) 'expectation day' = " + cov_area.center_date
 
     plt.legend(lines, labs, loc='upper left', facecolor="#fafafa", framealpha=0.8, 
                title=text, prop={'size': 8}, title_fontsize = 8)
 
-    plt.title(plot_item.title)
+    plt.title(cov_area.title)
     
-    if plot_item.filename:
-        fig.savefig(os.path.join(dataFiles.PICS_PATH, plot_item.filename),  bbox_inches='tight')
+    if cov_area.filename:
+        fig.savefig(os.path.join(dataFiles.PICS_PATH, cov_area.filename), bbox_inches='tight')
     
     if ifShow:
         plt.show()
