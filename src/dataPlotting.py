@@ -17,8 +17,12 @@ import os, datetime
 
 import pandas
 # import numpy
+
+import matplotlib
+# if not on a known GUI capable system, and no matplotlib backend is externally set, use 'Agg' as non-GUI backend
+if not os.getenv('WALYAND_DISPLAY') and not os.getenv('DISPLAY') and not os.getenv('MPLBACKEND'):
+    matplotlib.use('Agg')  # to be able to plot without GUI (e.g. on a headless server), this must be set before importing pyplot
 from matplotlib import pyplot as plt
-import matplotlib 
 
 
 import dataFiles, dataMangling
