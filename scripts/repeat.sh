@@ -13,8 +13,8 @@ echo "###############################################################"
 date
 echo
 echo sleep until the new CSV is there at approx 1am ...
-echo sleep 52000
-sleep 52000
+echo sleep  82800
+sleep  82800
 echo slept.
 
 echo
