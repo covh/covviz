@@ -60,7 +60,8 @@ RISKLAYER_MASTER_SHEET = "1wg-s4_Lz2Stil6spQEYFdZaBEp8nWW26gVyfHqvcl8s" # Riskla
 RISKLAYER_MASTER_SHEET_TABLE = ("Haupt", "A5:AU406")
 # the columns containing the web-URL-sources changed over time:
 QUELLEN_SPALTEN={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
-                 "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'] }
+                 "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
+                 "v03": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)',                                  'Names'] }
 
 VERSION_HISTORY_TABLE = {"sheetID"   : "1rn_nPJodxAwahIzqfRtEr9HHoqjvmh_7bj6-LUXDRSY",
                          "sheetName" : "ThePast",
@@ -584,7 +585,7 @@ def get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET_20200521):
     return not existed
 
 
-def add_urls_column(df, hauptversion="v02"):
+def add_urls_column(df, hauptversion="v03"):
     """
     combines all web sources into one column, as list
     """
@@ -597,7 +598,7 @@ def add_urls_column(df, hauptversion="v02"):
     return df
 
 
-def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500", hauptversion="v02"):
+def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500", hauptversion="v03"):
     """
     load the file.
     process master sheet, to supply page generating function 
@@ -744,8 +745,8 @@ if __name__ == '__main__':
     # test_comparison(); exit()
     
     # get_master_sheet_haupt(); exit()  # my copy of 20/May
-    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit() # their current state of the master sheet, might not work during daytime, too busy
-    # haupt = load_master_sheet_haupt(timestamp=""); exit()
+    get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); # exit() # their current state of the master sheet, might not work during daytime, too busy
+    haupt = load_master_sheet_haupt(timestamp=""); exit()
     
     # notEqual, ts = downloadData(andStore=False); exit()
     # newData, ts = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
