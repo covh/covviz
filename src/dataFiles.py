@@ -3,7 +3,7 @@
    
 @summary: download, store, load, inspect, ... several different sources
 
-@version: v03.5 (26/June/2020)
+@version: v03.7.0 (04/March/2021)
 @since:   25/April/2020
 
 @author:  Dr Andreas Krueger
