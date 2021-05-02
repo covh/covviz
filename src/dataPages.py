@@ -320,7 +320,10 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     
     page +='<hr><h2 id="Bundeslaender">16 Bundesländer</h2>\n'
     page +='<h3 id="Bundeslaender_expectationday">ranked by "expectation day"</h3>\n'
-    page +="Click on Bundesland name to see detailed data.<p/>\n"
+    page +="Click on Bundesland name to see detailed data."
+    page +=' Note that the "incidence per 1 million inhabitants" is becoming increasingly misleading, the more people are vaccinated.'
+    page +=' It massively underestimates the danger for the unprotected!'
+    page +=' A more relevant "susceptible incidence" would use "number of cases in 7 days divided by unvaccinated population".<p/>\n'
     
     BL_names = Bundeslaender_sorted.index.tolist()
     fn, bulaHTML= dataTable.BuLas_to_HTML_table(Bundeslaender_sorted, datacolumns, BL_names, cmap, table_filename=None, rolling_window_size=3, header="\n", footer="\n")
