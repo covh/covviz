@@ -3,7 +3,7 @@
    
 @summary: download, store, load, inspect, ... several different sources
 
-@version: v03.7.0 (04/March/2021)
+@version: v03.8.0 (02/May/2021)
 @since:   25/April/2020
 
 @author:  Dr Andreas Krueger
@@ -752,8 +752,8 @@ if __name__ == '__main__':
     # test_comparison(); exit()
     
     # get_master_sheet_haupt(); exit()  # my copy of 20/May
-    get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); # exit() # their current state of the master sheet, might not work during daytime, too busy
-    haupt = load_master_sheet_haupt(timestamp=""); exit()
+    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); # exit() # their current state of the master sheet, might not work during daytime, too busy
+    # haupt = load_master_sheet_haupt(timestamp=""); exit()
     
     # notEqual, ts = downloadData(andStore=False); exit()
     # newData, ts = downloadData(); print ("\ndownloaded timeseries CSV was new:", newData); exit()
