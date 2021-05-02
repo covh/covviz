@@ -179,10 +179,17 @@ def repairData(ts):
     newcols2 = ["AGS" if x=='ï»¿AGS' else x for x in newcols]
     if newcols2!=newcols:
         print ("found and fixed ï»¿AGS --> AGS  (problem since 29/4/2020)")
-        
-    ts.columns = newcols2
-    
 
+    # ts.columns = newcols2
+
+    newcols3 = ["AGS" if x=='ISO' else x for x in newcols2]
+    if newcols3!=newcols2:
+        print ("found and fixed ISO --> AGS  (problem since 15/4/2021)")
+    ts.columns = newcols3
+    
+    print()
+
+    
     before = ts[ts["AGS"]=="05370"]["27.04.2020"]
     after  = ts[ts["AGS"]=="05370"]["28.04.2020"]
     # print (float(after) / float(before) ) 
