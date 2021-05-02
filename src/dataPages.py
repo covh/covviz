@@ -2,7 +2,7 @@
 """
 @summary: assemble pages from plots and tables, include external links, etc.
 
-@version: v03.4 (24/June/2020)
+@version: v03.8.0 (02/May/2021)
 @since:   27/April/2020
 
 @author:  Dr Andreas Krueger
@@ -134,7 +134,10 @@ def bundesland(BL_name, filename_PNG, title, pop_BL, cumulative, filename_HTML, 
     page +="<h3>Sorted by 'expectation day'</h3>\n"
     
     page +='Click on name of Kreis to see detailed data. If not all visible, '
-    page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.<p/>\n'
+    page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.'
+    page +=' Note that the "incidence per 1 million inhabitants" is becoming increasingly misleading, the more people are vaccinated.'
+    page +=' It massively underestimates the danger for the unprotected!'
+    page +=' A more relevant "susceptible incidence" would use "number of cases in 7 days divided by unvaccinated population".<p/>\n'
     
     districtsHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, 
                                                       district_AGSs, cmap, filename=None, 
@@ -339,7 +342,10 @@ def Deutschland(Bundeslaender_sorted, datacolumns, cmap, ts_sorted, bnn, filenam
     page +='<hr><h2 id="Kreise">401 Kreise (districts)</h2>\n'
     page +='<h3>ranked by "expectation day" or other measures ...</h3>\n'
     page +="Click on name of Kreis (or Bundesland) to see detailed data. To see all of them, "
-    page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.<p/>\n'
+    page +='<a href="javascript:expand_table_div(\'tablediv_kreise\');">expand table area</a>, or use scrollbar.'
+    page +=' Note that the "incidence per 1 million inhabitants" is becoming increasingly misleading, the more people are vaccinated.'
+    page +=' It massively underestimates the danger for the unprotected!'
+    page +=' A more relevant "susceptible incidence" would use "number of cases in 7 days divided by unvaccinated population".<p/>\n'
     
     district_AGSs = ts_sorted.index.tolist()
     fn, kreiseHTML = dataTable.Districts_to_HTML_table(ts_sorted, datacolumns, bnn, district_AGSs, cmap, filename="kreise_Germany.html", header="\n", footer="\n")
@@ -526,7 +532,7 @@ def generate_hotspot_files():
 
 if __name__ == '__main__':
     
-    generate_hotspot_files(); exit()
+    # generate_hotspot_files(); exit()
     
     # test_search_URLs(); exit()
     
