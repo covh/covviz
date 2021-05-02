@@ -2,7 +2,7 @@
 """
 @summary: download newest data, visual inspection, (if new) generate plots & pages, copy into webfacing repo, git push
 
-@version: v03.4 (24/June/2020)
+@version: v03.8.0 (02/May/2021)
 @since:   28/April/2020
 
 @author:  Dr Andreas Krueger
@@ -99,12 +99,21 @@ def loadAndShowSomeExtremeValues():
 
 ## download and process:
 
-def download_all(showExtremes=True):
+def download_all(showExtremes=True, getMasterSheet=True):
     new_CSV, _ = dataFiles.downloadData()
     print ("\ndownloaded timeseries CSV was new: %s \n" % new_CSV)
 
-    new_master_state = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
-    print ("\ndownloaded mastersheet has new state: %s \n" % new_master_state)
+    if getMasterSheet:
+        new_master_state = dataFiles.get_master_sheet_haupt(sheetID=dataFiles.RISKLAYER_MASTER_SHEET);
+        print ("\ndownloaded mastersheet has new state: %s \n" % new_master_state)
+    else:
+        print ("\nWARN: !!!")
+        print ("N.B.: NOT downloading mastersheet because RiskLayer set their spreadsheet access to 'authenticated' in April 2021.")
+        print ("Solution needs either them changing acess rights again - or coding & debugging time on our side,")
+        print ("see e.g. https://developers.google.com/sheets/api/quickstart/python for authenticated access to sheets.")
+        print ("For now, ignoring the problem, and simply not saving the detailed data anymore, what a pity.")
+        print ("new_master_state=False\n")
+        new_master_state = False
     
     if showExtremes:
         loadAndShowSomeExtremeValues()
@@ -186,14 +195,14 @@ def git_commit_and_push(path=WWW_REPO_PATH, script=WWW_REPO_PATH_GIT_SCRIPT):
         os.chdir(before)
 
 
-def daily_update(regenerate_pages_regardless_if_new_data=False, regenerate_plots_regardless_if_new_data=False, publish=True, showExtremes=True, withSyntheticData=True):
+def daily_update(regenerate_pages_regardless_if_new_data=False, regenerate_plots_regardless_if_new_data=False, publish=True, showExtremes=True, withSyntheticData=True, getMasterSheet=True):
     print ("Started at", ("%s" % datetime.datetime.now()) [:19],"\n")
     
     success1, success2, success3, success4, success5  = False, False, False, False, False
     
     print ("Downloading risklayer data:")
     # new_CSV, new_master_state = True, True
-    new_CSV, new_master_state = download_all(showExtremes=showExtremes)
+    new_CSV, new_master_state = download_all(showExtremes=showExtremes, getMasterSheet=getMasterSheet)
     success1 = True
 
     line = "\n" + ("*"*50) + "\n"

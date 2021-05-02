@@ -2,7 +2,7 @@
 """
 @summary: download newest data, visual inspection, (if new) generate plots & pages, copy into webfacing repo, git push 
 
-@version: v03.4 (24/June/2020)
+@version: v03.8.0 (02/May/2021)
 @since:   22/May/2020
 
 @author:  Dr Andreas Krueger
@@ -16,7 +16,7 @@ import daily
 
 if __name__ == '__main__':
     
-    daily.daily_update(showExtremes=True, withSyntheticData=False)
+    daily.daily_update(showExtremes=True, withSyntheticData=False, getMasterSheet=False)
     
     # daily.showSomeExtremeValues()
     
