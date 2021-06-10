@@ -138,6 +138,22 @@ def show_problematic_columns(df, type_wanted=numpy.float64, how_many_different=2
     if len(cols)>how_many_different:
         print("There are columns which are not '%s': %s" % (type_wanted, cols))
         
+    return cols
+        
+def cast_type_if_there_are_problematic_columns(df, cols, type_wanted, ignore=["ISO", "ADMIN"]):
+    num = len(cols)-len(ignore)
+    if num<=0:
+        return df
+    else:
+        print ("Trying to repair %d column types by casting to '%s'" % (num, type_wanted), end=" ")
+        print ("(Problem first appeared in Risklayer data on '06.06.2021', probably fixed now.)")
+        for col in cols:
+            if col in ignore:
+                continue
+            df[col] = df[col].astype(dtype=type_wanted, copy=True, errors='raise')
+        print()
+    return df, num
+        
 
 def remove_unnecessary_columns(ts, wrong=["Population"]):
     
@@ -167,11 +183,12 @@ def repairData(ts):
     """
     
     print ("\nRepair dirty risklayer data:")
-    
-    show_problematic_columns(ts)
-    
+
     ts=remove_unnecessary_columns(ts)
-    
+        
+    cols_problematic = show_problematic_columns(ts, type_wanted=numpy.float64)
+    ts, _ = cast_type_if_there_are_problematic_columns(ts, cols_problematic, type_wanted=numpy.float64)
+  
     newcols = ["12.03.2020" if x=="12.03.20203" else x for x in ts.columns]
     if newcols!=ts.columns.tolist():
         print ("found and fixed 12.03.20203 --> 12.03.2020 (problem since 25/4/2020)")
