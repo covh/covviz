@@ -57,6 +57,14 @@ SPONSORS_IMG_ABOUT_PAGE = """
      title="sponsor me - credit card / paypal, or cryptocurrencies"
      style="top: 5px; right: 5px; position:fixed; z-index: 10;">
 </a> 
+
+<a href="https://jalsti.github.io/cov19de/pages/Deutschland.html" target="_blank">
+<img src="../pics/fork.png" 
+     alt=  "visit the IMPROVED FORK done by jalsti because this project here is seldom maintained anymore" 
+     title="visit the IMPROVED FORK done by jalsti because this project here is seldom maintained anymore"
+     style="top: 35px; right: 0px; position:fixed; z-index: 10;">
+</a> 
+
 """
 
 
