@@ -143,7 +143,7 @@ def show_problematic_columns(df, type_wanted=numpy.float64, how_many_different=2
 def cast_type_if_there_are_problematic_columns(df, cols, type_wanted, ignore=["ISO", "ADMIN"]):
     num = len(cols)-len(ignore)
     if num<=0:
-        return df
+        return df, num
     else:
         print ("Trying to repair %d column types by casting to '%s'" % (num, type_wanted), end=" ")
         print ("(Problem first appeared in Risklayer data on '06.06.2021', probably fixed now.)")
