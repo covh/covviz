@@ -1,3 +1,16 @@
+# REDIRECT:
+Maintenance of this project is irregular. Go to the **jalsti fork** instead:
+
+https://github.com/jalsti/covviz
+
+
+# OLD README:
+---
+
+---
+
+---
+
 # covid19 time series visualization - districts of Germany
 generates a static website from daily updated infections data in Germany.
 
