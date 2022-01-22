@@ -119,15 +119,14 @@ def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
     done = []
     for AGS in Kreise_AGS:
         daily, cumulative, title, filename, pop = dataMangling.get_Kreis(ts, bnn, AGS)
-        # print (title, filename); # debugging
-        plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False, population=pop)
-        done.append((title, filename))
         if ifPrint:
-            print (title, filename)
+            print (title, filename) # use this for debugging e.g. if single Kreis data is corrupt
         else:
             print (".", end="")
             if len(done)%60 == 0:
-                print()
+                print()        
+        plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False, population=pop)
+        done.append((title, filename))
     if not ifPrint:
         print()
     return done
@@ -176,7 +175,7 @@ if __name__ == '__main__':
 
     longrunner=True
     if longrunner:    
-        plot_Kreise(ts, bnn, dates, datacolumns, ts["AGS"].tolist())
+        plot_Kreise(ts, bnn, dates, datacolumns, ts["AGS"].tolist(), ifPrint=True)
         plot_all_Bundeslaender(ts, bnn, dates, datacolumns)
         
 
