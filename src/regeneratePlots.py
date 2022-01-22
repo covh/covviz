@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 @summary: download newest data, visual inspection, 
-          (always) generate pages, (if new data) generate plots,  
+          (if new data) generate pages, (always) generate plots,  
           (perhaps DO NOT, depends on publish=) copy into webfacing repo, git push 
 
 @version: v03.9.1 (22/Jan/2022)
@@ -18,8 +18,8 @@ import daily
 
 if __name__ == '__main__':
     
-    daily.daily_update(regenerate_pages_regardless_if_new_data=True,
-                       regenerate_plots_regardless_if_new_data=False,
+    daily.daily_update(regenerate_pages_regardless_if_new_data=False,
+                       regenerate_plots_regardless_if_new_data=True,
                        showExtremes=True, 
                        withSyntheticData=False, 
                        getMasterSheet=False, 
