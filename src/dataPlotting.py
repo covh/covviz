@@ -2,7 +2,7 @@
 """
 @summary: plot timeseries of (cumulative, daily) number of confirmed cases
 
-@version: v03.9.1 (22/Jan/2022)
+@version: v03.9.2 (22/Jan/2022)
 @since:   25/April/2020
 
 @author:  Dr Andreas Krueger
