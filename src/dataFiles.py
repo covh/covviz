@@ -614,6 +614,7 @@ def add_urls_column(df, hauptversion="v03"):
     combines all web sources into one column, as list
     """
     # print (df.columns); exit()
+    print ("df.columns:", df.columns, "\n"); 
     websources = QUELLEN_SPALTEN[hauptversion] 
     df["urls"]= [sorted(list(set( [url 
                             for url in urllist 
@@ -769,7 +770,7 @@ if __name__ == '__main__':
     # test_comparison(); exit()
     
     # get_master_sheet_haupt(); exit()  # my copy of 20/May
-    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); # exit() # their current state of the master sheet, might not work during daytime, too busy
+    # get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET); exit() # their current state of the master sheet, might not work during daytime, too busy
     # haupt = load_master_sheet_haupt(timestamp=""); exit()
     
     # notEqual, ts = downloadData(andStore=False); exit()

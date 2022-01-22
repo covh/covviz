@@ -16,7 +16,11 @@ import daily
 
 if __name__ == '__main__':
     
-    daily.daily_update(regenerate_pages_regardless_if_new_data=True, showExtremes=True, withSyntheticData=False, getMasterSheet=False, publish=True)
+    daily.daily_update(regenerate_pages_regardless_if_new_data=True, 
+                       showExtremes=True, 
+                       withSyntheticData=False, 
+                       getMasterSheet=False, 
+                       publish=True)
     
     # daily.showSomeExtremeValues()
     
