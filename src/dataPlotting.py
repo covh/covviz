@@ -2,7 +2,7 @@
 """
 @summary: plot timeseries of (cumulative, daily) number of confirmed cases
 
-@version: v03.4 (24/June/2020)
+@version: v03.9.1 (22/Jan/2022)
 @since:   25/April/2020
 
 @author:  Dr Andreas Krueger
@@ -55,7 +55,7 @@ def plot_timeseries(datacolumns, dates, daily, cumulative, title, filename, ifSh
 
     # plot center bar
     center, signal = dataMangling.temporal_center(daily)
-    # print (center)
+    # print (center); # debugging
     center_date=datacolumns.values[int(round(center))]
     # lns4 = ax.bar(dates, signal, label="'expectation day': "+center_date, color='green')
     
@@ -110,6 +110,7 @@ def test_plot_Kreis(ts, bnn, dates, datacolumns):
     #AGS = "1001"
     AGS = "5370"
     # AGS = "9377"
+    AGS = "16056" # risklayer unfortunately gave 'nan' here suddenly. Needed VERY BAD fix 'center=1'.
     daily, cumulative, title, filename, pop = dataMangling.get_Kreis(ts, bnn, AGS)
     plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, population=pop)
 
@@ -118,6 +119,7 @@ def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
     done = []
     for AGS in Kreise_AGS:
         daily, cumulative, title, filename, pop = dataMangling.get_Kreis(ts, bnn, AGS)
+        # print (title, filename); # debugging
         plot_timeseries(datacolumns, dates, daily, cumulative, title, filename=filename, ifShow=False, population=pop)
         done.append((title, filename))
         if ifPrint:

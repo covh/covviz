@@ -2,7 +2,7 @@
 """
 @summary: input data --> output data, misc helper functions
 
-@version: v03.4 (24/June/2020)
+@version: v03.9.1 (22/Jan/2022)
 @since:   26/April/2020
 
 @author:  Dr Andreas Krueger
@@ -113,6 +113,10 @@ def temporal_center(data):
     # print (ddata)
     productsum = sum([d*(i+1) for i,d in enumerate(ddata)]) # add one i.e. shift right
     center = productsum/sum(ddata) # + 1 - 1 # shift left and right equalize each other
+    if productsum!=productsum: 
+        print ("bad fix center=1 for errorenous 'nan' in risklayer source data")
+        center=1 # unfortunately, risklayer suddenly introduced wrongful 'nan' for Kreis 16056; this is a VERY BAD fix
+
     # synthetic "data" with one peak near center:
     signal = [0]*len(data)
     
