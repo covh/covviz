@@ -61,7 +61,8 @@ RISKLAYER_MASTER_SHEET_TABLE = ("Haupt", "A5:AU406")
 # the columns containing the web-URL-sources changed over time:
 QUELLEN_SPALTEN={"v01": ['Quelle 1', 'Gestrige Quellen', 'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
                  "v02": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'TWITTER', 'FACEBOOK/INSTAGRAM', 'Names'],
-                 "v03": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)',                                  'Names'] }
+                 "v03": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)',                                  'Names'],
+                 "v04": ['Quelle 1',                     'Quelle (Sollte nur Landesamt, Gesundheitsamt oder offiziell sein)', 'Gem.']  }
 
 VERSION_HISTORY_TABLE = {"sheetID"   : "1rn_nPJodxAwahIzqfRtEr9HHoqjvmh_7bj6-LUXDRSY",
                          "sheetName" : "ThePast",
@@ -609,21 +610,23 @@ def get_master_sheet_haupt(sheetID=RISKLAYER_MASTER_SHEET_20200521):
     return not existed
 
 
-def add_urls_column(df, hauptversion="v03"):
+def add_urls_column(df, hauptversion="v04"):
     """
     combines all web sources into one column, as list
     """
     # print (df.columns); exit()
-    print ("df.columns:", df.columns, "\n"); 
+    # print ("df.columns:", df.columns, "\n"); 
     websources = QUELLEN_SPALTEN[hauptversion] 
     df["urls"]= [sorted(list(set( [url 
                             for url in urllist 
-                            if url!="" and url!="nn"] )))    # remove the nans
+                            # if url!="" and url!="nn"] )))    # remove the nans
+                            if url.startswith("http") # remove the nan, stadt, LK, etc
+                            ] )))    
                  for urllist in df[websources].fillna("").values.tolist()] 
     return df
 
 
-def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500", hauptversion="v03"):
+def load_master_sheet_haupt(filestump=HAUPT_FILES, timestamp="-20200520_211500", hauptversion="v04"):
     """
     load the file.
     process master sheet, to supply page generating function 
