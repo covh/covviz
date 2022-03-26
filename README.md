@@ -33,7 +33,7 @@ If you want to work with this, and make your own copy of the site, fork both rep
 Warning: Size. By now the pages-repo `covh/cov19de` is humongous. 
 I suggest you make a *shallow clone* (instead of getting the whole history), with this command:
 
-    git clone --depth 1  git@github.com-cov:covh/cov19de.git
+    git clone --depth 1  git@github.com:covh/cov19de.git
 
 ### dependencies, clone, install
 needed machine wide dependencies: git for github, virtualenv for python, expect for unbuffer
