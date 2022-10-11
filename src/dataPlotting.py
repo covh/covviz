@@ -132,6 +132,34 @@ def plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
     return done
 
 
+def plot_Kreise_parallel(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint=True):
+    import  multiprocessing as mp
+
+    # one CPU should be left free for the system, and multiprocessing makes only sense for at least 2 free CPUs,
+    # so just call the non-parallel version if not enough CPUs are in the system
+    available_cpus = mp.cpu_count()
+    leave_alone_cpus = 1
+    wanted_cpus = available_cpus - leave_alone_cpus
+
+    if available_cpus < wanted_cpus or wanted_cpus < 2:
+        return plot_Kreise(ts, bnn, dates, datacolumns, Kreise_AGS, ifPrint)
+
+    done = []
+
+    # setup process pool
+    pool = mp.Pool(wanted_cpus)
+    try:
+        done = pool.starmap(plot_Kreise, [(ts, bnn, dates, datacolumns, [AGS], ifPrint) for AGS in Kreise_AGS])
+    except KeyboardInterrupt:
+        # without catching this here we will never be able to manually stop running in a sane way
+        pool.terminate()
+    finally:
+        pool.close()
+        pool.join()
+
+    return done
+
+
 def test_plot_Bundesland(ts, bnn, dates, datacolumns, Bundesland = "Hessen"):
     ## Bundesland
     # Bundesland = "Dummyland"
